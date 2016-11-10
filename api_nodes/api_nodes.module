@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains api_nodes.module..
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function api_nodes_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the api_nodes module.
+    case 'help.page.api_nodes':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Base for getting nodes via rest') . '</p>';
+      return $output;
+
+    default:
+  }
+}

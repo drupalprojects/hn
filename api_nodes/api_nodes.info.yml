@@ -1,0 +1,7 @@
+name: api_nodes
+type: module
+description: Base for getting nodes via rest
+core: 8.x
+package: API
+dependencies:
+  - rest
