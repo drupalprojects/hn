@@ -3,9 +3,11 @@
 namespace Drupal\api_settings\Plugin\rest\resource;
 
 use Drupal\Console\Bootstrap\Drupal;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Language\LanguageDefault;
 use Drupal\Core\Language\LanguageManager;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -110,15 +112,52 @@ class SettingsRestResource extends ResourceBase {
         $name = $language->getName();
         $default = $language->isDefault();
         $direction = $language->getDirection();
+        $url = "http://$_SERVER[HTTP_HOST]/$id";
 
         $languagesArray[][$id] = [
           'name' => $name,
           'default' => $default,
-          'direction' => $direction
+          'direction' => $direction,
+          'url' => $url,
         ];
       }
     }
     return $languagesArray;
   }
+
+//  private function getLanguageDomain($languageId) {
+//    $config = \Drupal::configFactory();
+//    $config->get('language.negotiation')->get('url');
+//
+//    switch ($config->get('source')) {
+//      case LanguageNegotiationUrl::CONFIG_PATH_PREFIX:
+//
+//        var_dump('test');
+//        die();
+//
+//        $prefix = $config['prefixes'][$languageId];
+//        var_dump($prefix);
+//        return $prefix;
+//        break;
+//
+////      case LanguageNegotiationUrl::CONFIG_DOMAIN:
+////        // Get only the host, not the port.
+////        $http_host = $request->getHost();
+////        foreach ($languages as $language) {
+////          // Skip the check if the language doesn't have a domain.
+////          if (!empty($config['domains'][$language->getId()])) {
+////            // Ensure that there is exactly one protocol in the URL when
+////            // checking the hostname.
+////            $host = 'http://' . str_replace(array('http://', 'https://'), '', $config['domains'][$language->getId()]);
+////            $host = parse_url($host, PHP_URL_HOST);
+////            if ($http_host == $host) {
+////              $langcode = $language->getId();
+////              break;
+////            }
+////          }
+////        }
+////        break;
+//    }
+//  }
 
 }
