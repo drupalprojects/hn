@@ -92,6 +92,10 @@ class NodeRestResource extends ResourceBase
       throw new AccessDeniedHttpException('Acces denied');
     }
 
+    /*
+     * TODO: Now i check on the language given by drupal, but should check if the language is in de path if not then use the language given by drupal.
+     */
+
     // Get the parameter url
     $url = \Drupal::request()->get('url');
     if(empty($url)) {
