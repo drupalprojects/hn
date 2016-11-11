@@ -2,12 +2,14 @@
 
 namespace Drupal\api_nodes\Plugin\rest\resource;
 
+use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -16,11 +18,12 @@ use Psr\Log\LoggerInterface;
  *   id = "node_rest_resource",
  *   label = @Translation("Node rest resource"),
  *   uri_paths = {
- *     "canonical" = "/api/v1/{nodeType}/{nid}"
+ *     "canonical" = "/api/v1/url"
  *   }
  * )
  */
-class NodeRestResource extends ResourceBase {
+class NodeRestResource extends ResourceBase
+{
 
   /**
    * A current user instance.
@@ -28,6 +31,8 @@ class NodeRestResource extends ResourceBase {
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
+
+  private $language;
 
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
@@ -55,6 +60,8 @@ class NodeRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
 
   /**
@@ -75,23 +82,37 @@ class NodeRestResource extends ResourceBase {
    * Responds to GET requests.
    *
    * Returns a list of bundles for specified entity.
-   *
-   * @param null $nodeType
-   * @param null $nid
    * @return ResourceResponse Throws exception expected.
    * Throws exception expected.
    */
-  public function get($nodeType = null, $nid = null) {
-
+  public function get() {
     // You must to implement the logic of your REST Resource here.
     // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
+    if(!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException('Acces denied');
     }
 
+    // Get the parameter url
+    $url = \Drupal::request()->get('url');
+    if(empty($url)) {
+      throw new BadRequestHttpException('Url should be set');
+    }
 
+    // Get normal path
+    $path = \Drupal::service('path.alias_manager')->getPathByAlias($url, $this->language);
+    if($path === $url) {
+      throw new BadRequestHttpException('Could not find the correct path');
+    }
 
-    return new ResourceResponse("Implement REST State GET!");
+    // Check if it is a node and get the id
+    if(preg_match('/node\/(\d+)/', $path, $matches)) {
+      $node = \Drupal\node\Entity\Node::load($matches[1]);
+
+      $response = new ResourceResponse(array($node));
+      $response->addCacheableDependency($node);
+    }
+
+    return $response;
   }
 
 }
