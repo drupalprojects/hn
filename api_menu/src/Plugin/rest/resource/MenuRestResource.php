@@ -121,7 +121,9 @@ class MenuRestResource extends ResourceBase
       $this->getMenuItems($menu['#items'], $this->menuItems);
 
       if(!empty($this->menuItems)) {
-        return new JsonResponse($this->menuItems);
+        $response = new ResourceResponse($this->menuItems);
+        $response->addCacheableDependency($this->menuItems);
+        return $response;
       }
       throw new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menu_name)));
     }
