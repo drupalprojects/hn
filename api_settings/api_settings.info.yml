@@ -1,0 +1,7 @@
+name: api_settings
+type: module
+description: Endpoint that returns all the settings that a user needs on every page
+core: 8.x
+package: API
+dependencies:
+  - rest
