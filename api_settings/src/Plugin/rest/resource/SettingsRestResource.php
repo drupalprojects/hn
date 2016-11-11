@@ -2,6 +2,9 @@
 
 namespace Drupal\api_settings\Plugin\rest\resource;
 
+use Drupal\Console\Bootstrap\Drupal;
+use Drupal\Core\Language\LanguageDefault;
+use Drupal\Core\Language\LanguageManager;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -87,7 +90,35 @@ class SettingsRestResource extends ResourceBase {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse("Implement REST State GET!");
+    $responseArray = [];
+
+    //Add languages
+    $responseArray['Languages'] = $this->getLanguages();
+
+    $response = new ResourceResponse($responseArray);
+    $response->addCacheableDependency($responseArray);
+    return $response;
+  }
+
+  private function getLanguages() {
+    // Get all the languages
+    $languages = \Drupal::languageManager()->getLanguages();
+    $languagesArray = [];
+    if(count($languages) > 0) {
+      foreach ($languages as $language) {
+        $id = $language->getId();
+        $name = $language->getName();
+        $default = $language->isDefault();
+        $direction = $language->getDirection();
+
+        $languagesArray[][$id] = [
+          'name' => $name,
+          'default' => $default,
+          'direction' => $direction
+        ];
+      }
+    }
+    return $languagesArray;
   }
 
 }
