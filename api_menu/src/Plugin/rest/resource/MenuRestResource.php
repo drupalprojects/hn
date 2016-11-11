@@ -8,6 +8,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -23,7 +24,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *   }
  * )
  */
-class MenuRestResource extends ResourceBase {
+class MenuRestResource extends ResourceBase
+{
 
   /**
    * A current user instance.
@@ -90,9 +92,9 @@ class MenuRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get($menu_name = NULL) {
-    if ($menu_name) {
+    if($menu_name) {
       $permission = 'View published content';
-      if (!$this->currentUser->hasPermission($permission)) {
+      if(!$this->currentUser->hasPermission($permission)) {
         throw new AccessDeniedHttpException();
       }
 
@@ -116,10 +118,10 @@ class MenuRestResource extends ResourceBase {
       // Finally, build a renderable array from the transformed tree.
       $menu = $menu_tree->build($tree);
 
-        $this->getMenuItems($menu['#items'], $this->menuItems);
+      $this->getMenuItems($menu['#items'], $this->menuItems);
 
-      if (!empty($this->menuItems)) {
-        return new ResourceResponse($this->menuItems);
+      if(!empty($this->menuItems)) {
+        return new JsonResponse($this->menuItems);
       }
       throw new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menu_name)));
     }
@@ -139,7 +141,7 @@ class MenuRestResource extends ResourceBase {
       /* @var $org_link \Drupal\Core\Menu\MenuLinkDefault */
       $org_link = $item_value['original_link'];
       $item_name = $org_link->getDerivativeId();
-      if (empty($item_name)) {
+      if(empty($item_name)) {
         $item_name = $org_link->getBaseId();
       }
 
@@ -147,11 +149,10 @@ class MenuRestResource extends ResourceBase {
       $url = $item_value['url'];
 
       $external = FALSE;
-      if ($url->isExternal()) {
+      if($url->isExternal()) {
         $uri = $url->getUri();
         $external = TRUE;
-      }
-      else {
+      } else {
         $uri = $url->getInternalPath();
       }
 
@@ -162,7 +163,7 @@ class MenuRestResource extends ResourceBase {
         'external' => $external,
       );
 
-      if (!empty($item_value['below'])) {
+      if(!empty($item_value['below'])) {
         $items[$item_name]['below'] = array();
         $this->getMenuItems($item_value['below'], $items[$item_name]['below']);
       }
