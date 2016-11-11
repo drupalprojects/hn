@@ -115,6 +115,7 @@ class SettingsRestResource extends ResourceBase {
         $url = "http://$_SERVER[HTTP_HOST]/$id";
 
         $languagesArray[][$id] = [
+          'id' => $id,
           'name' => $name,
           'default' => $default,
           'direction' => $direction,
