@@ -111,6 +111,7 @@ class NodeRestResource extends ResourceBase
     // Check if it is a node and get the id
     if(preg_match('/node\/(\d+)/', $path, $matches)) {
       $node = \Drupal\node\Entity\Node::load($matches[1]);
+      $node = $node->getTranslation($this->language);
 
       $response = new ResourceResponse(array($node));
       $response->addCacheableDependency($node);
