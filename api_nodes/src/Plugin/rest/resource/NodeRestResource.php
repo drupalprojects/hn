@@ -162,7 +162,9 @@ class NodeRestResource extends ResourceBase
        * TODO: check if the user has permissions to view this node
        */
 
-      $response = new ResourceResponse($nodeObject);
+      $response = new ResourceResponse(array(
+        'response' => $nodeObject
+      ));
 
 
       /**
