@@ -4,6 +4,7 @@ namespace Drupal\api_settings\Helpers;
 
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Menu\MenuTreeParameters;
+use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -31,7 +32,7 @@ trait Menu
 
   }
 
-  public static function getMenuById($menuName = NULL, $language = NULL) {
+  public static function getMenuById($menuName = NULL, LanguageInterface $language = NULL) {
     if($menuName && $language) {
 
       // Get the menu Tree
@@ -67,7 +68,7 @@ trait Menu
     return new HttpException(t("Entity wasn't provided"));
   }
 
-  private static function getMenuItems(array $tree, array &$items = array(), $language) {
+  private static function getMenuItems(array $tree, array &$items = array(), LanguageInterface $language) {
     foreach ($tree as $item_value) {
       /* @var $org_link \Drupal\Core\Menu\MenuLinkDefault */
       $org_link = $item_value['original_link'];
@@ -79,15 +80,26 @@ trait Menu
       /* @var $url \Drupal\Core\Url */
       $url = $item_value['url'];
 
+      $prefix = '';
+
+      $language_negotiation = \Drupal::config('language.negotiation')->get('url');
+
+      if($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
+
+        $prefix = $language_negotiation['prefixes'][$language->getId()];
+
+      }
+
       $external = FALSE;
       if($url->isExternal()) {
         $uri = $url->getUri();
         $external = TRUE;
       } else {
         if(!empty($url->getInternalPath())) {
-          $uri = \Drupal::service('path.alias_manager')->getAliasByPath('/'.$url->getInternalPath(), $language);
+
+          $uri = $prefix . \Drupal::service('path.alias_manager')->getAliasByPath('/'.$url->getInternalPath(), $language->getId());
         } else {
-          $uri = $url->getInternalPath();
+          $uri = $prefix . $url->getInternalPath();
         }
       }
 
@@ -100,7 +112,7 @@ trait Menu
 
       if(!empty($item_value['below'])) {
         $items[count($items) - 1]['below'] = array();
-        Menu::getMenuItems($item_value['below'], $items[count($items) - 1]['below']);
+        Menu::getMenuItems($item_value['below'], $items[count($items) - 1]['below'], $language);
       }
     }
   }
