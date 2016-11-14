@@ -27,7 +27,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *   }
  * )
  */
-class SettingsRestResource extends ResourceBase {
+class SettingsRestResource extends ResourceBase
+{
 
   /**
    * A current user instance.
@@ -90,7 +91,7 @@ class SettingsRestResource extends ResourceBase {
 
     // You must to implement the logic of your REST Resource here.
     // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
+    if(!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
@@ -133,31 +134,42 @@ class SettingsRestResource extends ResourceBase {
 
   private function getLanguageDomain(Request $request = null, $languageId) {
     if($request) {
+      // Instantiate configuration drupal
       $config = \Drupal::configFactory();
+      // Get language negotiation config. This will give a array with prefixes or domains.
       $languageNegotiation = $config->get('language.negotiation')->get('url');
 
+      // Check if the website is configurated with prefixes or domains
       switch ($languageNegotiation['source']) {
+        // If the configuration is path_prefix go further
         case LanguageNegotiationUrl::CONFIG_PATH_PREFIX:
 
+          // Get prefix for given language
           $prefix = $languageNegotiation['prefixes'][$languageId];
 
+          // Check if the prefix returns null if so the languageId is probally wrong.
           if(empty($prefix)) {
             throw new NotFoundHttpException('Language id is probally wrong.');
           }
 
-          $url = $request->getHost().'/'.$prefix;
+          $url = $request->getHost() . '/' . $prefix;
 
-        return $url;
-        break;
+          // Return the url
+          return $url;
+          break;
 
+        // If the configuration is path_domain go further
         case LanguageNegotiationUrl::CONFIG_DOMAIN:
 
+          // Get domain for given language
           $domain = $languageNegotiation['domain'][$languageId];
 
+          // Check if the domain returns null if so the languageId is probally wrong.
           if(empty($domain)) {
             throw new NotFoundHttpException('Language id is probally wrong.');
           }
 
+          // return the url
           return $domain;
           break;
       }
