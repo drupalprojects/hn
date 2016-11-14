@@ -86,14 +86,17 @@ class NodeRestResource extends ResourceBase
    * @return ResourceResponse Throws exception expected.
    * Throws exception expected.
    */
-  public function get($url = null) {
-
+  public function get()
+  {
     /**
      * Get the ?url= query
      */
-    if(!$url){
-      $url = '/' . trim(\Drupal::request()->get('url', ''), '/');
-    }
+    return $this->getResponseByUrl(\Drupal::request()->get('url', ''));
+  }
+
+  private function getResponseByUrl($url, $statusCode = 200){
+
+    $url = '/' . trim($url, '/');
 
     $language_negotiation = \Drupal::config('language.negotiation')->get('url');
 
@@ -153,6 +156,14 @@ class NodeRestResource extends ResourceBase
       $response = new ResourceResponse(array($node));
 
       /**
+       * Set status code
+       */
+      if($statusCode != 200){
+        $response->setStatusCode($statusCode);
+      }
+
+
+      /**
        * Don't cache (yet)
        */
       $response->addCacheableDependency(array(
@@ -169,7 +180,7 @@ class NodeRestResource extends ResourceBase
       $page_404 = \Drupal::config('system.site')->get('page.404');
 
       if($page_404){
-        return $this->get($page_404);
+        return $this->getResponseByUrl($page_404, 404);
       }
       else{
         throw new NotFoundHttpException('The path provided couldn\'t be found or isn\'t a node, and there is no 404 page available.');
