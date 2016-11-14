@@ -114,7 +114,11 @@ class NodeRestResource extends ResourceBase
       $node = $node->getTranslation($this->language);
 
       $response = new ResourceResponse(array($node));
-      $response->addCacheableDependency($node);
+      $response->addCacheableDependency(array(
+        '#cache' => array(
+          'max-age' => 0,
+        ),
+      ));
     }
 
     return $response;
