@@ -2,6 +2,7 @@
 
 namespace Drupal\api_nodes\Plugin\rest\resource;
 
+use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 /**
  * Provides a resource to get view modes by entity and bundle.
  *
@@ -100,15 +102,15 @@ class NodeRestResource extends ResourceBase
 
     $language_negotiation = \Drupal::config('language.negotiation')->get('url');
 
-    if($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX){
+    if($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
 
       /**
        * The PATH_PREFIX method is used for language detection. This should be stripped of the url.
        */
 
-      foreach($language_negotiation['prefixes'] as $lang_id => $lang_prefix){
+      foreach ($language_negotiation['prefixes'] as $lang_id => $lang_prefix) {
 
-        if(strpos($url, $lang_prefix) === 1){
+        if(strpos($url, $lang_prefix) === 1) {
 
           /**
            * Change the language
@@ -143,17 +145,44 @@ class NodeRestResource extends ResourceBase
      */
     if(preg_match('/node\/(\d+)/', $path, $matches)) {
 
+      $allowedEntityReferences = [
+        'paragraph', 'file'
+      ];
+
+      $referenced_entities = [];
+
       /**
        * Get the node
        */
       $node = \Drupal\node\Entity\Node::load($matches[1]);
       $node = $node->getTranslation($this->language);
 
+
+      $nodeObject = [];
+
+      // Gather a list of referenced entities.
+      foreach ($node->getFields() as $field_items) {
+        $targetType = $field_items->getSetting('target_type');
+        $name = $field_items->getName();
+        foreach ($field_items as $field_item) {
+          // Loop over all properties of a field item.
+          foreach ($field_item->getProperties(TRUE) as $property) {
+            if(in_array($targetType, $allowedEntityReferences)) {
+              if($property instanceof EntityReference && $entity = $property->getValue()) {
+                $nodeObject[$name][] = $entity;
+              }
+            } else {
+              $nodeObject[$name] = $field_item;
+            }
+          }
+        }
+      }
+
       /**
        * TODO: check if the user has permissions to view this node
        */
 
-      $response = new ResourceResponse(array($node));
+      $response = new ResourceResponse($nodeObject);
 
       /**
        * Set status code
