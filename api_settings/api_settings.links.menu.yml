@@ -1,0 +1,6 @@
+api_settings.config:
+  title: 'Perfetti van Melle'
+  description: 'example of how to make an admin settings page link'
+  parent: system.admin
+  route_name: api_settings.config
+  weight: 100
