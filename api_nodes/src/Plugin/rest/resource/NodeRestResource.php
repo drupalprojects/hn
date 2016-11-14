@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * Provides a resource to get view modes by entity and bundle.
  *
@@ -86,32 +86,31 @@ class NodeRestResource extends ResourceBase
    * Throws exception expected.
    */
   public function get() {
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if(!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException('Acces denied');
-    }
 
     /*
-     * TODO: Now i check on the language given by drupal, but should check if the language is in de path if not then use the language given by drupal.
+     * TODO: Now the language given by drupal is checked, but should check if the language is in de path if not then use the language given by drupal.
      */
 
     // Get the parameter url
     $url = \Drupal::request()->get('url');
     if(empty($url)) {
-      throw new BadRequestHttpException('Url should be set');
+      /**
+       * TODO: Return homepage instead of error
+       */
+      throw new BadRequestHttpException('The URL parameter should be set.');
     }
 
     // Get normal path
     $path = \Drupal::service('path.alias_manager')->getPathByAlias($url, $this->language);
-    if($path === $url) {
-      throw new BadRequestHttpException('Could not find the correct path');
-    }
 
     // Check if it is a node and get the id
     if(preg_match('/node\/(\d+)/', $path, $matches)) {
       $node = \Drupal\node\Entity\Node::load($matches[1]);
       $node = $node->getTranslation($this->language);
+
+      /**
+       * TODO: check if the user has permissions to view this node
+       */
 
       $response = new ResourceResponse(array($node));
       $response->addCacheableDependency(array(
@@ -119,6 +118,8 @@ class NodeRestResource extends ResourceBase
           'max-age' => 0,
         ),
       ));
+    } else {
+      throw new NotFoundHttpException('The path provided couldn\'t be found, or isn\'t a node.');
     }
 
     return $response;
