@@ -6,6 +6,7 @@ use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
+use Drupal\node\Entity\Node;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -36,6 +37,10 @@ class NodeRestResource extends ResourceBase
   protected $currentUser;
 
   private $language;
+
+  private $allowedEntityReferences = [
+    'paragraph', 'file'
+  ];
 
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
@@ -145,44 +150,20 @@ class NodeRestResource extends ResourceBase
      */
     if(preg_match('/node\/(\d+)/', $path, $matches)) {
 
-      $allowedEntityReferences = [
-        'paragraph', 'file'
-      ];
-
-      $referenced_entities = [];
-
       /**
        * Get the node
        */
       $node = \Drupal\node\Entity\Node::load($matches[1]);
       $node = $node->getTranslation($this->language);
 
-
-      $nodeObject = [];
-
-      // Gather a list of referenced entities.
-      foreach ($node->getFields() as $field_items) {
-        $targetType = $field_items->getSetting('target_type');
-        $name = $field_items->getName();
-        foreach ($field_items as $field_item) {
-          // Loop over all properties of a field item.
-          foreach ($field_item->getProperties(TRUE) as $property) {
-            if(in_array($targetType, $allowedEntityReferences)) {
-              if($property instanceof EntityReference && $entity = $property->getValue()) {
-                $nodeObject[$name][] = $entity;
-              }
-            } else {
-              $nodeObject[$name] = $field_item;
-            }
-          }
-        }
-      }
+      $nodeObject = $this->getFields($node);
 
       /**
        * TODO: check if the user has permissions to view this node
        */
 
       $response = new ResourceResponse($nodeObject);
+
 
       /**
        * Set status code
@@ -218,6 +199,29 @@ class NodeRestResource extends ResourceBase
     }
 
     return $response;
+  }
+
+  private function getFields($node = NULL, array $nodeObject = array()) {
+    if($node) {
+      foreach ($node->getFields() as $field_items) {
+        $targetType = $field_items->getSetting('target_type');
+        $name = $field_items->getName();
+        foreach ($field_items as $field_item) {
+          // Loop over all properties of a field item.
+          foreach ($field_item->getProperties(TRUE) as $property) {
+            if(in_array($targetType, $this->allowedEntityReferences)) {
+              if($property instanceof EntityReference && $entity = $property->getValue()) {
+                if(empty($nodeObject[$name])) $nodeObject[$name] = [];
+                $nodeObject[$name][] = $this->getFields($entity);
+              }
+            } else {
+                $nodeObject[$name] = $field_item;
+            }
+          }
+        }
+      }
+    }
+    return $nodeObject;
   }
 
 }
