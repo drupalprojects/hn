@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
 use Drupal\api_settings\Helpers\Language;
+use Drupal\api_settings\Helpers\Menu;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -93,6 +94,8 @@ class SettingsRestResource extends ResourceBase
 
     //Add languages
     $responseArray['Languages'] = Language::getLanguages();
+
+    $responseArray['Main-Menu'] = Menu::getMenuById('main');
 
     $response = new ResourceResponse($responseArray);
     $response->addCacheableDependency($responseArray);

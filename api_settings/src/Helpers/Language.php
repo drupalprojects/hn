@@ -37,7 +37,7 @@ trait Language
     return $languagesArray;
   }
 
-  public static function getLanguageDomain(Request $request = null, $languageId) {
+  private static function getLanguageDomain(Request $request = null, $languageId) {
     if($request) {
       // Instantiate configuration drupal
       $config = \Drupal::configFactory();
