@@ -2,10 +2,6 @@
 
 namespace Drupal\api_settings\Plugin\rest\resource;
 
-use Drupal\Console\Bootstrap\Drupal;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Language\LanguageDefault;
-use Drupal\Core\Language\LanguageManager;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\Plugin\ResourceBase;
@@ -112,7 +108,9 @@ class SettingsRestResource extends ResourceBase
 
     // Instantiate request
     $request = \Drupal::request();
+
     if(count($languages) > 0) {
+      // Get the settings for each language
       foreach ($languages as $language) {
         $id = $language->getId();
         $name = $language->getName();
