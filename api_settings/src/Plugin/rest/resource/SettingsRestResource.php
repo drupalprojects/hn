@@ -92,7 +92,6 @@ class SettingsRestResource extends ResourceBase
 
     $responseArray = [];
 
-    //Add languages
     $responseMethods = array(
       'Languages' => Language::getLanguages(),
       'Main-Menu' => Menu::getMenuById('main'),
