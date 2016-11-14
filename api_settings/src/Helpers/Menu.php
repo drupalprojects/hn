@@ -8,8 +8,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait Menu
 {
-  public static function getMenuById($menuName = NULL) {
-    if($menuName) {
+  public static function getMenuById($menuName = NULL, $language = NULL) {
+    if($menuName && $language) {
 
       // Get the menu Tree
       $menuTree = \Drupal::menuTree();
@@ -34,7 +34,7 @@ trait Menu
 
       $menuItems = [];
 
-      Menu::getMenuItems($menu['#items'], $menuItems);
+      Menu::getMenuItems($menu['#items'], $menuItems, $language);
 
       if(!empty($menuItems)) {
         return $menuItems;
@@ -44,7 +44,7 @@ trait Menu
     return new HttpException(t("Entity wasn't provided"));
   }
 
-  private static function getMenuItems(array $tree, array &$items = array()) {
+  private static function getMenuItems(array $tree, array &$items = array(), $language) {
     foreach ($tree as $item_value) {
       /* @var $org_link \Drupal\Core\Menu\MenuLinkDefault */
       $org_link = $item_value['original_link'];
@@ -61,7 +61,11 @@ trait Menu
         $uri = $url->getUri();
         $external = TRUE;
       } else {
-        $uri = $url->getInternalPath();
+        if(!empty($url->getInternalPath())) {
+          $uri = \Drupal::service('path.alias_manager')->getAliasByPath('/'.$url->getInternalPath(), $language);
+        } else {
+          $uri = $url->getInternalPath();
+        }
       }
 
       $items[] = array(

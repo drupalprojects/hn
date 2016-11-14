@@ -32,6 +32,8 @@ class SettingsRestResource extends ResourceBase
    */
   protected $currentUser;
 
+  private $language;
+
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
@@ -58,6 +60,8 @@ class SettingsRestResource extends ResourceBase
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
 
   /**
@@ -94,7 +98,7 @@ class SettingsRestResource extends ResourceBase
 
     $responseMethods = array(
       'Languages' => Language::getLanguages(),
-      'Main-Menu' => Menu::getMenuById('main'),
+      'Main-Menu' => Menu::getMenuById('main', $this->language),
     );
 
     foreach($responseMethods as $key => $responseMethod){
