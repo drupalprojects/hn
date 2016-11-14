@@ -10,9 +10,11 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -106,13 +108,16 @@ class SettingsRestResource extends ResourceBase {
     // Get all the languages
     $languages = \Drupal::languageManager()->getLanguages();
     $languagesArray = [];
+
+    // Instantiate request
+    $request = \Drupal::request();
     if(count($languages) > 0) {
       foreach ($languages as $language) {
         $id = $language->getId();
         $name = $language->getName();
         $default = $language->isDefault();
         $direction = $language->getDirection();
-        $url = "http://$_SERVER[HTTP_HOST]/$id";
+        $url = $this->getLanguageDomain($request, $id);
 
         $languagesArray[][$id] = [
           'id' => $id,
@@ -126,39 +131,38 @@ class SettingsRestResource extends ResourceBase {
     return $languagesArray;
   }
 
-//  private function getLanguageDomain($languageId) {
-//    $config = \Drupal::configFactory();
-//    $config->get('language.negotiation')->get('url');
-//
-//    switch ($config->get('source')) {
-//      case LanguageNegotiationUrl::CONFIG_PATH_PREFIX:
-//
-//        var_dump('test');
-//        die();
-//
-//        $prefix = $config['prefixes'][$languageId];
-//        var_dump($prefix);
-//        return $prefix;
-//        break;
-//
-////      case LanguageNegotiationUrl::CONFIG_DOMAIN:
-////        // Get only the host, not the port.
-////        $http_host = $request->getHost();
-////        foreach ($languages as $language) {
-////          // Skip the check if the language doesn't have a domain.
-////          if (!empty($config['domains'][$language->getId()])) {
-////            // Ensure that there is exactly one protocol in the URL when
-////            // checking the hostname.
-////            $host = 'http://' . str_replace(array('http://', 'https://'), '', $config['domains'][$language->getId()]);
-////            $host = parse_url($host, PHP_URL_HOST);
-////            if ($http_host == $host) {
-////              $langcode = $language->getId();
-////              break;
-////            }
-////          }
-////        }
-////        break;
-//    }
-//  }
+  private function getLanguageDomain(Request $request = null, $languageId) {
+    if($request) {
+      $config = \Drupal::configFactory();
+      $languageNegotiation = $config->get('language.negotiation')->get('url');
+
+      switch ($languageNegotiation['source']) {
+        case LanguageNegotiationUrl::CONFIG_PATH_PREFIX:
+
+          $prefix = $languageNegotiation['prefixes'][$languageId];
+
+          if(empty($prefix)) {
+            throw new NotFoundHttpException('Language id is probally wrong.');
+          }
+
+          $url = $request->getHost().'/'.$prefix;
+
+        return $url;
+        break;
+
+        case LanguageNegotiationUrl::CONFIG_DOMAIN:
+
+          $domain = $languageNegotiation['domain'][$languageId];
+
+          if(empty($domain)) {
+            throw new NotFoundHttpException('Language id is probally wrong.');
+          }
+
+          return $domain;
+          break;
+      }
+    }
+    return NULL;
+  }
 
 }
