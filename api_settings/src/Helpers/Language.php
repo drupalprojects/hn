@@ -25,7 +25,7 @@ trait Language
         $direction = $language->getDirection();
         $url = Language::getLanguageDomain($request, $id);
 
-        $languagesArray[][$id] = [
+        $languagesArray[] = [
           'id' => $id,
           'name' => $name,
           'default' => $default,

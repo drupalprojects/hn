@@ -64,7 +64,7 @@ trait Menu
         $uri = $url->getInternalPath();
       }
 
-      $items[$item_name] = array(
+      $items[] = array(
         'key' => $item_name,
         'title' => $org_link->getTitle(),
         'uri' => $uri,
@@ -72,8 +72,8 @@ trait Menu
       );
 
       if(!empty($item_value['below'])) {
-        $items[$item_name]['below'] = array();
-        Menu::getMenuItems($item_value['below'], $items[$item_name]['below']);
+        $items[count($items) - 1]['below'] = array();
+        Menu::getMenuItems($item_value['below'], $items[count($items) - 1]['below']);
       }
     }
   }
