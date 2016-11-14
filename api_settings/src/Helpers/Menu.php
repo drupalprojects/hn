@@ -39,9 +39,9 @@ trait Menu
       if(!empty($menuItems)) {
         return $menuItems;
       }
-      throw new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menuName)));
+      return new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menuName)));
     }
-    throw new HttpException(t("Entity wasn't provided"));
+    return new HttpException(t("Entity wasn't provided"));
   }
 
   private static function getMenuItems(array $tree, array &$items = array()) {

@@ -54,7 +54,7 @@ trait Language
 
           // Check if the prefix returns null if so the languageId is probally wrong.
           if(empty($prefix)) {
-            throw new NotFoundHttpException('Language id is probally wrong.');
+            return new NotFoundHttpException('Language id is probally wrong.');
           }
 
           $url = $request->getHost() . '/' . $prefix;
@@ -71,7 +71,7 @@ trait Language
 
           // Check if the domain returns null if so the languageId is probally wrong.
           if(empty($domain)) {
-            throw new NotFoundHttpException('Language id is probally wrong.');
+            return new NotFoundHttpException('Language id is probally wrong.');
           }
 
           // return the url

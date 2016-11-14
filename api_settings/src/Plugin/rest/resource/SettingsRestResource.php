@@ -93,9 +93,17 @@ class SettingsRestResource extends ResourceBase
     $responseArray = [];
 
     //Add languages
-    $responseArray['Languages'] = Language::getLanguages();
+    $responseMethods = array(
+      'Languages' => Language::getLanguages(),
+      'Main-Menu' => Menu::getMenuById('main'),
+    );
 
-    $responseArray['Main-Menu'] = Menu::getMenuById('main');
+    foreach($responseMethods as $key => $responseMethod){
+      if ($responseMethod instanceof \Exception) {
+        throw $responseMethod;
+      }
+      $responseArray[$key] = $responseMethod;
+    }
 
     $response = new ResourceResponse($responseArray);
     $response->addCacheableDependency($responseArray);
