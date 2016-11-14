@@ -2,12 +2,35 @@
 
 namespace Drupal\api_settings\Helpers;
 
+use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Menu\MenuTreeParameters;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait Menu
 {
+  public static $AVAILABLE_MENUS = array('main', 'footer', 'overlay', 'disclaimer');
+
+  public static function get() {
+
+    return array_map(function(LanguageInterface $language){
+
+      $menus = [];
+
+      foreach(Menu::$AVAILABLE_MENUS as $menu){
+
+        $menu_machine_name = \Drupal::config('api_settings.config')->get("menu." . $language->getId() . ".$menu");
+
+        $menus[$menu] = Menu::getMenuById($menu_machine_name, $language);
+
+      }
+
+      return $menus;
+
+    }, \Drupal::languageManager()->getLanguages());
+
+  }
+
   public static function getMenuById($menuName = NULL, $language = NULL) {
     if($menuName && $language) {
 

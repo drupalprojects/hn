@@ -94,22 +94,19 @@ class SettingsRestResource extends ResourceBase
       throw new AccessDeniedHttpException();
     }
 
-    $responseArray = [];
-
-    $responseMethods = array(
-      'Languages' => Language::getLanguages(),
-      'Main-Menu' => Menu::getMenuById('main', $this->language),
+    $responseArray = array(
+      'response' => array(
+        'languages' => Language::getLanguages(),
+        'menu' => Menu::get()
+      )
     );
 
-    foreach($responseMethods as $key => $responseMethod){
-      if ($responseMethod instanceof \Exception) {
-        throw $responseMethod;
-      }
-      $responseArray[$key] = $responseMethod;
-    }
-
     $response = new ResourceResponse($responseArray);
-    $response->addCacheableDependency($responseArray);
+    $response->addCacheableDependency(array(
+      '#cache' => array(
+        'max-age' => 0,
+      ),
+    ));
     return $response;
   }
 }

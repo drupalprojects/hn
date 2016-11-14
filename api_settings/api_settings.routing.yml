@@ -1,0 +1,7 @@
+api_settings.config:
+  path: '/admin/api_settings'
+  defaults:
+    _form: '\Drupal\api_settings\Form\ApiSettingsForm'
+    _title: 'Perfetti van Melle settings'
+  requirements:
+    _permission: 'administer site configuration'
