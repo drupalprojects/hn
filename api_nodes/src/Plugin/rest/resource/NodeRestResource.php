@@ -4,6 +4,7 @@ namespace Drupal\api_nodes\Plugin\rest\resource;
 
 use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -87,19 +88,43 @@ class NodeRestResource extends ResourceBase
    */
   public function get() {
 
-    /*
-     * TODO: Now the language given by drupal is checked, but should check if the language is in de path if not then use the language given by drupal.
-     */
-
     /**
      * Get the ?url= query
      */
-    $url = \Drupal::request()->get('url');
+    $url = '/' . trim(\Drupal::request()->get('url', ''), '/');
+
+    $language_negotiation = \Drupal::config('language.negotiation')->get('url');
+
+    if($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX){
+
+      /**
+       * The PATH_PREFIX method is used for language detection. This should be stripped of the url.
+       */
+
+      foreach($language_negotiation['prefixes'] as $lang_id => $lang_prefix){
+
+        if(strpos($url, $lang_prefix) === 1){
+
+          /**
+           * Change the language
+           */
+          $this->language = $lang_id;
+
+          /**
+           * Remove the prefix from the url
+           */
+          $url = substr($url, strlen($lang_prefix) + 1);
+
+        }
+
+      }
+
+    }
 
     /**
      * If the ?url= is empty, get the frontpage
      */
-    if(empty($url) || $url == '/') {
+    if($url == '/') {
       $url = \Drupal::config('system.site')->get('page.front');
     }
 
