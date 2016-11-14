@@ -3,14 +3,12 @@
 namespace Drupal\api_settings\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Drupal\api_settings\Helpers\Language;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -94,85 +92,10 @@ class SettingsRestResource extends ResourceBase
     $responseArray = [];
 
     //Add languages
-    $responseArray['Languages'] = $this->getLanguages();
+    $responseArray['Languages'] = Language::getLanguages();
 
     $response = new ResourceResponse($responseArray);
     $response->addCacheableDependency($responseArray);
     return $response;
   }
-
-  private function getLanguages() {
-    // Get all the languages
-    $languages = \Drupal::languageManager()->getLanguages();
-    $languagesArray = [];
-
-    // Instantiate request
-    $request = \Drupal::request();
-
-    if(count($languages) > 0) {
-      // Get the settings for each language
-      foreach ($languages as $language) {
-        $id = $language->getId();
-        $name = $language->getName();
-        $default = $language->isDefault();
-        $direction = $language->getDirection();
-        $url = $this->getLanguageDomain($request, $id);
-
-        $languagesArray[][$id] = [
-          'id' => $id,
-          'name' => $name,
-          'default' => $default,
-          'direction' => $direction,
-          'url' => $url,
-        ];
-      }
-    }
-    return $languagesArray;
-  }
-
-  private function getLanguageDomain(Request $request = null, $languageId) {
-    if($request) {
-      // Instantiate configuration drupal
-      $config = \Drupal::configFactory();
-      // Get language negotiation config. This will give a array with prefixes or domains.
-      $languageNegotiation = $config->get('language.negotiation')->get('url');
-
-      // Check if the website is configurated with prefixes or domains
-      switch ($languageNegotiation['source']) {
-        // If the configuration is path_prefix go further
-        case LanguageNegotiationUrl::CONFIG_PATH_PREFIX:
-
-          // Get prefix for given language
-          $prefix = $languageNegotiation['prefixes'][$languageId];
-
-          // Check if the prefix returns null if so the languageId is probally wrong.
-          if(empty($prefix)) {
-            throw new NotFoundHttpException('Language id is probally wrong.');
-          }
-
-          $url = $request->getHost() . '/' . $prefix;
-
-          // Return the url
-          return $url;
-          break;
-
-        // If the configuration is path_domain go further
-        case LanguageNegotiationUrl::CONFIG_DOMAIN:
-
-          // Get domain for given language
-          $domain = $languageNegotiation['domain'][$languageId];
-
-          // Check if the domain returns null if so the languageId is probally wrong.
-          if(empty($domain)) {
-            throw new NotFoundHttpException('Language id is probally wrong.');
-          }
-
-          // return the url
-          return $domain;
-          break;
-      }
-    }
-    return NULL;
-  }
-
 }
