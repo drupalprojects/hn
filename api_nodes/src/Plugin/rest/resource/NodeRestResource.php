@@ -91,20 +91,31 @@ class NodeRestResource extends ResourceBase
      * TODO: Now the language given by drupal is checked, but should check if the language is in de path if not then use the language given by drupal.
      */
 
-    // Get the parameter url
+    /**
+     * Get the ?url= query
+     */
     $url = \Drupal::request()->get('url');
-    if(empty($url)) {
-      /**
-       * TODO: Return homepage instead of error
-       */
-      throw new BadRequestHttpException('The URL parameter should be set.');
+
+    /**
+     * If the ?url= is empty, get the frontpage
+     */
+    if(empty($url) || $url == '/') {
+      $url = \Drupal::config('system.site')->get('page.front');
     }
 
-    // Get normal path
+    /**
+     * Get the internal path (entity/entity_id) by the alias provided
+     */
     $path = \Drupal::service('path.alias_manager')->getPathByAlias($url, $this->language);
 
-    // Check if it is a node and get the id
+    /**
+     * Check if the entity is a node
+     */
     if(preg_match('/node\/(\d+)/', $path, $matches)) {
+
+      /**
+       * Get the node
+       */
       $node = \Drupal\node\Entity\Node::load($matches[1]);
       $node = $node->getTranslation($this->language);
 
@@ -113,12 +124,21 @@ class NodeRestResource extends ResourceBase
        */
 
       $response = new ResourceResponse(array($node));
+
+      /**
+       * Don't cache (yet)
+       */
       $response->addCacheableDependency(array(
         '#cache' => array(
           'max-age' => 0,
         ),
       ));
+
     } else {
+
+      /**
+       * When it's not a supported entity, return 404
+       */
       throw new NotFoundHttpException('The path provided couldn\'t be found, or isn\'t a node.');
     }
 
