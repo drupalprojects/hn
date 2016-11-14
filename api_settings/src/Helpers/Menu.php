@@ -3,6 +3,7 @@
 namespace Drupal\api_settings\Helpers;
 
 use Drupal\Core\Menu\MenuTreeParameters;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 trait Menu
