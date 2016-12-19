@@ -112,11 +112,12 @@ class NodeRestResource extends ResourceBase
       /**
        * The PATH_PREFIX method is used for language detection. This should be stripped of the url.
        */
-
       foreach ($language_negotiation['prefixes'] as $lang_id => $lang_prefix) {
+        if (empty($lang_prefix) && !isset($this->language)) {
+          $this->language = $lang_id;
+        }
 
-        if(strpos($url, $lang_prefix) === 1) {
-
+        if (!empty($lang_prefix) && strpos($url, $lang_prefix) === 1) {
           /**
            * Change the language
            */
@@ -126,7 +127,6 @@ class NodeRestResource extends ResourceBase
            * Remove the prefix from the url
            */
           $url = substr($url, strlen($lang_prefix) + 1);
-
         }
 
       }
