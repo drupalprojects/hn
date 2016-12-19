@@ -46,8 +46,8 @@ class ApiSettingsForm extends ConfigFormBase {
     }
     asort($menus);
 
-    foreach(\Drupal::languageManager()->getLanguages() as $language){
-      foreach(array('main', 'footer', 'overlay', 'disclaimer') as $menu){
+    foreach (\Drupal::languageManager()->getLanguages() as $language){
+      foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu){
         $form["menu_" . $language->getId() . "_$menu"] = array(
           '#type' => 'select',
           '#options' => $menus,
@@ -67,8 +67,8 @@ class ApiSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('api_settings.config');
 
-    foreach(\Drupal::languageManager()->getLanguages() as $language){
-      foreach(array('main', 'footer', 'overlay', 'disclaimer') as $menu) {
+    foreach (\Drupal::languageManager()->getLanguages() as $language){
+      foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu) {
         $config->set("menu." . $language->getId() . ".$menu", $form_state->getValue("menu_" . $language->getId() . "_$menu"));
       }
     }

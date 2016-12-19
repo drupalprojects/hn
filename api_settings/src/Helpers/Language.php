@@ -16,7 +16,7 @@ trait Language
     // Instantiate request
     $request = \Drupal::request();
 
-    if(count($languages) > 0) {
+    if (count($languages) > 0) {
       // Get the settings for each language
       foreach ($languages as $language) {
         $id = $language->getId();
@@ -38,7 +38,7 @@ trait Language
   }
 
   private static function getLanguageDomain(Request $request = null, $languageId) {
-    if($request) {
+    if ($request) {
       // Instantiate configuration drupal
       $config = \Drupal::configFactory();
       // Get language negotiation config. This will give a array with prefixes or domains.
@@ -54,9 +54,7 @@ trait Language
 
           $url = $request->getHost() . '/' . $prefix;
 
-          // Return the url
           return $url;
-          break;
 
         // If the configuration is path_domain go further
         case LanguageNegotiationUrl::CONFIG_DOMAIN:
@@ -65,13 +63,11 @@ trait Language
           $domain = $languageNegotiation['domain'][$languageId];
 
           // Check if the domain returns null if so the languageId is probally wrong.
-          if(empty($domain)) {
+          if (empty($domain)) {
             return new NotFoundHttpException('Language id is probally wrong.');
           }
 
-          // return the url
           return $domain;
-          break;
       }
     }
     return NULL;

@@ -14,11 +14,11 @@ trait Menu
 
   public static function get() {
 
-    return array_map(function(LanguageInterface $language){
+    return array_map(function(LanguageInterface $language) {
 
       $menus = [];
 
-      foreach(Menu::$AVAILABLE_MENUS as $menu){
+      foreach (Menu::$AVAILABLE_MENUS as $menu) {
 
         $menu_machine_name = \Drupal::config('api_settings.config')->get("menu." . $language->getId() . ".$menu");
 
@@ -33,7 +33,7 @@ trait Menu
   }
 
   public static function getMenuById($menuName = NULL, LanguageInterface $language = NULL) {
-    if($menuName && $language) {
+    if ($menuName && $language) {
 
       // Get the menu Tree
       $menuTree = \Drupal::menuTree();
@@ -62,7 +62,7 @@ trait Menu
         Menu::getMenuItems($menu['#items'], $menuItems, $language);
       }
 
-      if(!empty($menuItems)) {
+      if (!empty($menuItems)) {
         return $menuItems;
       }
 
@@ -76,7 +76,7 @@ trait Menu
       /* @var $org_link \Drupal\Core\Menu\MenuLinkDefault */
       $org_link = $item_value['original_link'];
       $item_name = $org_link->getDerivativeId();
-      if(empty($item_name)) {
+      if (empty($item_name)) {
         $item_name = $org_link->getBaseId();
       }
 
@@ -87,21 +87,23 @@ trait Menu
 
       $language_negotiation = \Drupal::config('language.negotiation')->get('url');
 
-      if($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
+      if ($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
 
         $prefix = $language_negotiation['prefixes'][$language->getId()];
 
       }
 
       $external = FALSE;
-      if($url->isExternal()) {
+      if ($url->isExternal()) {
         $uri = $url->getUri();
         $external = TRUE;
-      } else {
-        if(!empty($url->getInternalPath())) {
+      }
+      else {
+        if (!empty($url->getInternalPath())) {
 
           $uri = $prefix . \Drupal::service('path.alias_manager')->getAliasByPath('/'.$url->getInternalPath(), $language->getId());
-        } else {
+        }
+        else {
           $uri = $prefix . $url->getInternalPath();
         }
       }
@@ -113,7 +115,7 @@ trait Menu
         'external' => $external,
       );
 
-      if(!empty($item_value['below'])) {
+      if (!empty($item_value['below'])) {
         $items[count($items) - 1]['below'] = array();
         Menu::getMenuItems($item_value['below'], $items[count($items) - 1]['below'], $language);
       }
