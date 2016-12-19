@@ -93,21 +93,19 @@ class NodeRestResource extends ResourceBase
    * @return ResourceResponse Throws exception expected.
    * Throws exception expected.
    */
-  public function get()
-  {
+  public function get() {
     /**
      * Get the ?url= query
      */
     return $this->getResponseByUrl(\Drupal::request()->get('url', ''));
   }
 
-  private function getResponseByUrl($url, $statusCode = 200){
-
+  private function getResponseByUrl($url, $statusCode = 200) {
     $url = '/' . trim($url, '/');
 
     $language_negotiation = \Drupal::config('language.negotiation')->get('url');
 
-    if($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
+    if ($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
 
       /**
        * The PATH_PREFIX method is used for language detection. This should be stripped of the url.
@@ -128,15 +126,13 @@ class NodeRestResource extends ResourceBase
            */
           $url = substr($url, strlen($lang_prefix) + 1);
         }
-
       }
-
     }
 
     /**
      * If the ?url= is empty, get the frontpage
      */
-    if($url == '/') {
+    if ($url == '/') {
       $url = \Drupal::config('system.site')->get('page.front');
     }
 
@@ -148,7 +144,7 @@ class NodeRestResource extends ResourceBase
     /**
      * Check if the entity is a node
      */
-    if(preg_match('/node\/(\d+)/', $path, $matches)) {
+    if (preg_match('/node\/(\d+)/', $path, $matches)) {
 
       /**
        * Get the node
@@ -171,22 +167,29 @@ class NodeRestResource extends ResourceBase
 
       $data = json_encode($response);
       $httpResponse = new Response($data);
-      return $httpResponse;
 
-    } else {
+      /**
+       * Set status code
+       */
+      if ($statusCode != 200) {
+        $response->setStatusCode($statusCode);
+      }
+
+      return $httpResponse;
+    }
+    else {
 
       /**
        * When it's not a supported entity, return 404
        */
       $page_404 = \Drupal::config('system.site')->get('page.404');
 
-      if($page_404){
+      if ($page_404) {
         return $this->getResponseByUrl($page_404, 404);
       }
-      else{
+      else {
         throw new NotFoundHttpException('The path provided couldn\'t be found or isn\'t a node, and there is no 404 page available.');
       }
-
     }
 
     return $response;
@@ -217,19 +220,20 @@ class NodeRestResource extends ResourceBase
   }
 
   private function getFields($node = NULL, array $nodeObject = array()) {
-    if($node) {
+    if ($node) {
       foreach ($node->getFields() as $field_items) {
         $targetType = $field_items->getSetting('target_type');
         $name = $field_items->getName();
         foreach ($field_items as $field_item) {
           // Loop over all properties of a field item.
           foreach ($field_item->getProperties(TRUE) as $property) {
-            if(in_array($targetType, $this->allowedEntityReferences)) {
-              if($property instanceof EntityReference && $entity = $property->getValue()) {
-                if(empty($nodeObject[$name])) $nodeObject[$name] = [];
+            if (in_array($targetType, $this->allowedEntityReferences)) {
+              if ($property instanceof EntityReference && $entity = $property->getValue()) {
+                if (empty($nodeObject[$name])) $nodeObject[$name] = [];
                 $nodeObject[$name][] = $this->getFields($entity);
               }
-            } else {
+            }
+            else {
                 $nodeObject[$name] = $field_item->value;
             }
           }
