@@ -159,13 +159,15 @@ class NodeRestResource extends ResourceBase
       $nodeObject = $this->getFields($node);
 
       /**
-       * TODO: check if the user has permissions to view this node
+       * Check if the user has permissions to view this node
        */
+      if (!$node->access()) {
+        throw new AccessDeniedHttpException();
+      }
 
       $response = new ResourceResponse(array(
         'response' => $nodeObject
       ));
-
 
       /**
        * Set status code
