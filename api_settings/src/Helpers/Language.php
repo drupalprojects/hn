@@ -52,11 +52,6 @@ trait Language
           // Get prefix for given language
           $prefix = $languageNegotiation['prefixes'][$languageId];
 
-          // Check if the prefix returns null if so the languageId is probally wrong.
-          if(empty($prefix)) {
-            return new NotFoundHttpException('Language id is probally wrong.');
-          }
-
           $url = $request->getHost() . '/' . $prefix;
 
           // Return the url
