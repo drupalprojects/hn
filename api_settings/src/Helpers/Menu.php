@@ -58,11 +58,14 @@ trait Menu
 
       $menuItems = [];
 
-      Menu::getMenuItems($menu['#items'], $menuItems, $language);
+      if ($menu['#items']) {
+        Menu::getMenuItems($menu['#items'], $menuItems, $language);
+      }
 
       if(!empty($menuItems)) {
         return $menuItems;
       }
+
       return new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menuName)));
     }
     return new HttpException(t("Entity wasn't provided"));
