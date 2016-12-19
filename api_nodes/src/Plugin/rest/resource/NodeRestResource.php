@@ -14,6 +14,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -28,7 +29,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class NodeRestResource extends ResourceBase
 {
-
   /**
    * A current user instance.
    *
@@ -165,26 +165,13 @@ class NodeRestResource extends ResourceBase
         throw new AccessDeniedHttpException();
       }
 
-      $response = new ResourceResponse(array(
-        'response' => $nodeObject
-      ));
+      $response = new \stdClass();
+      $response->content = $nodeObject;
+      $response->meta = $this->getMetatags($node);
 
-      /**
-       * Set status code
-       */
-      if($statusCode != 200){
-        $response->setStatusCode($statusCode);
-      }
-
-
-      /**
-       * Don't cache (yet)
-       */
-      $response->addCacheableDependency(array(
-        '#cache' => array(
-          'max-age' => 0,
-        ),
-      ));
+      $data = json_encode($response);
+      $httpResponse = new Response($data);
+      return $httpResponse;
 
     } else {
 
@@ -205,6 +192,30 @@ class NodeRestResource extends ResourceBase
     return $response;
   }
 
+  protected function getMetatags($node) {
+    $metatag_manager = \Drupal::service('metatag.manager');
+    if ($metatags = metatag_get_default_tags()) {
+      foreach ($metatag_manager->tagsFromEntity($node) as $key => $value) {
+        $metatags[$key] = $value;
+      }
+      $token = \Drupal::token();
+      foreach ($metatags as $key => $value) {
+        $value = str_replace('[current-page:title]', '[node:title]', $value);
+        $metatags[$key] = $token->replace($value, ['node' => $node], ['langcode' => $this->language]);
+      }
+    }
+    else {
+      $metatags = [];
+    }
+    $url = $node->toUrl('canonical');
+    $url->setOption('absolute', TRUE);
+    return $metatags + [
+      'description' => '',
+      'keywords' => '',
+      'canonical_url' => $url->toString(),
+    ];
+  }
+
   private function getFields($node = NULL, array $nodeObject = array()) {
     if($node) {
       foreach ($node->getFields() as $field_items) {
@@ -219,7 +230,7 @@ class NodeRestResource extends ResourceBase
                 $nodeObject[$name][] = $this->getFields($entity);
               }
             } else {
-                $nodeObject[$name] = $field_item;
+                $nodeObject[$name] = $field_item->value;
             }
           }
         }
