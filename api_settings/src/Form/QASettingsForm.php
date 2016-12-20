@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\api_settings\Form\ApiSettingsForm
- */
 namespace Drupal\api_settings\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
@@ -13,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Configure example settings for this site.
  */
 class QASettingsForm extends ConfigFormBase {
+
   /**
    * {@inheritdoc}
    */
@@ -36,7 +33,7 @@ class QASettingsForm extends ConfigFormBase {
 
     $config = $this->config('api_settings.qa');
 
-    foreach (\Drupal::languageManager()->getLanguages() as $language){
+    foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $form['q_' . $language->getId()] = array(
         '#type' => 'textfield',
         '#title' => 'Question label for ' . $language->getName(),
@@ -58,7 +55,7 @@ class QASettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('api_settings.qa');
 
-    foreach (\Drupal::languageManager()->getLanguages() as $language){
+    foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $config->set('q.' . $language->getId(), $form_state->getValue('q_' . $language->getId()));
       $config->set('a.' . $language->getId(), $form_state->getValue('a_' . $language->getId()));
     }
@@ -67,4 +64,5 @@ class QASettingsForm extends ConfigFormBase {
 
     return parent::submitForm($form, $form_state);
   }
+
 }
