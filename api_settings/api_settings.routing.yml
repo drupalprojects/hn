@@ -5,3 +5,11 @@ api_settings.config:
     _title: 'Settings API settings'
   requirements:
     _permission: 'administer site configuration'
+
+api_settings.qa:
+  path: '/admin/config/services/settings-api/qa'
+  defaults:
+    _form: '\Drupal\api_settings\Form\QASettingsForm'
+    _title: 'Settings API settings'
+  requirements:
+    _permission: 'administer site configuration'

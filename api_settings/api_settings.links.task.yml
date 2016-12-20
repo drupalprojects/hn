@@ -1,0 +1,8 @@
+api_settings.config.menu:
+  route_name: api_settings.config
+  base_route: api_settings.config
+  title: Menu
+api_settings.config.qa:
+  route_name: api_settings.qa
+  base_route: api_settings.config
+  title: Q&A

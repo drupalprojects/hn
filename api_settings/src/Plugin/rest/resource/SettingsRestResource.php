@@ -96,7 +96,8 @@ class SettingsRestResource extends ResourceBase
     $responseArray = array(
       'response' => array(
         'languages' => Language::getLanguages(),
-        'menu' => Menu::get()
+        'menu' => Menu::get(),
+        'qa' => $this->getQASettings(),
       )
     );
 
@@ -107,5 +108,20 @@ class SettingsRestResource extends ResourceBase
       ),
     ));
     return $response;
+  }
+
+  /**
+   * Get Q&A settings.
+   */
+  protected function getQASettings() {
+    $config = \Drupal::config('api_settings.qa');
+    $qa = [];
+    foreach (\Drupal::languageManager()->getLanguages() as $language){
+      $qa[$language->getId()] = [
+        'q' => $config->get('q.' . $language->getId()),
+        'a' => $config->get('a.' . $language->getId()),
+      ];
+    }
+    return $qa;
   }
 }
