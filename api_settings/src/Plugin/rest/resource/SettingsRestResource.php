@@ -22,8 +22,7 @@ use Drupal\api_settings\Helpers\Menu;
  *   }
  * )
  */
-class SettingsRestResource extends ResourceBase
-{
+class SettingsRestResource extends ResourceBase {
 
   /**
    * A current user instance.
@@ -96,8 +95,8 @@ class SettingsRestResource extends ResourceBase
     $responseArray = array(
       'response' => array(
         'languages' => Language::getLanguages(),
-        'menu' => Menu::get()
-      )
+        'menu' => Menu::get(),
+      ),
     );
 
     $response = new ResourceResponse($responseArray);
@@ -108,4 +107,5 @@ class SettingsRestResource extends ResourceBase
     ));
     return $response;
   }
+
 }

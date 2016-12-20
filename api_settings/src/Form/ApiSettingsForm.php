@@ -1,12 +1,7 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\api_settings\Form\ApiSettingsForm
- */
 namespace Drupal\api_settings\Form;
 
-use Drupal\api_settings\Plugin\rest\resource\SettingsRestResource;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\system\Entity\Menu;
@@ -15,6 +10,7 @@ use Drupal\system\Entity\Menu;
  * Configure example settings for this site.
  */
 class ApiSettingsForm extends ConfigFormBase {
+
   /**
    * {@inheritdoc}
    */
@@ -46,17 +42,16 @@ class ApiSettingsForm extends ConfigFormBase {
     }
     asort($menus);
 
-    foreach (\Drupal::languageManager()->getLanguages() as $language){
-      foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu){
+    foreach (\Drupal::languageManager()->getLanguages() as $language) {
+      foreach (['main', 'footer', 'overlay', 'disclaimer'] as $menu) {
         $form["menu_" . $language->getId() . "_$menu"] = array(
           '#type' => 'select',
           '#options' => $menus,
-          '#title' => 'Menu '.$language->getName().' '.$menu,
+          '#title' => 'Menu ' . $language->getName() . ' ' . $menu,
           '#default_value' => $config->get("menu." . $language->getId() . ".$menu"),
         );
       }
     }
-
 
     return parent::buildForm($form, $form_state);
   }
@@ -67,7 +62,7 @@ class ApiSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('api_settings.config');
 
-    foreach (\Drupal::languageManager()->getLanguages() as $language){
+    foreach (\Drupal::languageManager()->getLanguages() as $language) {
       foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu) {
         $config->set("menu." . $language->getId() . ".$menu", $form_state->getValue("menu_" . $language->getId() . "_$menu"));
       }
@@ -77,4 +72,5 @@ class ApiSettingsForm extends ConfigFormBase {
 
     return parent::submitForm($form, $form_state);
   }
+
 }
