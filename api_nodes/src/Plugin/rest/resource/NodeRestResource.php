@@ -66,6 +66,9 @@ class NodeRestResource extends ResourceBase {
     $this->currentUser = $current_user;
 
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+    $this->fileStorage = \Drupal::entityTypeManager()->getStorage('file');
+    $this->imageStyleStorage = \Drupal::entityTypeManager()->getStorage('image_style');
   }
 
   /**
@@ -222,7 +225,11 @@ class NodeRestResource extends ResourceBase {
                 if (empty($nodeObject[$name])) {
                   $nodeObject[$name] = [];
                 }
-                $nodeObject[$name][] = $this->getFields($entity);
+                $fields = $this->getFields($entity);
+                if (!empty($fields['fid']) && !empty($fields['uri'])) {
+                  $this->addFileUri($fields);
+                }
+                $nodeObject[$name][] = $fields;
               }
             }
             if (!in_array($targetType, $this->allowedEntityReferences)) {
@@ -233,6 +240,29 @@ class NodeRestResource extends ResourceBase {
       }
     }
     return $nodeObject;
+  }
+
+  /**
+   * Add uri to file fields.
+   */
+  private function addFileUri(&$fields) {
+    $file = $this->fileStorage->load($fields['fid']);
+    $fields['url'] = $file->url();
+    if (reset(explode('/', $fields['filemime'])) == 'image') {
+      $fields['styles'] = $this->getImageStyleUris($fields['uri']);
+    }
+  }
+
+  /**
+   * Generate uri for each image style.
+   */
+  private function getImageStyleUris($uri) {
+    $output = [];
+    foreach (\Drupal::entityQuery('image_style')->execute() as $name) {
+      $style = $this->imageStyleStorage->load($name);
+      $output[$name] = $style->buildUrl($uri);
+    }
+    return $output;
   }
 
 }
