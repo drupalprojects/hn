@@ -96,6 +96,7 @@ class SettingsRestResource extends ResourceBase {
       'response' => array(
         'languages' => Language::getLanguages(),
         'menu' => Menu::get(),
+        'imageStyles' => $this->getImageStyles(),
         'qa' => $this->getQaSettings(),
       ),
     );
@@ -120,6 +121,29 @@ class SettingsRestResource extends ResourceBase {
         'q' => $config->get('q.' . $language->getId()),
         'a' => $config->get('a.' . $language->getId()),
       ];
+    }
+    return $output;
+  }
+
+  /**
+   * List all image styles.
+   */
+  protected function getImageStyles() {
+    $output = [];
+    $storage = \Drupal::entityTypeManager()->getStorage('image_style');
+    foreach (\Drupal::entityQuery('image_style')->execute() as $name) {
+      $style = $storage->load($name);
+      $width = 0;
+      $height = 0;
+      foreach ($style->getEffects()->getConfiguration() as $effect) {
+        if (!empty($effect['data']['width'])) {
+          $width = $effect['data']['width'];
+        }
+        if (!empty($effect['data']['height'])) {
+          $height = $effect['data']['height'];
+        }
+      }
+      $output[$name] = ['width' => $width, 'height' => $height];
     }
     return $output;
   }
