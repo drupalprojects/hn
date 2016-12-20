@@ -94,6 +94,7 @@ class SettingsRestResource extends ResourceBase {
 
     $responseArray = array(
       'response' => array(
+        'siteName' => $this->getSiteName(),
         'languages' => Language::getLanguages(),
         'menu' => Menu::get(),
         'qa' => $this->getQaSettings(),
@@ -107,6 +108,14 @@ class SettingsRestResource extends ResourceBase {
       ),
     ));
     return $response;
+  }
+
+  /**
+   * Get site name.
+   */
+  private function getSiteName() {
+    $config = \Drupal::config('system.site');
+    return $config->get('name');
   }
 
   /**
