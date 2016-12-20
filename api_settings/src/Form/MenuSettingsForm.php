@@ -9,13 +9,13 @@ use Drupal\system\Entity\Menu;
 /**
  * Configure example settings for this site.
  */
-class ApiSettingsForm extends ConfigFormBase {
+class MenuSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'example_admin_settings';
+    return 'api_settings_menu';
   }
 
   /**
@@ -23,7 +23,7 @@ class ApiSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'api_settings.config',
+      'api_settings.menu',
     ];
   }
 
@@ -32,7 +32,7 @@ class ApiSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('api_settings.config');
+    $config = $this->config('api_settings.menu');
 
     $all_menus = Menu::loadMultiple();
 
@@ -60,7 +60,7 @@ class ApiSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('api_settings.config');
+    $config = $this->config('api_settings.menu');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu) {
