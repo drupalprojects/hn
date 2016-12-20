@@ -2,17 +2,14 @@
 
 namespace Drupal\api_nodes\Plugin\rest\resource;
 
+use \Drupal\node\Entity\Node;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
-use Drupal\Core\Path\AliasManager;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
-use Drupal\node\Entity\Node;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,8 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
  *   }
  * )
  */
-class NodeRestResource extends ResourceBase
-{
+class NodeRestResource extends ResourceBase {
   /**
    * A current user instance.
    *
@@ -39,7 +35,7 @@ class NodeRestResource extends ResourceBase
   private $language;
 
   private $allowedEntityReferences = [
-    'paragraph', 'file'
+    'paragraph', 'file',
   ];
 
   /**
@@ -90,16 +86,18 @@ class NodeRestResource extends ResourceBase
    * Responds to GET requests.
    *
    * Returns a list of bundles for specified entity.
-   * @return ResourceResponse Throws exception expected.
-   * Throws exception expected.
+   *
+   * @return ResourceResponse
+   *   Throws exception expected.
    */
   public function get() {
-    /**
-     * Get the ?url= query
-     */
+    // Get the ?url= query.
     return $this->getResponseByUrl(\Drupal::request()->get('url', ''));
   }
 
+  /**
+   * Generate API response for given URL.
+   */
   private function getResponseByUrl($url, $statusCode = 200) {
     $url = '/' . trim($url, '/');
 
@@ -107,56 +105,41 @@ class NodeRestResource extends ResourceBase
 
     if ($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
 
-      /**
-       * The PATH_PREFIX method is used for language detection. This should be stripped of the url.
-       */
+      // The PATH_PREFIX method is used for language detection.
+      // This should be stripped of the url.
       foreach ($language_negotiation['prefixes'] as $lang_id => $lang_prefix) {
         if (empty($lang_prefix) && !isset($this->language)) {
           $this->language = $lang_id;
         }
 
         if (!empty($lang_prefix) && strpos($url, $lang_prefix) === 1) {
-          /**
-           * Change the language
-           */
+          // Change the language.
           $this->language = $lang_id;
 
-          /**
-           * Remove the prefix from the url
-           */
+          // Remove the prefix from the url.
           $url = substr($url, strlen($lang_prefix) + 1);
         }
       }
     }
 
-    /**
-     * If the ?url= is empty, get the frontpage
-     */
+    // If the ?url= is empty, get the frontpage.
     if ($url == '/') {
       $url = \Drupal::config('system.site')->get('page.front');
     }
 
-    /**
-     * Get the internal path (entity/entity_id) by the alias provided
-     */
+    // Get the internal path (entity/entity_id) by the alias provided.
     $path = \Drupal::service('path.alias_manager')->getPathByAlias($url, $this->language);
 
-    /**
-     * Check if the entity is a node
-     */
+    // Check if the entity is a node.
     if (preg_match('/node\/(\d+)/', $path, $matches)) {
 
-      /**
-       * Get the node
-       */
-      $node = \Drupal\node\Entity\Node::load($matches[1]);
+      // Get the node.
+      $node = Node::load($matches[1]);
       $node = $node->getTranslation($this->language);
 
       $nodeObject = $this->getFields($node);
 
-      /**
-       * Check if the user has permissions to view this node
-       */
+      // Check if the user has permissions to view this node.
       if (!$node->access()) {
         throw new AccessDeniedHttpException();
       }
@@ -168,26 +151,22 @@ class NodeRestResource extends ResourceBase
       $data = json_encode($response);
       $httpResponse = new Response($data);
 
-      /**
-       * Set status code
-       */
+      // Set status code.
       if ($statusCode != 200) {
         $response->setStatusCode($statusCode);
       }
 
       return $httpResponse;
     }
-    else {
+    if (!preg_match('/node\/(\d+)/', $path, $matches)) {
 
-      /**
-       * When it's not a supported entity, return 404
-       */
+      // When it's not a supported entity, return 404.
       $page_404 = \Drupal::config('system.site')->get('page.404');
 
       if ($page_404) {
         return $this->getResponseByUrl($page_404, 404);
       }
-      else {
+      if (!$page_404) {
         throw new NotFoundHttpException('The path provided couldn\'t be found or isn\'t a node, and there is no 404 page available.');
       }
     }
@@ -195,19 +174,27 @@ class NodeRestResource extends ResourceBase
     return $response;
   }
 
+  /**
+   * Get metatags for node.
+   */
   protected function getMetatags($node) {
     $metatag_manager = \Drupal::service('metatag.manager');
-    if ($metatags = metatag_get_default_tags()) {
+    $metatags = metatag_get_default_tags();
+    if ($metatags) {
       foreach ($metatag_manager->tagsFromEntity($node) as $key => $value) {
         $metatags[$key] = $value;
       }
       $token = \Drupal::token();
       foreach ($metatags as $key => $value) {
         $value = str_replace('[current-page:title]', '[node:title]', $value);
-        $metatags[$key] = $token->replace($value, ['node' => $node], ['langcode' => $this->language]);
+        $metatags[$key] = $token->replace($value, [
+          'node' => $node,
+        ], [
+          'langcode' => $this->language,
+        ]);
       }
     }
-    else {
+    if (!$metatags) {
       $metatags = [];
     }
     $url = $node->toUrl('canonical');
@@ -219,6 +206,9 @@ class NodeRestResource extends ResourceBase
     ];
   }
 
+  /**
+   * Get fields for node Object.
+   */
   private function getFields($node = NULL, array $nodeObject = array()) {
     if ($node) {
       foreach ($node->getFields() as $field_items) {
@@ -229,12 +219,14 @@ class NodeRestResource extends ResourceBase
           foreach ($field_item->getProperties(TRUE) as $property) {
             if (in_array($targetType, $this->allowedEntityReferences)) {
               if ($property instanceof EntityReference && $entity = $property->getValue()) {
-                if (empty($nodeObject[$name])) $nodeObject[$name] = [];
+                if (empty($nodeObject[$name])) {
+                  $nodeObject[$name] = [];
+                }
                 $nodeObject[$name][] = $this->getFields($entity);
               }
             }
-            else {
-                $nodeObject[$name] = $field_item->value;
+            if (!in_array($targetType, $this->allowedEntityReferences)) {
+              $nodeObject[$name] = $field_item->value;
             }
           }
         }

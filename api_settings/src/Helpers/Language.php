@@ -6,18 +6,24 @@ use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-trait Language
-{
+/**
+ * Language trait.
+ */
+trait Language {
+
+  /**
+   * List all languages.
+   */
   public static function getLanguages() {
-    // Get all the languages
+    // Get all the languages.
     $languages = \Drupal::languageManager()->getLanguages();
     $languagesArray = [];
 
-    // Instantiate request
+    // Instantiate request.
     $request = \Drupal::request();
 
     if (count($languages) > 0) {
-      // Get the settings for each language
+      // Get the settings for each language.
       foreach ($languages as $language) {
         $id = $language->getId();
         $name = $language->getName();
@@ -37,32 +43,36 @@ trait Language
     return $languagesArray;
   }
 
-  private static function getLanguageDomain(Request $request = null, $languageId) {
+  /**
+   * Get domain for language in request.
+   */
+  private static function getLanguageDomain(Request $request, $languageId) {
     if ($request) {
-      // Instantiate configuration drupal
       $config = \Drupal::configFactory();
-      // Get language negotiation config. This will give a array with prefixes or domains.
+      // Get language negotiation config. This will give a array with
+      // prefixes or domains.
       $languageNegotiation = $config->get('language.negotiation')->get('url');
 
-      // Check if the website is configurated with prefixes or domains
+      // Check if the website is configurated with prefixes or domains.
       switch ($languageNegotiation['source']) {
-        // If the configuration is path_prefix go further
+        // If the configuration is path_prefix go further.
         case LanguageNegotiationUrl::CONFIG_PATH_PREFIX:
 
-          // Get prefix for given language
+          // Get prefix for given language.
           $prefix = $languageNegotiation['prefixes'][$languageId];
 
           $url = $request->getHost() . '/' . $prefix;
 
           return $url;
 
-        // If the configuration is path_domain go further
+        // If the configuration is path_domain go further.
         case LanguageNegotiationUrl::CONFIG_DOMAIN:
 
-          // Get domain for given language
+          // Get domain for given language.
           $domain = $languageNegotiation['domain'][$languageId];
 
-          // Check if the domain returns null if so the languageId is probally wrong.
+          // Check if the domain returns null if so the languageId is
+          // probally wrong.
           if (empty($domain)) {
             return new NotFoundHttpException('Language id is probally wrong.');
           }
@@ -72,4 +82,5 @@ trait Language
     }
     return NULL;
   }
+
 }

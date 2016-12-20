@@ -8,34 +8,45 @@ use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-trait Menu
-{
-  public static $AVAILABLE_MENUS = array('main', 'footer', 'overlay', 'disclaimer');
+/**
+ * Menu trait.
+ */
+trait Menu {
 
+  /**
+   * List of menu's that are available in each language.
+   *
+   * @var availableMenus
+   */
+  public static $availableMenus = array(
+    'main',
+    'footer',
+    'overlay',
+    'disclaimer',
+  );
+
+  /**
+   * Get all menu trees.
+   */
   public static function get() {
-
-    return array_map(function(LanguageInterface $language) {
-
+    return array_map(function (LanguageInterface $language) {
       $menus = [];
-
-      foreach (Menu::$AVAILABLE_MENUS as $menu) {
-
+      foreach (Menu::$availableMenus as $menu) {
         $menu_machine_name = \Drupal::config('api_settings.config')->get("menu." . $language->getId() . ".$menu");
-
         $menus[$menu] = Menu::getMenuById($menu_machine_name, $language);
-
       }
 
       return $menus;
-
     }, \Drupal::languageManager()->getLanguages());
-
   }
 
+  /**
+   * Get full menu tree by menu id.
+   */
   public static function getMenuById($menuName = NULL, LanguageInterface $language = NULL) {
     if ($menuName && $language) {
 
-      // Get the menu Tree
+      // Get the menu Tree.
       $menuTree = \Drupal::menuTree();
 
       // Set the parameters.
@@ -71,7 +82,10 @@ trait Menu
     return new HttpException(t("Entity wasn't provided"));
   }
 
-  private static function getMenuItems(array $tree, array &$items = array(), LanguageInterface $language) {
+  /**
+   * Recursive function to get all links in menu tree.
+   */
+  private static function getMenuItems(array $tree, array &$items, LanguageInterface $language) {
     foreach ($tree as $item_value) {
       /* @var $org_link \Drupal\Core\Menu\MenuLinkDefault */
       $org_link = $item_value['original_link'];
@@ -88,22 +102,18 @@ trait Menu
       $language_negotiation = \Drupal::config('language.negotiation')->get('url');
 
       if ($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
-
         $prefix = $language_negotiation['prefixes'][$language->getId()];
-
       }
 
-      $external = FALSE;
-      if ($url->isExternal()) {
+      $external = $url->isExternal();
+      if ($external) {
         $uri = $url->getUri();
-        $external = TRUE;
       }
-      else {
+      if (!$external) {
         if (!empty($url->getInternalPath())) {
-
-          $uri = $prefix . \Drupal::service('path.alias_manager')->getAliasByPath('/'.$url->getInternalPath(), $language->getId());
+          $uri = $prefix . \Drupal::service('path.alias_manager')->getAliasByPath('/' . $url->getInternalPath(), $language->getId());
         }
-        else {
+        if (empty($url->getInternalPath())) {
           $uri = $prefix . $url->getInternalPath();
         }
       }
@@ -121,4 +131,5 @@ trait Menu
       }
     }
   }
+
 }
