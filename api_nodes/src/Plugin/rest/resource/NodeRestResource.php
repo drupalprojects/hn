@@ -138,14 +138,18 @@ class NodeRestResource extends ResourceBase {
 
       // Get the node.
       $node = Node::load($matches[1]);
-      $node = $node->getTranslation($this->language);
+      if (!$node) {
+        return $this->getErrorResponse(404, $url);
+      }
 
-      $nodeObject = $this->getFields($node);
+      $node = $node->getTranslation($this->language);
 
       // Check if the user has permissions to view this node.
       if (!$node->access()) {
-        throw new AccessDeniedHttpException();
+        return $this->getErrorResponse(403, $url);
       }
+
+      $nodeObject = $this->getFields($node);
 
       $response = new \stdClass();
       $response->content = $nodeObject;
@@ -156,25 +160,36 @@ class NodeRestResource extends ResourceBase {
 
       // Set status code.
       if ($statusCode != 200) {
-        $response->setStatusCode($statusCode);
+        $httpResponse->setStatusCode($statusCode);
       }
 
       return $httpResponse;
     }
     if (!preg_match('/node\/(\d+)/', $path, $matches)) {
-
-      // When it's not a supported entity, return 404.
-      $page_404 = \Drupal::config('system.site')->get('page.404');
-
-      if ($page_404) {
-        return $this->getResponseByUrl($page_404, 404);
-      }
-      if (!$page_404) {
-        throw new NotFoundHttpException('The path provided couldn\'t be found or isn\'t a node, and there is no 404 page available.');
-      }
+      return $this->getErrorResponse(404, $url);
     }
 
     return $response;
+  }
+
+  /**
+   * Generate HTTP response for error page.
+   */
+  private function getErrorResponse($code, $originalUrl) {
+    $url = \Drupal::config('system.site')->get("page.$code");
+    if ($originalUrl == $url) {
+      // Error page is not found or accessible by itself.
+      // Prevent inifinite recursion.
+      switch ($code) {
+        case 403:
+          throw new AccessDeniedHttpException();
+
+        case 404:
+          throw new NotFoundHttpException();
+
+      }
+    }
+    return $this->getResponseByUrl($url, $code);
   }
 
   /**
