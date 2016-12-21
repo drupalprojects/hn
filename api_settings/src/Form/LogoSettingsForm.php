@@ -2,6 +2,7 @@
 
 namespace Drupal\api_settings\Form;
 
+use Drupal\file\Entity\File;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
@@ -59,7 +60,7 @@ class LogoSettingsForm extends ConfigFormBase {
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $fid = NULL;
       $upload = $form_state->getValue('logo_' . $language->getId());
-      if ($upload && $upload[0]) {
+      if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
