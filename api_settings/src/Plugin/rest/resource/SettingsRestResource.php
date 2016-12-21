@@ -61,6 +61,9 @@ class SettingsRestResource extends ResourceBase {
     $this->currentUser = $current_user;
 
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+    $this->fileStorage = \Drupal::entityTypeManager()->getStorage('file');
+    $this->imageStyleStorage = \Drupal::entityTypeManager()->getStorage('image_style');
   }
 
   /**
@@ -94,10 +97,10 @@ class SettingsRestResource extends ResourceBase {
 
     $responseArray = array(
       'response' => array(
-        'siteName' => $this->getSiteName(),
+        'general' => $this->getGeneralSettings(),
+        'logos' => $this->getLogos(),
         'languages' => Language::getLanguages(),
         'menu' => Menu::get(),
-        'imageStyles' => $this->getImageStyles(),
         'qa' => $this->getQaSettings(),
       ),
     );
@@ -112,11 +115,56 @@ class SettingsRestResource extends ResourceBase {
   }
 
   /**
-   * Get site name.
+   * Get general settings.
    */
-  private function getSiteName() {
+  private function getGeneralSettings() {
+    $output = [];
+
     $config = \Drupal::config('system.site');
-    return $config->get('name');
+    $output['siteName'] = $config->get('name');
+
+    $config = \Drupal::config('api_settings.config');
+
+    $output['showShareButtons'] = (bool) $config->get('show_share_buttons');
+    $output['countriesLink'] = $config->get('countries_link');
+
+    return $output;
+  }
+
+  /**
+   * Get site logo's.
+   */
+  protected function getLogos() {
+    $config = \Drupal::config('api_settings.logo');
+    $output = [];
+
+    foreach (\Drupal::languageManager()->getLanguages() as $language) {
+      $fid = $config->get('logo.' . $language->getId());
+
+      if (empty($fid)) {
+        $output[$language->getId()] = NULL;
+      }
+      if (!empty($fid)) {
+        $file = $this->fileStorage->load($fid);
+        $output[$language->getId()] = [
+          'url' => $file->url(),
+          'styles' => $this->getImageStyleUris($file->getFileUri()),
+        ];
+      }
+    }
+    return $output;
+  }
+
+  /**
+   * Generate uri for each image style.
+   */
+  private function getImageStyleUris($uri) {
+    $output = [];
+    foreach (\Drupal::entityQuery('image_style')->execute() as $name) {
+      $style = $this->imageStyleStorage->load($name);
+      $output[$name] = $style->buildUrl($uri);
+    }
+    return $output;
   }
 
   /**
@@ -130,29 +178,6 @@ class SettingsRestResource extends ResourceBase {
         'q' => $config->get('q.' . $language->getId()),
         'a' => $config->get('a.' . $language->getId()),
       ];
-    }
-    return $output;
-  }
-
-  /**
-   * List all image styles.
-   */
-  protected function getImageStyles() {
-    $output = [];
-    $storage = \Drupal::entityTypeManager()->getStorage('image_style');
-    foreach (\Drupal::entityQuery('image_style')->execute() as $name) {
-      $style = $storage->load($name);
-      $width = 0;
-      $height = 0;
-      foreach ($style->getEffects()->getConfiguration() as $effect) {
-        if (!empty($effect['data']['width'])) {
-          $width = $effect['data']['width'];
-        }
-        if (!empty($effect['data']['height'])) {
-          $height = $effect['data']['height'];
-        }
-      }
-      $output[$name] = ['width' => $width, 'height' => $height];
     }
     return $output;
   }

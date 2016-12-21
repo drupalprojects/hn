@@ -4,7 +4,6 @@ namespace Drupal\api_settings\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\system\Entity\Menu;
 
 /**
  * Configure example settings for this site.

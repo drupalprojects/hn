@@ -34,14 +34,16 @@ class LogoSettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.logo');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
+      $fid = $config->get('logo.' . $language->getId());
       $form['logo_' . $language->getId()] = [
         '#type' => 'managed_file',
         '#title' => 'Logo for ' . $language->getName(),
-        '#default_value' => $config->get('logo.' . $language->getId()),
+        '#default_value' => $fid ? [$fid] : NULL,
         '#upload_validators' => [
           'file_validate_extensions' => ['gif png jpg jpeg'],
           'file_validate_size' => [1024 * 1024],
         ],
+        '#upload_location' => 'public://',
       ];
     }
 
@@ -55,7 +57,16 @@ class LogoSettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.logo');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $config->set('logo.' . $language->getId(), $form_state->getValue('logo_' . $language->getId()));
+      $fid = NULL;
+      $upload = $form_state->getValue('logo_' . $language->getId());
+      if ($upload && $upload[0]) {
+        $fid = $upload[0];
+        $file = File::load($fid);
+        $file->setPermanent();
+        $file->save();
+      }
+
+      $config->set('logo.' . $language->getId(), $fid);
     }
 
     $config->save();
