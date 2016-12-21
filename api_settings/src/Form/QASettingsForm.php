@@ -34,15 +34,16 @@ class QASettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.qa');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $form['q_' . $language->getId()] = array(
+      $languageId = $language->getId();
+      $form["q_$languageId"] = array(
         '#type' => 'textfield',
         '#title' => 'Question label for ' . $language->getName(),
-        '#default_value' => $config->get('q.' . $language->getId()),
+        '#default_value' => $config->get("q.$languageId"),
       );
       $form['a_' . $language->getId()] = array(
         '#type' => 'textfield',
         '#title' => 'Answer label for ' . $language->getName(),
-        '#default_value' => $config->get('a.' . $language->getId()),
+        '#default_value' => $config->get("a.$languageId"),
       );
     }
 
@@ -56,8 +57,9 @@ class QASettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.qa');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $config->set('q.' . $language->getId(), $form_state->getValue('q_' . $language->getId()));
-      $config->set('a.' . $language->getId(), $form_state->getValue('a_' . $language->getId()));
+      $languageId = $language->getId();
+      $config->set("q.$languageId", $form_state->getValue("q_$languageId"));
+      $config->set("a.$languageId", $form_state->getValue("a_$languageId"));
     }
 
     $config->save();

@@ -43,12 +43,13 @@ class MenuSettingsForm extends ConfigFormBase {
     asort($menus);
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
+      $languageId = $language->getId();
       foreach (['main', 'footer', 'overlay', 'disclaimer'] as $menu) {
-        $form["menu_" . $language->getId() . "_$menu"] = array(
+        $form["menu_{$languageId}_{$menu}"] = array(
           '#type' => 'select',
           '#options' => $menus,
           '#title' => 'Menu ' . $language->getName() . ' ' . $menu,
-          '#default_value' => $config->get("menu." . $language->getId() . ".$menu"),
+          '#default_value' => $config->get("menu.{$languageId}.{$menu}"),
         );
       }
     }
@@ -63,8 +64,9 @@ class MenuSettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.menu');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
+      $languageId = $language->getId();
       foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu) {
-        $config->set("menu." . $language->getId() . ".$menu", $form_state->getValue("menu_" . $language->getId() . "_$menu"));
+        $config->set("menu.{$languageId}.{$menu}", $form_state->getValue("menu_{$languageId}_{$menu}"));
       }
     }
 

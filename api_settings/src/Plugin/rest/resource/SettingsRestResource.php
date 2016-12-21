@@ -139,14 +139,16 @@ class SettingsRestResource extends ResourceBase {
     $output = [];
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $fid = $config->get('logo.' . $language->getId());
+      $languageId = $language->getId();
+
+      $fid = $config->get("logo.$languageId");
 
       if (empty($fid)) {
         $output[$language->getId()] = NULL;
       }
       if (!empty($fid)) {
         $file = $this->fileStorage->load($fid);
-        $output[$language->getId()] = [
+        $output[$languageId] = [
           'url' => $file->url(),
           'styles' => $this->getImageStyleUris($file->getFileUri()),
         ];
@@ -174,9 +176,10 @@ class SettingsRestResource extends ResourceBase {
     $config = \Drupal::config('api_settings.qa');
     $output = [];
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $output[$language->getId()] = [
-        'q' => $config->get('q.' . $language->getId()),
-        'a' => $config->get('a.' . $language->getId()),
+      $languageId = $language->getId();
+      $output[$languageId] = [
+        'q' => $config->get("q.$languageId"),
+        'a' => $config->get("a.$languageId"),
       ];
     }
     return $output;

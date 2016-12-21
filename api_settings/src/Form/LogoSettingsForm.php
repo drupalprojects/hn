@@ -35,8 +35,9 @@ class LogoSettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.logo');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $fid = $config->get('logo.' . $language->getId());
-      $form['logo_' . $language->getId()] = [
+      $languageId = $language->getId();
+      $fid = $config->get('logo.' . $languageId);
+      $form["logo_$languageId"] = [
         '#type' => 'managed_file',
         '#title' => 'Logo for ' . $language->getName(),
         '#default_value' => $fid ? [$fid] : NULL,
@@ -58,8 +59,9 @@ class LogoSettingsForm extends ConfigFormBase {
     $config = $this->config('api_settings.logo');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
+      $languageId = $language->getId();
       $fid = NULL;
-      $upload = $form_state->getValue('logo_' . $language->getId());
+      $upload = $form_state->getValue("logo_$languageId");
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
@@ -67,7 +69,7 @@ class LogoSettingsForm extends ConfigFormBase {
         $file->save();
       }
 
-      $config->set('logo.' . $language->getId(), $fid);
+      $config->set("logo.$languageId", $fid);
     }
 
     $config->save();
