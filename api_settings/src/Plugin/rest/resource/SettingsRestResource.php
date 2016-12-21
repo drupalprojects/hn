@@ -23,6 +23,7 @@ use Drupal\api_settings\Helpers\Menu;
  * )
  */
 class SettingsRestResource extends ResourceBase {
+  use \Drupal\api_nodes\FileUrlsTrait;
 
   /**
    * A current user instance.
@@ -61,9 +62,6 @@ class SettingsRestResource extends ResourceBase {
     $this->currentUser = $current_user;
 
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
-
-    $this->fileStorage = \Drupal::entityTypeManager()->getStorage('file');
-    $this->imageStyleStorage = \Drupal::entityTypeManager()->getStorage('image_style');
   }
 
   /**
@@ -147,24 +145,10 @@ class SettingsRestResource extends ResourceBase {
         $output[$language->getId()] = NULL;
       }
       if (!empty($fid)) {
-        $file = $this->fileStorage->load($fid);
-        $output[$languageId] = [
-          'url' => $file->url(),
-          'styles' => $this->getImageStyleUris($file->getFileUri()),
-        ];
+        $file = ['fid' => $fid];
+        $this->addFileUri($file);
+        $output[$languageId] = $file;
       }
-    }
-    return $output;
-  }
-
-  /**
-   * Generate uri for each image style.
-   */
-  private function getImageStyleUris($uri) {
-    $output = [];
-    foreach (\Drupal::entityQuery('image_style')->execute() as $name) {
-      $style = $this->imageStyleStorage->load($name);
-      $output[$name] = $style->buildUrl($uri);
     }
     return $output;
   }
