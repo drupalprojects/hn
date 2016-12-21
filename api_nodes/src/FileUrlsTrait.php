@@ -15,7 +15,8 @@ trait FileUrlsTrait {
     $file = $fileStorage->load($fields['fid']);
     $fields['filemime'] = $file->getMimeType();
     $fields['url'] = $file->url();
-    if (reset(explode('/', $fields['filemime'])) == 'image') {
+    $mimeParts = explode('/', $fields['filemime']);
+    if (reset($mimeParts) == 'image') {
       $fields['styles'] = $this->getImageStyleUris($file->getFileUri());
     }
   }
