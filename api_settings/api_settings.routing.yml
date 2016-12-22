@@ -29,3 +29,11 @@ api_settings.qa:
     _title: 'Settings API settings'
   requirements:
     _permission: 'administer site configuration'
+
+api_settings.social:
+  path: '/admin/config/services/settings-api/social'
+  defaults:
+    _form: '\Drupal\api_settings\Form\SocialSettingsForm'
+    _title: 'Settings API settings'
+  requirements:
+    _permission: 'administer site configuration'
