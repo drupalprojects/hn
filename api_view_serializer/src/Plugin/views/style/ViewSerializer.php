@@ -2,6 +2,7 @@
 
 namespace Drupal\api_view_serializer\Plugin\views\style;
 
+use Drupal\Core\Render\Markup;
 use Drupal\rest\Plugin\views\style\Serializer;
 
 /**
@@ -38,7 +39,7 @@ class ViewSerializer extends Serializer {
 
     foreach ($rows as $rowKey => $row) {
       foreach ($row as $key => $field) {
-        if ($field > 0) {
+        if ($field instanceof Markup) {
           // Decode if markup is json.
           $json = json_decode($field->jsonSerialize(),
             TRUE);
