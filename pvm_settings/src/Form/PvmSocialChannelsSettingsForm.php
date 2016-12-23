@@ -9,13 +9,13 @@ use Drupal\file\Entity\File;
 /**
  * Configure example settings for this site.
  */
-class PvmSocialSettingsForm extends ConfigFormBase {
+class PvmSocialChannelsSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'pvm_social_settings';
+    return 'pvm_social_channels_settings';
   }
 
   /**
@@ -23,7 +23,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'pvm_settings.social',
+      'pvm_settings.socialchannels',
     ];
   }
 
@@ -32,7 +32,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('pvm_settings.social');
+    $config = $this->config('pvm_settings.socialchannels');
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $lang = $language->getId();
 
@@ -226,7 +226,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
       $value = $config->get('skype_url.' . $lang);
-      $form[$lang]['skype_container']['skype_url_' . $lang] = array(
+      $form[$lang]['skype_container']['skype_username_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Skype Username of Channel',
         '#description' => $this->t('Enter a valid Skype username e.g. social_us'),
@@ -262,7 +262,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('pvm_settings.social');
+    $config = $this->config('pvm_settings.socialchannels');
 
     $values = $form_state->getValues();
 
