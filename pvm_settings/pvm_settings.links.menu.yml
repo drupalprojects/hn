@@ -5,9 +5,17 @@ pvm_settings.config:
   route_name: pvm_settings.config
   weight: 100
 
-pvm_settings.config.social:
-  title: 'Social'
-  description: 'Social media related configuration'
+pvm_settings.config.socialchannels:
+  title: 'Social channels'
+  description: 'Social channels related configuration'
   parent: pvm_settings.config
-  route_name: pvm_settings.config.social
-  weight: 100
+  route_name: pvm_settings.config.socialchannels
+  weight: 1
+
+pvm_settings.config.socialchannels:
+  title: 'Social sharing'
+  description: 'Social sharing related configuration'
+  parent: pvm_settings.config
+  route_name: pvm_settings.config.socialchannels
+  weight: 2
+

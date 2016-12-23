@@ -2,7 +2,11 @@ pvm_settings.config:
   route_name: pvm_settings.config
   base_route: pvm_settings.config
   title: General
-pvm_settings.config.social:
-  route_name: pvm_settings.config.social
+pvm_settings.config.socialchannels:
+  route_name: pvm_settings.config.socialchannels
   base_route: pvm_settings.config
-  title: Social
+  title: Social channels
+pvm_settings.config.socialsharing:
+  route_name: pvm_settings.config.socialsharing
+  base_route: pvm_settings.config
+  title: Social sharing

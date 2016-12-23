@@ -6,10 +6,19 @@ pvm_settings.config:
   requirements:
     _permission: 'administer site configuration'
 
-pvm_settings.config.social:
-  path: '/admin/config/pvm/social'
+pvm_settings.config.socialchannels:
+  path: '/admin/config/pvm/social-channels'
   defaults:
-    _form: '\Drupal\pvm_settings\Form\PvmSocialSettingsForm'
-    _title: 'Social Settings'
+    _form: '\Drupal\pvm_settings\Form\PvmSocialChannelsSettingsForm'
+    _title: 'Social Channels Settings'
   requirements:
     _permission: 'administer site configuration'
+
+pvm_settings.config.socialsharing:
+  path: '/admin/config/pvm/social-sharing'
+  defaults:
+    _form: '\Drupal\pvm_settings\Form\PvmSocialSharingSettingsForm'
+    _title: 'Social Sharing Settings'
+  requirements:
+    _permission: 'administer site configuration'
+
