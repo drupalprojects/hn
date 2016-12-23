@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_settings\Form;
+namespace Drupal\pvm_settings\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Configure example settings for this site.
  */
-class QASettingsForm extends ConfigFormBase {
+class PvmQASettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}

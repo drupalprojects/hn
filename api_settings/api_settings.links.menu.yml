@@ -1,6 +1,0 @@
-api_settings.config:
-  title: 'Settings API'
-  description: 'Configuration for settings API'
-  parent: system.admin_config_services
-  route_name: api_settings.config
-  weight: 100

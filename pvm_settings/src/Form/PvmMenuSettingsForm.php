@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_settings\Form;
+namespace Drupal\pvm_settings\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -9,7 +9,7 @@ use Drupal\system\Entity\Menu;
 /**
  * Configure example settings for this site.
  */
-class MenuSettingsForm extends ConfigFormBase {
+class PvmMenuSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
@@ -72,7 +72,7 @@ class MenuSettingsForm extends ConfigFormBase {
 
     $config->save();
 
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
 }

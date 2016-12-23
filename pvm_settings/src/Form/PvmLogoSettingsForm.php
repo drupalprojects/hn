@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_settings\Form;
+namespace Drupal\pvm_settings\Form;
 
 use Drupal\file\Entity\File;
 use Drupal\Core\Form\ConfigFormBase;
@@ -9,7 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Configure settings for this site.
  */
-class LogoSettingsForm extends ConfigFormBase {
+class PvmLogoSettingsForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
