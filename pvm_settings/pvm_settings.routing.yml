@@ -10,7 +10,7 @@ pvm_settings.config.menu:
   path: '/admin/config/pvm/menu'
   defaults:
     _form: '\Drupal\pvm_settings\Form\PvmMenuSettingsForm'
-    _title: 'Settings API settings'
+    _title: 'PvM Settings'
   requirements:
     _permission: 'administer site configuration'
 
@@ -18,7 +18,7 @@ pvm_settings.config.logo:
   path: '/admin/config/pvm/logo'
   defaults:
     _form: '\Drupal\pvm_settings\Form\PvmLogoSettingsForm'
-    _title: 'Settings API settings'
+    _title: 'PvM Settings'
   requirements:
     _permission: 'administer site configuration'
 
@@ -26,7 +26,7 @@ pvm_settings.config.qa:
   path: '/admin/config/pvm/qa'
   defaults:
     _form: '\Drupal\pvm_settings\Form\PvmQASettingsForm'
-    _title: 'Settings API settings'
+    _title: 'PvM Settings'
   requirements:
     _permission: 'administer site configuration'
 
@@ -34,6 +34,6 @@ pvm_settings.config.social:
   path: '/admin/config/pvm/social'
   defaults:
     _form: '\Drupal\pvm_settings\Form\PvmSocialSettingsForm'
-    _title: 'Settings API settings'
+    _title: 'PvM Settings'
   requirements:
     _permission: 'administer site configuration'
