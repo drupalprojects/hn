@@ -5,3 +5,11 @@ pvm_settings.config:
     _title: 'PvM Settings'
   requirements:
     _permission: 'administer site configuration'
+
+pvm_settings.config.social:
+  path: '/admin/config/pvm/social'
+  defaults:
+    _form: '\Drupal\pvm_settings\Form\PvmSocialSettingsForm'
+    _title: 'Social Settings'
+  requirements:
+    _permission: 'administer site configuration'

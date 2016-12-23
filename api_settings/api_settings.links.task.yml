@@ -14,3 +14,7 @@ api_settings.config.qa:
   route_name: api_settings.qa
   base_route: api_settings.config
   title: Q&A
+api_settings.config.social:
+  route_name: api_settings.social
+  base_route: api_settings.config
+  title: Social

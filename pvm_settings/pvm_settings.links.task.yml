@@ -1,0 +1,8 @@
+pvm_settings.config:
+  route_name: pvm_settings.config
+  base_route: pvm_settings.config
+  title: General
+pvm_settings.config.social:
+  route_name: pvm_settings.config.social
+  base_route: pvm_settings.config
+  title: Social
