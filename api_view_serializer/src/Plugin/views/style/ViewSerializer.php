@@ -70,7 +70,7 @@ class ViewSerializer extends Serializer {
 
     $rows = [
       $viewId => $rows,
-      'filters' => $filters
+      'filters' => $filters,
     ];
     return $this->serializer->serialize($rows, $content_type);
   }
