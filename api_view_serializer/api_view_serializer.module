@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Contains api_view_serializer.module..
+ */
+
+
+/**
+ * Implements hook_help().
+ */
+function api_view_serializer_help($route_name) {
+  switch ($route_name) {
+    // Main module help for the api_view_serializer module.
+    case 'help.page.api_view_serializer':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Base serializer to render a view') . '</p>';
+      return $output;
+
+    default:
+  }
+}
