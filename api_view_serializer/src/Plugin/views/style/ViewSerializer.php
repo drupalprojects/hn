@@ -65,11 +65,9 @@ class ViewSerializer extends Serializer {
 
     // Get the content type configured in the display or fallback to the
     // default.
+    $content_type = !empty($this->options['formats']) ? reset($this->options['formats']) : 'json';
     if ((empty($this->view->live_preview))) {
       $content_type = $this->displayHandler->getContentType();
-    }
-    else {
-      $content_type = !empty($this->options['formats']) ? reset($this->options['formats']) : 'json';
     }
 
     $rows = [
