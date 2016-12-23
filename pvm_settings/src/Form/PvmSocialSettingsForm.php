@@ -11,6 +11,15 @@ use Drupal\file\Entity\File;
  */
 class PvmSocialSettingsForm extends ConfigFormBase {
 
+  protected $social_channels = array(
+    'facebook',
+    'twitter',
+    'youtube',
+    'pinterest',
+    'youtube',
+    'skype',
+  );
+
   /**
    * {@inheritdoc}
    */
