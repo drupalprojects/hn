@@ -245,8 +245,9 @@ class NodeRestResource extends ResourceBase {
                 if (!empty($fields['fid']) && !empty($fields['uri'])) {
                   $this->addFileUri($fields);
                 }
-                else {
-                  $fields = pvm_paragraphs_paragraph_content($entity);
+                $paragraphContent = pvm_paragraphs_paragraph_content($entity);
+                if (empty($paragraphContent) === FALSE) {
+                  $fields = array_merge($fields, $paragraphContent);
                 }
                 $nodeObject[$name][] = $fields;
               }
