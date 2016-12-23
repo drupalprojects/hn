@@ -3,7 +3,6 @@
 namespace Drupal\api_view_serializer\Plugin\Field\FieldFormatter;
 
 use Drupal\image\Plugin\Field\FieldFormatter\ImageFormatterBase;
-use Drupal\image\Entity\ImageStyle;
 use Drupal\Core\Field\FieldItemListInterface;
 
 /**
@@ -17,8 +16,7 @@ use Drupal\Core\Field\FieldItemListInterface;
  *   }
  * )
  */
-class UrlApiFormatter extends ImageFormatterBase
-{
+class UrlApiFormatter extends ImageFormatterBase {
   use \Drupal\api_nodes\FileUrlsTrait;
 
   /**
@@ -44,4 +42,5 @@ class UrlApiFormatter extends ImageFormatterBase
     }
     return $elements;
   }
+
 }

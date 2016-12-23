@@ -1,14 +1,7 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\api_view_serializer\Plugin\views\style\ViewSerializer.
- */
-
 namespace Drupal\api_view_serializer\Plugin\views\style;
 
-use Drupal\Console\Bootstrap\Drupal;
-use Drupal\file\Entity\File;
 use Drupal\rest\Plugin\views\style\Serializer;
 
 /**
@@ -46,16 +39,17 @@ class ViewSerializer extends Serializer {
     foreach ($rows as $rowKey => $row) {
       foreach ($row as $key => $field) {
         if ($field > 0) {
-          // Decode if markup is json
-          $json = json_decode($field->jsonSerialize(), TRUE);
+          // Decode if markup is json.
+          $json = json_decode($field->jsonSerialize(),
+            TRUE);
           $result = $json;
 
-          // If markup isn't json just use the original value
+          // If markup isn't json just use the original value.
           if (json_last_error() !== JSON_ERROR_NONE) {
             $result = $field;
           }
 
-          // set rows to result
+          // Set rows to result.
           $rows[$rowKey][$key] = $result;
         }
       }
@@ -71,8 +65,9 @@ class ViewSerializer extends Serializer {
     }
 
     $rows = [
-      $viewId => $rows
+      $viewId => $rows,
     ];
     return $this->serializer->serialize($rows, $content_type);
   }
+
 }
