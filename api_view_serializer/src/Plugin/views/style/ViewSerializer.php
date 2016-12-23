@@ -55,6 +55,10 @@ class ViewSerializer extends Serializer {
       }
     }
 
+    // Get filters from view configuration.
+    $config = \Drupal::config('views.view.'.$viewId);
+    $filters = $config->get('display.default.display_options.filters');
+
     unset($this->view->row_index);
 
     // Get the content type configured in the display or fallback to the
@@ -66,6 +70,7 @@ class ViewSerializer extends Serializer {
 
     $rows = [
       $viewId => $rows,
+      'filters' => $filters
     ];
     return $this->serializer->serialize($rows, $content_type);
   }
