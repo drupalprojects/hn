@@ -1,7 +1,7 @@
 api_settings.config:
   path: '/admin/config/services/settings-api'
   defaults:
-    _form: '\Drupal\api_settings\Form\configSettingsForm'
+    _form: '\Drupal\api_settings\Form\ConfigSettingsForm'
     _title: 'Settings API settings'
   requirements:
     _permission: 'administer site configuration'
@@ -26,6 +26,14 @@ api_settings.qa:
   path: '/admin/config/services/settings-api/qa'
   defaults:
     _form: '\Drupal\api_settings\Form\QASettingsForm'
+    _title: 'Settings API settings'
+  requirements:
+    _permission: 'administer site configuration'
+
+api_settings.social:
+  path: '/admin/config/services/settings-api/social'
+  defaults:
+    _form: '\Drupal\api_settings\Form\SocialSettingsForm'
     _title: 'Settings API settings'
   requirements:
     _permission: 'administer site configuration'

@@ -132,6 +132,8 @@ class NodeRestResource extends ResourceBase {
     // Get the internal path (entity/entity_id) by the alias provided.
     $path = \Drupal::service('path.alias_manager')->getPathByAlias($url, $this->language);
 
+    $response = NULL;
+
     // Check if the entity is a node.
     if (preg_match('/node\/(\d+)/', $path, $matches)) {
 
@@ -242,6 +244,10 @@ class NodeRestResource extends ResourceBase {
                 $fields = $this->getFields($entity);
                 if (!empty($fields['fid']) && !empty($fields['uri'])) {
                   $this->addFileUri($fields);
+                }
+                $paragraphContent = pvm_paragraphs_paragraph_content($entity);
+                if (empty($paragraphContent) === FALSE) {
+                  $fields = array_merge($fields, $paragraphContent);
                 }
                 $nodeObject[$name][] = $fields;
               }
