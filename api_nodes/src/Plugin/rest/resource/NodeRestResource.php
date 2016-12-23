@@ -132,6 +132,8 @@ class NodeRestResource extends ResourceBase {
     // Get the internal path (entity/entity_id) by the alias provided.
     $path = \Drupal::service('path.alias_manager')->getPathByAlias($url, $this->language);
 
+    $response = NULL;
+
     // Check if the entity is a node.
     if (preg_match('/node\/(\d+)/', $path, $matches)) {
 
