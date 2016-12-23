@@ -56,7 +56,7 @@ class ViewSerializer extends Serializer {
     }
 
     // Get filters from view configuration.
-    $config = \Drupal::config('views.view.'.$viewId);
+    $config = \Drupal::config('views.view.' . $viewId);
     $filters = $config->get('display.default.display_options.filters');
 
     unset($this->view->row_index);
