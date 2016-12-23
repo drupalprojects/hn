@@ -4,7 +4,6 @@ namespace Drupal\pvm_settings\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\file\Entity\File;
 
 /**
  * Configure example settings for this site.
@@ -63,7 +62,6 @@ class PvmSocialSharingSettingsForm extends ConfigFormBase {
         '#options' => $options,
         '#default_value' => ($value) ? $value : array(),
       );
-
 
     }
 
