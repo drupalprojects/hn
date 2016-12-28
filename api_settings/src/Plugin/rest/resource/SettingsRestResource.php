@@ -4,7 +4,7 @@ namespace Drupal\api_settings\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
@@ -103,12 +103,9 @@ class SettingsRestResource extends ResourceBase {
       ),
     );
 
-    $response = new ResourceResponse($responseArray);
-    $response->addCacheableDependency(array(
-      '#cache' => array(
-        'max-age' => 0,
-      ),
-    ));
+    $data = json_encode($responseArray);
+    $response = new Response($data);
+
     return $response;
   }
 
