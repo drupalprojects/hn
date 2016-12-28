@@ -125,7 +125,7 @@ class NodeRestResource extends ResourceBase {
     }
 
     // If the ?url= is empty, get the frontpage.
-    if ($url == '/' || $url == '') {
+    if ($url == '/' || empty($url)) {
       $url = \Drupal::config('system.site')->get('page.front');
     }
 
