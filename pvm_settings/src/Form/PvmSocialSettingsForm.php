@@ -41,19 +41,18 @@ class PvmSocialSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('api_settings.config');
+    $config = $this->config('pvm.settings');
 
-    $form['social_token'] = [
-      '#type' => 'textfield',
-      '#title' => 'Social admin token',
-      '#default_value' => $config->get('social_token'),
-    ];
+    $form['group_tabs'] = array(
+      '#type'     => 'horizontal_tabs',
+      '#attached' => array('library' => array(array('field_group', 'horizontal-tabs'))), // Converts fieldsets into tabs
+    );
 
-    $form['social_suffix'] = [
-      '#type' => 'textfield',
-      '#title' => 'Social suffix',
-      '#default_value' => $config->get('social_suffix'),
-    ];
+    $form['general'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'General',
+      '#group' => 'group_tabs',
+    );
 
     $config = $this->config('pvm_settings.socialsharing');
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
