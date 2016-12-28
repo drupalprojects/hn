@@ -118,10 +118,10 @@ class SettingsRestResource extends ResourceBase {
     $config = \Drupal::config('system.site');
     $output['siteName'] = $config->get('name');
 
-    $config = \Drupal::config('api_settings.config');
+    $config = \Drupal::config('pvm.settings');
 
-    $output['showShareButtons'] = (bool) $config->get('show_share_buttons');
-    $output['countriesLink'] = $config->get('countries_link');
+    $output['showShareButtons'] = (bool) $config->get('general.show_share_buttons');
+    $output['countriesLink'] = $config->get('general.countries_link');
 
     return $output;
   }
@@ -130,7 +130,7 @@ class SettingsRestResource extends ResourceBase {
    * Get site logo's.
    */
   protected function getLogos() {
-    $config = \Drupal::config('api_settings.logo');
+    $config = \Drupal::config('pvm.settings');
     $output = [];
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
@@ -154,13 +154,13 @@ class SettingsRestResource extends ResourceBase {
    * Get Q&A settings.
    */
   protected function getQaSettings() {
-    $config = \Drupal::config('api_settings.qa');
+    $config = \Drupal::config('pvm.settings');
     $output = [];
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
       $output[$languageId] = [
-        'q' => $config->get("q.$languageId"),
-        'a' => $config->get("a.$languageId"),
+        'q' => $config->get("QA.q.$languageId"),
+        'a' => $config->get("QA.a.$languageId"),
       ];
     }
     return $output;

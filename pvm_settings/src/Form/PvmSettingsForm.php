@@ -14,7 +14,7 @@ class PvmSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'api_settings_config';
+    return 'pvm_settings_config';
   }
 
   /**
@@ -22,7 +22,7 @@ class PvmSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'api_settings.config',
+      'pvm.settings',
     ];
   }
 
@@ -31,18 +31,18 @@ class PvmSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('api_settings.config');
+    $config = $this->config('pvm.settings');
 
     $form['show_share_buttons'] = [
       '#type' => 'checkbox',
       '#title' => 'Show share buttons',
-      '#default_value' => $config->get('show_share_buttons'),
+      '#default_value' => $config->get('general.show_share_buttons'),
     ];
 
     $form['countries_link'] = [
       '#type' => 'textfield',
       '#title' => 'Countries link',
-      '#default_value' => $config->get('countries_link'),
+      '#default_value' => $config->get('general.countries_link'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -52,13 +52,13 @@ class PvmSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('api_settings.config');
+    $config = $this->config('pvm.settings');
 
-    $config->set('show_share_buttons', $form_state->getValue('show_share_buttons'));
-    $config->set('countries_link', $form_state->getValue('countries_link'));
+    $config->set('general.show_share_buttons', $form_state->getValue('show_share_buttons'));
+    $config->set('general.countries_link', $form_state->getValue('countries_link'));
     $config->save();
 
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
 }

@@ -32,7 +32,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'api_settings.config',
+      'pvm.settings',
     ];
   }
 
@@ -42,19 +42,6 @@ class PvmSocialSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     $config = $this->config('pvm.settings');
-
-    $form['group_tabs'] = array(
-      '#type'     => 'horizontal_tabs',
-      '#attached' => array('library' => array(array('field_group', 'horizontal-tabs'))), // Converts fieldsets into tabs
-    );
-
-    $form['general'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'General',
-      '#group' => 'group_tabs',
-    );
-
-    $config = $this->config('pvm_settings.socialsharing');
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $lang = $language->getId();
 
@@ -65,7 +52,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => TRUE,
       );
 
-      $value = $config->get('label.' . $lang);
+      $value = $config->get('social_sharing.label.' . $lang);
       $form[$lang]['label_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Social sharing label text',
@@ -74,7 +61,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $value = $config->get('channels.' . $lang);
+      $value = $config->get('social_sharing.channels.' . $lang);
       $options = array(
         'facebook' => 'Facebook',
         'twitter' => 'Twitter',
@@ -88,7 +75,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
 
     }
 
-    $config = $this->config('pvm_settings.socialchannels');
+    $config = $this->config('pvm.settings');
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $lang = $language->getId();
 
@@ -106,7 +93,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $value = $config->get('facebook_url.' . $lang);
+      $value = $config->get('social_channels.facebook_url.' . $lang);
       $form[$lang]['facebook_container']['facebook_url_' . $lang] = array(
         '#type' => 'url',
         '#title' => 'Facebook URL',
@@ -115,7 +102,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $value = $config->get('facebook_button_text.' . $lang);
+      $value = $config->get('social_channels.facebook_button_text.' . $lang);
       $form[$lang]['facebook_container']['facebook_button_text_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Button text',
@@ -124,7 +111,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $value = $config->get('facebook_image.' . $lang);
+      $value = $config->get('social_channels.facebook_image.' . $lang);
       $form[$lang]['facebook_container']['facebook_image_' . $lang] = [
         '#type' => 'managed_file',
         '#title' => 'Social page image',
@@ -143,7 +130,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $value = $config->get('twitter_url.' . $lang);
+      $value = $config->get('social_channels.twitter_url.' . $lang);
       $form[$lang]['twitter_container']['twitter_url_' . $lang] = array(
         '#type' => 'url',
         '#title' => 'Twitter URL',
@@ -152,7 +139,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $value = $config->get('twitter_button_text.' . $lang);
+      $value = $config->get('social_channels.twitter_button_text.' . $lang);
       $form[$lang]['twitter_container']['twitter_button_text_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Button text',
@@ -161,7 +148,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#open' => FALSE,
       );
 
-      $fid = $config->get('twitter_image.' . $lang);
+      $fid = $config->get('social_channels.twitter_image.' . $lang);
       $form[$lang]['twitter_container']['twitter_image_' . $lang] = [
         '#type' => 'managed_file',
         '#title' => 'Social page image',
@@ -179,7 +166,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#title' => 'Pinterest',
         '#open' => FALSE,
       );
-      $value = $config->get('pinterest_url.' . $lang);
+      $value = $config->get('social_channels.pinterest_url.' . $lang);
       $form[$lang]['pinterest_container']['pinterest_url_' . $lang] = array(
         '#type' => 'url',
         '#title' => 'Pinterest URL',
@@ -187,7 +174,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $value = $config->get('pintereset_button_text.' . $lang);
+      $value = $config->get('social_channels.pintereset_button_text.' . $lang);
       $form[$lang]['pinterest_container']['pinterest_button_text_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Button text',
@@ -195,7 +182,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $fid = $config->get('pinterest_image.' . $lang);
+      $fid = $config->get('social_channels.pinterest_image.' . $lang);
       $form[$lang]['pinterest_container']['pinterest_image_' . $lang] = [
         '#type' => 'managed_file',
         '#title' => 'Social page image',
@@ -213,7 +200,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#title' => 'YouTube',
         '#open' => FALSE,
       );
-      $value = $config->get('youtube_username.' . $lang);
+      $value = $config->get('social_channels.youtube_username.' . $lang);
       $form[$lang]['youtube_container']['youtube_username_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Youtube Username of Channel',
@@ -221,7 +208,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $value = $config->get('youtube_button_text.' . $lang);
+      $value = $config->get('social_channels.youtube_button_text.' . $lang);
       $form[$lang]['youtube_container']['youtube_button_text_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Button text',
@@ -229,7 +216,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $fid = $config->get('youtube_image.' . $lang);
+      $fid = $config->get('social_channels.youtube_image.' . $lang);
       $form[$lang]['youtube_container']['youtube_image_' . $lang] = [
         '#type' => 'managed_file',
         '#title' => 'Social page image',
@@ -247,7 +234,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#title' => 'VK',
         '#open' => FALSE,
       );
-      $value = $config->get('vk_username.' . $lang);
+      $value = $config->get('social_channels.vk_username.' . $lang);
       $form[$lang]['vk_container']['vk_username_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'VK Username of Channel',
@@ -255,7 +242,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $value = $config->get('vk_button_text.' . $lang);
+      $value = $config->get('social_channels.vk_button_text.' . $lang);
       $form[$lang]['vk_container']['vk_button_text_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Button text',
@@ -263,7 +250,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $fid = $config->get('vk_image.' . $lang);
+      $fid = $config->get('social_channels.vk_image.' . $lang);
       $form[$lang]['vk_container']['vk_image_' . $lang] = [
         '#type' => 'managed_file',
         '#title' => 'Social page image',
@@ -281,7 +268,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#title' => 'Skype',
         '#open' => FALSE,
       );
-      $value = $config->get('skype_url.' . $lang);
+      $value = $config->get('social_channels.skype_url.' . $lang);
       $form[$lang]['skype_container']['skype_username_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Skype Username of Channel',
@@ -289,7 +276,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $value = $config->get('skype_button_text.' . $lang);
+      $value = $config->get('social_channels.skype_button_text.' . $lang);
       $form[$lang]['skype_container']['skype_button_text_' . $lang] = array(
         '#type' => 'textfield',
         '#title' => 'Button text',
@@ -297,7 +284,7 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         '#default_value' => ($value) ? $value : '',
         '#open' => FALSE,
       );
-      $fid = $config->get('skype_image.' . $lang);
+      $fid = $config->get('social_channels.skype_image.' . $lang);
       $form[$lang]['skype_container']['skype_image_' . $lang] = [
         '#type' => 'managed_file',
         '#title' => 'Social page image',
@@ -318,30 +305,31 @@ class PvmSocialSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('api_settings.config');
+//    $config = $this->config('api_settings.config');
+//
+//    $config->set('social_token', $form_state->getValue('social_token'));
+//    $config->set('social_suffix', $form_state->getValue('social_suffix'));
+//    $config->save();
 
-    $config->set('social_token', $form_state->getValue('social_token'));
-    $config->set('social_suffix', $form_state->getValue('social_suffix'));
-    $config->save();
-
-    $config = $this->config('pvm_settings.socialsharing');
+    $config = $this->config('pvm.settings');
 
     $values = $form_state->getValues();
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $lang = $language->getId();
 
-      // Label.
-      $config->set("label.$lang", $values['label_' . $lang]);
-
-      // Channels.
-      $config->set("channels.$lang", $values['channels_' . $lang]);
-
+      if (!empty($values['label_' . $lang])) {
+        $config->set("social_sharing.label.$lang", $values['label_' . $lang]);
+      }
+      if (!empty($values['channels_' . $lang])) {
+        // Channels.
+        $config->set("social_sharing.channels.$lang", $values['channels_' . $lang]);
+      }
     }
 
     $config->save();
 
-    $config = $this->config('pvm_settings.socialchannels');
+    $config = $this->config('pvm.settings');
 
     $values = $form_state->getValues();
 
@@ -349,75 +337,75 @@ class PvmSocialSettingsForm extends ConfigFormBase {
       $lang = $language->getId();
 
       // Facebook.
-      $config->set("facebook_url.$lang", $values['facebook_url_' . $lang]);
-      $config->set("facebook_button_text.$lang", $values['facebook_button_text_' . $lang]);
+      $config->set("social_channels.facebook_url.$lang", $values['facebook_url_' . $lang]);
+      $config->set("social_channels.facebook_button_text.$lang", $values['facebook_button_text_' . $lang]);
       $upload = $values["facebook_image_$lang"];
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
         $file->save();
-        $config->set("facebook_image.$lang", $fid);
+        $config->set("social_channels.facebook_image.$lang", $fid);
       }
 
       // Twitter.
-      $config->set("twitter_url.$lang", $values['twitter_url_' . $lang]);
-      $config->set("twitter_button_text.$lang", $values['twitter_button_text_' . $lang]);
+      $config->set("social_channels.twitter_url.$lang", $values['twitter_url_' . $lang]);
+      $config->set("social_channels.twitter_button_text.$lang", $values['twitter_button_text_' . $lang]);
       $upload = $values["facebook_image_$lang"];
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
         $file->save();
-        $config->set("twitter_image.$lang", $fid);
+        $config->set("social_channels.twitter_image.$lang", $fid);
       }
 
       // Pinterest.
-      $config->set("pinterest_url.$lang", $values['pinterest_url_' . $lang]);
-      $config->set("pinterest_button_text.$lang", $values['pinterest_button_text_' . $lang]);
+      $config->set("social_channels.pinterest_url.$lang", $values['pinterest_url_' . $lang]);
+      $config->set("social_channels.pinterest_button_text.$lang", $values['pinterest_button_text_' . $lang]);
       $upload = $values["pinterest_image_$lang"];
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
         $file->save();
-        $config->set("pinterest_image.$lang", $fid);
+        $config->set("social_channels.pinterest_image.$lang", $fid);
       }
 
       // Youtube.
-      $config->set("youtube_username.$lang", $values['youtube_username_' . $lang]);
-      $config->set("youtube_button_text.$lang", $values['youtube_button_text_' . $lang]);
+      $config->set("social_channels.youtube_username.$lang", $values['youtube_username_' . $lang]);
+      $config->set("social_channels.youtube_button_text.$lang", $values['youtube_button_text_' . $lang]);
       $upload = $values["vk_image_$lang"];
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
         $file->save();
-        $config->set("youtube_image.$lang", $fid);
+        $config->set("social_channels.youtube_image.$lang", $fid);
       }
 
       // VK.
-      $config->set("vk_username.$lang", $values['vk_username_' . $lang]);
-      $config->set("vk_button_text.$lang", $values['vk_button_text_' . $lang]);
+      $config->set("social_channels.vk_username.$lang", $values['vk_username_' . $lang]);
+      $config->set("social_channels.vk_button_text.$lang", $values['vk_button_text_' . $lang]);
       $upload = $values["vk_image_$lang"];
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
         $file->save();
-        $config->set("vk_image.$lang", $fid);
+        $config->set("social_channels.vk_image.$lang", $fid);
       }
 
       // Skype.
-      $config->set("skype_username.$lang", $values['skype_username_' . $lang]);
-      $config->set("skype_button_text.$lang", $values['skype_button_text_' . $lang]);
+      $config->set("social_channels.skype_username.$lang", $values['skype_username_' . $lang]);
+      $config->set("social_channels.skype_button_text.$lang", $values['skype_button_text_' . $lang]);
       $upload = $values["skype_image_$lang"];
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
         $file->setPermanent();
         $file->save();
-        $config->set("skype_image.$lang", $fid);
+        $config->set("social_channels.skype_image.$lang", $fid);
       }
 
     }

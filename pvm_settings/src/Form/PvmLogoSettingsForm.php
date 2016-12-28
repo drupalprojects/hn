@@ -23,7 +23,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'api_settings.logo',
+      'pvm.settings',
     ];
   }
 
@@ -32,7 +32,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('api_settings.logo');
+    $config = $this->config('pvm.settings');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
@@ -56,7 +56,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('api_settings.logo');
+    $config = $this->config('pvm.settings');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
@@ -74,7 +74,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
 
     $config->save();
 
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
 }

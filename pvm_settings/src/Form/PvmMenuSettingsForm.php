@@ -15,7 +15,7 @@ class PvmMenuSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'api_settings_menu';
+    return 'pvm_settings_menu';
   }
 
   /**
@@ -23,7 +23,7 @@ class PvmMenuSettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'api_settings.menu',
+      'pvm.settings',
     ];
   }
 
@@ -32,7 +32,7 @@ class PvmMenuSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('api_settings.menu');
+    $config = $this->config('pvm.settings');
 
     $all_menus = Menu::loadMultiple();
 
@@ -61,7 +61,7 @@ class PvmMenuSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('api_settings.menu');
+    $config = $this->config('pvm.settings');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();

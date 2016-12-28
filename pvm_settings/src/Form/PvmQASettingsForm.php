@@ -22,7 +22,7 @@ class PvmQASettingsForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'api_settings.qa',
+      'pvm.settings',
     ];
   }
 
@@ -31,19 +31,19 @@ class PvmQASettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    $config = $this->config('api_settings.qa');
+    $config = $this->config('pvm.settings');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
       $form["q_$languageId"] = array(
         '#type' => 'textfield',
         '#title' => 'Question label for ' . $language->getName(),
-        '#default_value' => $config->get("q.$languageId"),
+        '#default_value' => $config->get("QA.q.$languageId"),
       );
       $form['a_' . $language->getId()] = array(
         '#type' => 'textfield',
         '#title' => 'Answer label for ' . $language->getName(),
-        '#default_value' => $config->get("a.$languageId"),
+        '#default_value' => $config->get("QA.a.$languageId"),
       );
     }
 
@@ -54,17 +54,17 @@ class PvmQASettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $config = $this->config('api_settings.qa');
+    $config = $this->config('pvm.settings');
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
-      $config->set("q.$languageId", $form_state->getValue("q_$languageId"));
-      $config->set("a.$languageId", $form_state->getValue("a_$languageId"));
+      $config->set("QA.q.$languageId", $form_state->getValue("q_$languageId"));
+      $config->set("QA.a.$languageId", $form_state->getValue("a_$languageId"));
     }
 
     $config->save();
 
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 
 }

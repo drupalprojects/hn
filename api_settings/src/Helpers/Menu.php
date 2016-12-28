@@ -32,7 +32,7 @@ trait Menu {
     return array_map(function (LanguageInterface $language) {
       $menus = [];
       foreach (Menu::$availableMenus as $menu) {
-        $menu_machine_name = \Drupal::config('api_settings.config')->get("menu." . $language->getId() . ".$menu");
+        $menu_machine_name = \Drupal::config('api_settings.menu')->get("menu." . $language->getId() . ".$menu");
         $menus[$menu] = Menu::getMenuById($menu_machine_name, $language);
       }
 
