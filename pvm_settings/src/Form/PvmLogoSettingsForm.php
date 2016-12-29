@@ -37,7 +37,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
       $fid = $config->get('logo.' . $languageId);
-      $form["logo_$languageId"] = [
+      $form['logo_' . $languageId] = [
         '#type' => 'managed_file',
         '#title' => 'Logo for ' . $language->getName(),
         '#default_value' => $fid ? [$fid] : NULL,
@@ -61,7 +61,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
       $fid = NULL;
-      $upload = $form_state->getValue("logo_$languageId");
+      $upload = $form_state->getValue('logo_' . $languageId);
       if (!empty($upload[0])) {
         $fid = $upload[0];
         $file = File::load($fid);
@@ -69,7 +69,7 @@ class PvmLogoSettingsForm extends ConfigFormBase {
         $file->save();
       }
 
-      $config->set("logo.$languageId", $fid);
+      $config->set('logo.' . $languageId, $fid);
     }
 
     $config->save();
