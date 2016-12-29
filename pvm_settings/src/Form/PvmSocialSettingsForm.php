@@ -81,21 +81,21 @@ class PvmSocialSettingsForm extends ConfigFormBase {
         );
 
         // Url for a social channel.
-        $value = $config->get('social_channels.' . $key . "_url.$lang");
+        $value = $config->get('social_channels.' . $key . '_url.' . $lang);
         $form[$lang][$key . '_container'][$key . '_url_' . $lang] = array(
           '#type' => 'url',
-          '#title' => "$channel url",
+          '#title' => $channel . ' url',
           '#description' => $this->t('Enter a valid url'),
           '#default_value' => ($value) ? $value : '',
           '#open' => FALSE,
         );
 
         // Icon class for social share channel.
-        $value = $config->get('social_channels.' . $key . "_icon.$lang");
+        $value = $config->get('social_channels.' . $key . '_icon.' . $lang);
         $form[$lang][$key . '_container'][$key . '_icon_' . $lang] = array(
           '#type' => 'textfield',
-          '#title' => "$channel icon class",
-          '#description' => $this->t("Enter a valid icon class"),
+          '#title' => $channel . ' icon class',
+          '#description' => $this->t('Enter a valid icon class'),
           '#default_value' => ($value) ? $value : '',
           '#open' => FALSE,
         );
@@ -146,22 +146,22 @@ class PvmSocialSettingsForm extends ConfigFormBase {
       $lang = $language->getId();
       foreach (array_keys($this->socialChannels) as $key) {
         // Set the social channel url.
-        $config->set('social_channels.' . $key . "_url.$lang", $values[$key . "_url_$lang"]);
+        $config->set('social_channels.' . $key . '_url.' . $lang, $values[$key . '_url_' . $lang]);
 
         // Set the social channel button text.
-        $config->set('social_channels.' . $key . "_button_text.$lang", $values[$key . "_button_text_$lang"]);
+        $config->set('social_channels.' . $key . '_button_text.' . $lang, $values[$key . '_button_text_' . $lang]);
 
         // Set the social channel icon class.
-        $config->set('social_channels.' . $key . "_icon.$lang", $values[$key . "_icon_$lang"]);
+        $config->set('social_channels.' . $key . '_icon.' . $lang, $values[$key . '_icon_' . $lang]);
 
         // Set the uploaded image.
-        $upload = $values[$key . "_image_$lang"];
+        $upload = $values[$key . '_image_' . $lang];
         if (!empty($upload[0])) {
           $fid = $upload[0];
           $file = File::load($fid);
           $file->setPermanent();
           $file->save();
-          $config->set('social_channels.' . $key . "_image.$lang", $fid);
+          $config->set('social_channels.' . $key . '_image.' . $lang, $fid);
         }
       }
     }
