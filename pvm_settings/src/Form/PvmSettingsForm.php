@@ -56,6 +56,7 @@ class PvmSettingsForm extends ConfigFormBase {
 
     $config->set('general.show_share_buttons', $form_state->getValue('show_share_buttons'));
     $config->set('general.countries_link', $form_state->getValue('countries_link'));
+
     $config->save();
 
     parent::submitForm($form, $form_state);
