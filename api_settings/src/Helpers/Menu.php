@@ -32,7 +32,7 @@ trait Menu {
     return array_map(function (LanguageInterface $language) {
       $menus = [];
       foreach (Menu::$availableMenus as $menu) {
-        $menu_machine_name = \Drupal::config('pvm.settings')->get("menu." . $language->getId() . ".$menu");
+        $menu_machine_name = \Drupal::config('pvm.settings')->get('menu.' . $language->getId() . '.$menu');
         $menus[$menu] = Menu::getMenuById($menu_machine_name, $language);
       }
 
@@ -42,6 +42,13 @@ trait Menu {
 
   /**
    * Get full menu tree by menu id.
+   *
+   * @param null $menuName
+   *   Menuitem ID.
+   * @param \Drupal\Core\Language\LanguageInterface $language
+   *   LanguageInterface.
+   *
+   * @return array|\Symfony\Component\HttpKernel\Exception\HttpException|\Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
   public static function getMenuById($menuName = NULL, LanguageInterface $language = NULL) {
     if ($menuName && $language) {
@@ -79,11 +86,18 @@ trait Menu {
 
       return new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menuName)));
     }
-    return new HttpException(t("Entity wasn't provided"));
+    return new HttpException(t('Entity wasn\'t provided'));
   }
 
   /**
    * Recursive function to get all links in menu tree.
+   *
+   * @param array $tree
+   *   The menu item tree.
+   * @param array $items
+   *   All items from a menu.
+   * @param \Drupal\Core\Language\LanguageInterface $language
+   *   LanguageInterface.
    */
   private static function getMenuItems(array $tree, array &$items, LanguageInterface $language) {
     foreach ($tree as $item_value) {
@@ -106,6 +120,7 @@ trait Menu {
       }
 
       $external = $url->isExternal();
+      $uri = NULL;
       if ($external) {
         $uri = $url->getUri();
       }
