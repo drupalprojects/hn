@@ -2,7 +2,7 @@
 
 namespace Drupal\api_nodes\Plugin\rest\resource;
 
-use \Drupal\node\Entity\Node;
+use Drupal\node\Entity\Node;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
@@ -89,7 +89,7 @@ class NodeRestResource extends ResourceBase {
    *
    * Returns a list of bundles for specified entity.
    *
-   * @return ResourceResponse
+   * @return Response
    *   Throws exception expected.
    */
   public function get() {
@@ -194,9 +194,15 @@ class NodeRestResource extends ResourceBase {
   }
 
   /**
-   * Get metatags for node.
+   * Get meta-tags for node.
+   *
+   * @param Node $node
+   *   Node.
+   *
+   * @return array|mixed
+   *   Returns all meta-tags.
    */
-  protected function getMetatags($node) {
+  protected function getMetatags(Node $node) {
     $metatag_manager = \Drupal::service('metatag.manager');
     $metatags = metatag_get_default_tags();
     if ($metatags) {
@@ -227,6 +233,14 @@ class NodeRestResource extends ResourceBase {
 
   /**
    * Get fields for node Object.
+   *
+   * @param Node|null $node
+   *   The enity.
+   * @param array $nodeObject
+   *   The nodeObject that should be returned.
+   *
+   * @return array
+   *   Full nodeObject.
    */
   private function getFields($node = NULL, array $nodeObject = array()) {
     if ($node) {
@@ -239,7 +253,7 @@ class NodeRestResource extends ResourceBase {
             if (in_array($targetType, $this->allowedEntityReferences)) {
               if ($property instanceof EntityReference && $entity = $property->getValue()) {
                 if (empty($nodeObject[$name])) {
-                  $nodeObject[$name] = [];
+                  $nodeObject[$name] = array();
                 }
                 $fields = $this->getFields($entity);
                 if (!empty($fields['fid']) && !empty($fields['uri'])) {
