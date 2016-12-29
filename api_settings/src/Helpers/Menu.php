@@ -84,8 +84,8 @@ trait Menu {
       if (!empty($menuItems)) {
         return $menuItems;
       }
-
-      return new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menuName)));
+      // Return empty array when no menu items where found.
+      return array();
     }
     return new HttpException(t("Entity wasn't provided"));
   }
