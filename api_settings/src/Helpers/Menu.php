@@ -43,12 +43,13 @@ trait Menu {
   /**
    * Get full menu tree by menu id.
    *
-   * @param null $menuName
+   * @param string|null $menuName
    *   Menuitem ID.
    * @param \Drupal\Core\Language\LanguageInterface $language
    *   LanguageInterface.
    *
    * @return array|\Symfony\Component\HttpKernel\Exception\HttpException|\Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+   *   Returns all menuitems with their children
    */
   public static function getMenuById($menuName = NULL, LanguageInterface $language = NULL) {
     if ($menuName && $language) {
@@ -86,7 +87,7 @@ trait Menu {
 
       return new NotFoundHttpException(t('Menu items for menu name @menu were not found', array('@menu' => $menuName)));
     }
-    return new HttpException(t('Entity wasn\'t provided'));
+    return new HttpException(t("Entity wasn't provided"));
   }
 
   /**
