@@ -2,7 +2,6 @@
 
 namespace Drupal\api_nodes\Plugin\rest\resource;
 
-use Drupal\Core\Entity\Entity;
 use Drupal\node\Entity\Node;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -235,7 +234,7 @@ class NodeRestResource extends ResourceBase {
   /**
    * Get fields for node Object.
    *
-   * @param \Drupal\Core\Entity\Entity|null $node
+   * @param Node|null $node
    *   Node.
    * @param array $nodeObject
    *   Array.
@@ -243,7 +242,7 @@ class NodeRestResource extends ResourceBase {
    * @return array
    *   Returns nodeObject.
    */
-  private function getFields(Entity $node = NULL, array $nodeObject = array()) {
+  private function getFields($node = NULL, array $nodeObject = array()) {
     if ($node) {
       // Loop through all node fields.
       foreach ($node->getFields() as $field_items) {
