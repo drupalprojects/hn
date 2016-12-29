@@ -38,18 +38,20 @@ class PvmMenuSettingsForm extends ConfigFormBase {
 
     $menus = array();
     foreach ($all_menus as $id => $menu) {
+      /* @var $menu \Drupal\system\Entity\Menu */
       $menus[$id] = $menu->label();
+      /* @var $menu */
     }
     asort($menus);
 
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
       foreach (['main', 'footer', 'overlay', 'disclaimer'] as $menu) {
-        $form["menu_{$languageId}_{$menu}"] = array(
+        $form['menu_' . $languageId . '_' . $menu] = array(
           '#type' => 'select',
           '#options' => $menus,
           '#title' => 'Menu ' . $language->getName() . ' ' . $menu,
-          '#default_value' => $config->get("menu.{$languageId}.{$menu}"),
+          '#default_value' => $config->get('menu.' . $languageId . '.' . $menu),
         );
       }
     }
@@ -66,7 +68,7 @@ class PvmMenuSettingsForm extends ConfigFormBase {
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $languageId = $language->getId();
       foreach (array('main', 'footer', 'overlay', 'disclaimer') as $menu) {
-        $config->set("menu.{$languageId}.{$menu}", $form_state->getValue("menu_{$languageId}_{$menu}"));
+        $config->set('menu.' . $languageId . '.' . $menu, $form_state->getValue('menu_' . $languageId . '_' . $menu));
       }
     }
 
