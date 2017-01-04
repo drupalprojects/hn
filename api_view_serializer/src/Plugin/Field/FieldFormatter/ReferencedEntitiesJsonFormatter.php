@@ -40,7 +40,7 @@ class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterB
    *
    * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
    */
-  protected $entityDisplayRepository;
+  protected $entityDisplayRepo;
 
   /**
    * Constructs a StringFormatter instance.
@@ -61,13 +61,13 @@ class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterB
    *   Any third party settings settings.
    * @param LoggerChannelFactoryInterface $logger_factory
    *   The logger factory.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepo
    *   The entity display repository.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, LoggerChannelFactoryInterface $logger_factory, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, LoggerChannelFactoryInterface $logger_factory, EntityDisplayRepositoryInterface $entityDisplayRepo) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->loggerFactory = $logger_factory;
-    $this->entityDisplayRepository = $entity_display_repository;
+    $this->entityDisplayRepo = $entityDisplayRepo;
   }
 
   /**
@@ -103,7 +103,7 @@ class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterB
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $elements['view_mode'] = array(
       '#type' => 'select',
-      '#options' => $this->entityDisplayRepository->getViewModeOptions($this->getFieldSetting('target_type')),
+      '#options' => $this->entityDisplayRepo->getViewModeOptions($this->getFieldSetting('target_type')),
       '#title' => $this->t('View mode'),
       '#default_value' => $this->getSetting('view_mode'),
       '#required' => TRUE,
@@ -118,7 +118,7 @@ class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterB
   public function settingsSummary() {
     $summary = array();
 
-    $view_modes = $this->entityDisplayRepository->getViewModeOptions($this->getFieldSetting('target_type'));
+    $view_modes = $this->entityDisplayRepo->getViewModeOptions($this->getFieldSetting('target_type'));
     $view_mode = $this->getSetting('view_mode');
     $summary[] = $this->t('Rendered as @mode', array('@mode' => isset($view_modes[$view_mode]) ? $view_modes[$view_mode] : $view_mode));
 

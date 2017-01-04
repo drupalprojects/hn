@@ -40,11 +40,12 @@ class ViewSerializer extends Serializer {
     foreach ($rows as $rowKey => $row) {
       foreach ($row as $key => $field) {
         if ($field instanceof Markup) {
-          // I create this ugly array because markup returns json string like this:
+          // I create this ugly array because markup returns json string
+          // like this:
           // {"id":"2"}, {"id":"3"}, {"id":"4"}
           // There should be array brackets around it, but markup doesn't add
           // them.
-          $array = '['.$field->jsonSerialize().']';
+          $array = '[' . $field->jsonSerialize() . ']';
 
           // Decode if markup is json.
           $json = json_decode($array,
