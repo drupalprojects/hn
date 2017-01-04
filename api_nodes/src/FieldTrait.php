@@ -12,7 +12,7 @@ use Drupal\views\Entity\View;
 trait FieldTrait {
 
   private $allowedEntityReferences = [
-    'paragraph', 'file', 'view'
+    'paragraph', 'file'
   ];
 
   /**
@@ -33,6 +33,7 @@ trait FieldTrait {
         $targetType = $field_items->getSetting('target_type');
         $name = $field_items->getName();
 
+        // Check if it is a view reference.
         if ($targetType !== 'view') {
           foreach ($field_items as $field_item) {
             // Loop over all properties of a field item.
