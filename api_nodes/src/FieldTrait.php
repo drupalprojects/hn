@@ -61,8 +61,8 @@ trait FieldTrait {
                 // Add all fields to the nodeObject.
                 $nodeObject[$name][] = $fields;
               }
-              continue;
             }
+            continue;
           }
           // Check if target_type is a view.
           elseif ($targetType === 'view') {
