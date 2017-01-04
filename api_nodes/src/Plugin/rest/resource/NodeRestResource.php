@@ -3,6 +3,7 @@
 namespace Drupal\api_nodes\Plugin\rest\resource;
 
 use Drupal\node\Entity\Node;
+use Drupal\views\Entity\View;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
@@ -37,7 +38,7 @@ class NodeRestResource extends ResourceBase {
   private $language;
 
   private $allowedEntityReferences = [
-    'paragraph', 'file',
+    'paragraph', 'file', 'view' 
   ];
 
   /**
@@ -247,8 +248,8 @@ class NodeRestResource extends ResourceBase {
       // Loop through all node fields.
       foreach ($node->getFields() as $field_items) {
         $targetType = $field_items->getSetting('target_type');
-        $name = $field_items->getName();
-
+        $name = $field_items->getName();	      
+	     
         foreach ($field_items as $field_item) {
 
           // Loop over all properties of a field item.
@@ -257,6 +258,11 @@ class NodeRestResource extends ResourceBase {
             if (in_array($targetType, $this->allowedEntityReferences)) {
               // Check if it is a entityreference.
               if ($property instanceof EntityReference && $entity = $property->getValue()) {
+	              if($entity instanceof View) {
+		              var_dump($entity);
+		              die();
+	              }
+	              
                 if (empty($nodeObject[$name])) {
                   $nodeObject[$name] = array();
                 }
