@@ -131,6 +131,11 @@ class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterB
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = array();
 
+    // There is a way to cause a infinite loop in this code: This is why it
+    // happens:
+    // When you add a view to a reference view field and this view also has
+    // a reference to all paragraphs it will loop forever.
+    // SO DON'T DO THIS!
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
       $object = $this->getFields($entity);
 

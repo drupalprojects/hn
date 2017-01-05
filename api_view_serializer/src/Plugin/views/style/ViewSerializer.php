@@ -38,6 +38,9 @@ class ViewSerializer extends Serializer {
       $rows[] = $this->view->rowPlugin->render($row);
     }
 
+    // There is one reason i do this and that is because i have a field
+    // formatter ../../Field/FieldFormatter wich returns json.
+    // This is kinda hacky i know, but at this time there was no other choice.
     foreach ($rows as $rowKey => $row) {
       foreach ($row as $key => $field) {
         if ($field instanceof Markup) {
