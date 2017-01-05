@@ -31,6 +31,8 @@ trait FieldTrait {
    *   Returns nodeObject.
    */
   private function getFields($node = NULL, array $nodeObject = array()) {
+
+    //TODO: Check if there are multiple values in a field.
     if ($node) {
       // Loop through all node fields.
       foreach ($node->getFields() as $field_items) {

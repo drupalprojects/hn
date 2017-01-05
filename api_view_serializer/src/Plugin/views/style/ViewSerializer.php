@@ -26,6 +26,9 @@ class ViewSerializer extends Serializer {
     $rows = array();
 
     $viewId = $this->view->id();
+    $viewDisplay = $this->view->getDisplay();
+    kint($this->view->getDisplay());
+    die();
 
     // If the Data Entity row plugin is used, this will be an array of entities
     // which will pass through Serializer to one of the registered Normalizers,
