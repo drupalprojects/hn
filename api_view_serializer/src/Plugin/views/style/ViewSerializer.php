@@ -26,6 +26,7 @@ class ViewSerializer extends Serializer {
     $rows = array();
 
     $viewId = $this->view->id();
+    $path = $this->view->getPath();
 
     // If the Data Entity row plugin is used, this will be an array of entities
     // which will pass through Serializer to one of the registered Normalizers,
@@ -37,13 +38,28 @@ class ViewSerializer extends Serializer {
       $rows[] = $this->view->rowPlugin->render($row);
     }
 
+    // There is one reason i do this and that is because i have a field
+    // formatter ../../Field/FieldFormatter wich returns json.
+    // This is kinda hacky i know, but at this time there was no other choice.
     foreach ($rows as $rowKey => $row) {
       foreach ($row as $key => $field) {
         if ($field instanceof Markup) {
+          // I create this ugly array because markup returns json string
+          // like this:
+          // {"id":"2"}, {"id":"3"}, {"id":"4"}
+          // There should be array brackets around it, but markup doesn't add
+          // them.
+          $array = '[' . $field->jsonSerialize() . ']';
+
           // Decode if markup is json.
-          $json = json_decode($field->jsonSerialize(),
+          $json = json_decode($array,
             TRUE);
           $result = $json;
+
+          // Check if result is array but only has 1 item.
+          if (is_array($result) && count($result) == 1) {
+            $result = $result[0];
+          }
 
           // If markup isn't json just use the original value.
           if (json_last_error() !== JSON_ERROR_NONE) {
@@ -56,9 +72,16 @@ class ViewSerializer extends Serializer {
       }
     }
 
-    // Get filters from view configuration.
-    $config = \Drupal::config('views.view.' . $viewId);
-    $filters = $config->get('display.default.display_options.filters');
+    // Get filters.
+    $filters = array();
+
+    foreach ($this->view->filter as $filter) {
+      // Check if it is a exposed filter.
+      if ($filter->isExposed()) {
+        // Add filter to filters array.
+        $filters[] = $filter->options;
+      }
+    }
 
     unset($this->view->row_index);
 
@@ -70,6 +93,7 @@ class ViewSerializer extends Serializer {
     }
 
     $rows = [
+      'path' => $path,
       $viewId => $rows,
       'filters' => $filters,
     ];
