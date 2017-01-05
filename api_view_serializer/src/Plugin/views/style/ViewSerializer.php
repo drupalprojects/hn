@@ -26,9 +26,7 @@ class ViewSerializer extends Serializer {
     $rows = array();
 
     $viewId = $this->view->id();
-    $viewDisplay = $this->view->getDisplay();
-    kint($this->view->getDisplay());
-    die();
+    $path = $this->view->getPath();
 
     // If the Data Entity row plugin is used, this will be an array of entities
     // which will pass through Serializer to one of the registered Normalizers,
@@ -71,9 +69,16 @@ class ViewSerializer extends Serializer {
       }
     }
 
-    // Get filters from view configuration.
-    $config = \Drupal::config('views.view.' . $viewId);
-    $filters = $config->get('display.default.display_options.filters');
+    // Get filters.
+    $filters = array();
+
+    foreach ($this->view->filter as $filter) {
+      // Check if it is a exposed filter.
+      if ($filter->isExposed()) {
+        // Add filter to filters array.
+        $filters[] = $filter->options;
+      }
+    }
 
     unset($this->view->row_index);
 
@@ -85,6 +90,7 @@ class ViewSerializer extends Serializer {
     }
 
     $rows = [
+      'path' => $path,
       $viewId => $rows,
       'filters' => $filters,
     ];
