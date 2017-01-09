@@ -32,6 +32,8 @@ trait FieldTrait {
    */
   private function getFields($node = NULL, array $nodeObject = array()) {
 
+    $moduleHandler = \Drupal::moduleHandler();
+
     // TODO: Check if there are multiple values in a field.
     if ($node) {
       // Loop through all node fields.
@@ -54,12 +56,18 @@ trait FieldTrait {
                 if (!empty($fields['fid']) && !empty($fields['uri'])) {
                   $this->addFileUri($fields);
                 }
-                // If the given entity is one of our custom paragraph types
-                // fill it with our own content.
-                $paragraphContent = pvm_paragraphs_paragraph_content($entity);
-                if (empty($paragraphContent) === FALSE) {
-                  $fields = array_merge($fields, $paragraphContent);
+
+                // Check if the entity has a bundle.
+                if ($bundle = $entity->bundle()) {
+                  // Invoke all hooks.
+                  $paragraphContent = $moduleHandler->invokeAll('alter_paragraph_json', array('bundle' => $bundle));
+
+                  // Check if the array returned isn't empty.
+                  if (empty($paragraphContent) === FALSE) {
+                    $fields = array_merge($fields, $paragraphContent);
+                  }
                 }
+
                 // Add all fields to the nodeObject.
                 $nodeObject[$name][] = $fields;
               }

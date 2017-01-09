@@ -1,5 +1,5 @@
-name: pvm_paragraphs
+name: pvm_settings
 type: module
-description: Paragraphs tweaks for the PvM platform
+description: Pvm Settings
 core: 8.x
 package: PvM
