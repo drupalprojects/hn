@@ -1,5 +1,0 @@
-name: pvm_settings
-type: module
-description: Pvm Settings
-core: 8.x
-package: PvM
