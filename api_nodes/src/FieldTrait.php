@@ -16,7 +16,7 @@ trait FieldTrait {
    */
   private $allowedEntityReferences = [
     'paragraph',
-    'file',
+    'file', 'yamlform'
   ];
 
   /**
@@ -48,6 +48,20 @@ trait FieldTrait {
             foreach ($field_item->getProperties(TRUE) as $property) {
               // Check if it is a entityreference.
               if ($property instanceof EntityReference && $entity = $property->getValue()) {
+
+                  // Check if target_type is a yaml_form.
+                  if ($targetType === 'yamlform') {
+                      $elements = $entity->getElementsDecoded();
+                      $yamlSettings = $entity->getSettings();
+
+                      $nodeObject[$name] = array(
+                          'elements' => $elements,
+                          'settings' => $yamlSettings,
+                      );
+
+                      continue;
+                  }
+
                 if (empty($nodeObject[$name])) {
                   $nodeObject[$name] = array();
                 }
