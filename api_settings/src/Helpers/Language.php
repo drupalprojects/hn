@@ -83,6 +83,12 @@ trait Language {
     return NULL;
   }
 
+  /**
+   * Get the languages selected in the settings.
+   *
+   * @return array|mixed|null
+   *   Returns all possible options
+   */
   private static function getSelectedLanguages() {
     $config = \Drupal::configFactory();
 
@@ -94,7 +100,7 @@ trait Language {
     // Get languageManager.
     $languageManger = \Drupal::languageManager();
 
-    // Get all languages
+    // Get all languages.
     $options = array();
     foreach ($languageManger->getLanguages() as $key => $language) {
       $options[$key] = $language->getName();
