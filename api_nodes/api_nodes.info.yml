@@ -1,4 +1,4 @@
-name: api_nodes
+name: Api nodes
 type: module
 description: Base for getting nodes via rest
 core: 8.x
