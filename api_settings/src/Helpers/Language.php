@@ -83,4 +83,23 @@ trait Language {
     return NULL;
   }
 
+  private static function getSelectedLanguages() {
+    $config = \Drupal::configFactory();
+
+    // Check if the selectedLanguages are set in pvm.settings.
+    if ($selected_languages = $config->get('pvm.settings')->get('general.selected_languages')) {
+      return $selected_languages;
+    }
+
+    // Get languageManager.
+    $languageManger = \Drupal::languageManager();
+
+    // Get all languages
+    $options = array();
+    foreach ($languageManger->getLanguages() as $key => $language) {
+      $options[$key] = $language->getName();
+    }
+    return $options;
+  }
+
 }
