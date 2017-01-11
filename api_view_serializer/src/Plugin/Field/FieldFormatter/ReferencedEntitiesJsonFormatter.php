@@ -137,7 +137,7 @@ class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterB
     // a reference to all paragraphs it will loop forever.
     // SO DON'T DO THIS!
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
-      $object = $this->getFields($entity);
+      $object = $this->getFullNode($entity);
 
       $elements[$delta] = array('#markup' => json_encode($object));
     }

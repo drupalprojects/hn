@@ -146,7 +146,7 @@ class NodeRestResource extends ResourceBase {
         return $this->getErrorResponse(403, $url);
       }
 
-      $nodeObject = $this->getFields($node);
+      $nodeObject = $this->getFullNode($node);
 
       $response = new \stdClass();
       $response->content = $nodeObject;

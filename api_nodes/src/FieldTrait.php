@@ -3,112 +3,117 @@
 namespace Drupal\api_nodes;
 
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
+use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 
 /**
  * Functions for adding file uri's to file fields.
  */
 trait FieldTrait {
 
-  /**
-   * All allowed EntityReferences.
-   *
-   * @var array
-   */
-  private $allowedEntityReferences = [
-    'paragraph',
-    'file',
-    'yamlform',
-  ];
-
-  /**
-   * Get fields for node Object.
-   *
-   * @param \Drupal\node\Entity\Node|null $node
-   *   Node.
-   * @param array $nodeObject
-   *   Array.
-   *
-   * @return array
-   *   Returns nodeObject.
-   */
-  private function getFields($node = NULL, array $nodeObject = array()) {
-
+  private function getFullNode($node = NULL, array $returnArray = array()) {
     $moduleHandler = \Drupal::moduleHandler();
 
-    // TODO: Check if there are multiple values in a field.
     if ($node) {
-      // Loop through all node fields.
-      foreach ($node->getFields() as $field_items) {
-        $targetType = $field_items->getSetting('target_type');
-        $name = $field_items->getName();
-        // Get all values from a field.
-        foreach ($field_items as $field_item) {
-          // Check if the field is one of the allowed referenced entity fields.
-          if (in_array($targetType, $this->allowedEntityReferences)) {
-            // Loop through the properties.
-            foreach ($field_item->getProperties(TRUE) as $property) {
-              // Check if it is a entityreference.
-              if ($property instanceof EntityReference && $entity = $property->getValue()) {
+      // Get all the fields from the node.
+      foreach ($node->getFields() as $field) {
+        $name = $field->getName();
 
-                // Check if target_type is a yaml_form.
-                if ($targetType === 'yamlform') {
-                  $elements = $entity->getElementsDecoded();
-                  $yamlSettings = $entity->getSettings();
+        // Loop through all the values in a field.
+        foreach ($field as $value) {
 
-                  $nodeObject[$name] = array(
-                    'elements' => $elements,
-                    'settings' => $yamlSettings,
-                  );
+          // Check if the value is a entity reference.
+          if ($value instanceof EntityReferenceItem) {
+            $targetType = $field->getSetting('target_type');
 
-                  continue;
-                }
+            // Loop through all the properties.
+            foreach ($value->getProperties(TRUE) as $property) {
 
-                if (empty($nodeObject[$name])) {
-                  $nodeObject[$name] = array();
-                }
-                // Get all fields for a referenced entity field.
-                $fields = $this->getFields($entity);
-                if (!empty($fields['fid']) && !empty($fields['uri'])) {
-                  $this->addFileUri($fields);
-                }
+              // Check if property is a entityReference and not a type,
+              // because when it is a type the property->getValue()
+              // doesn't work.
+              // @TODO: Check if getValue() on type property in a not dirty way.
+              if ($property instanceof EntityReference && $name !== 'type') {
+                $property = $property->getValue();
 
-                // Check if the entity has a bundle.
-                if ($bundle = $entity->bundle()) {
-                  // Invoke all hooks.
-                  $paragraphContent = $moduleHandler->invokeAll('alter_paragraph_json', array('bundle' => $bundle));
-
-                  // Check if the array returned isn't empty.
-                  if (empty($paragraphContent) === FALSE) {
-                    $fields = array_merge($fields, $paragraphContent);
-                  }
-                }
-
-                // Add all fields to the nodeObject.
-                $nodeObject[$name][] = $fields;
+                $this->getReferencedNode($property, $name, $returnArray);
               }
+
+              // Call hook if you want to return custom data for a entity
+              // reference value.
+              $moduleHandler->invokeAll('api_alter_entity_reference_data',
+                array(
+                  'property' => $property,
+                  'value' => $value,
+                  'returnArray' => &$returnArray[$name],
+                ));
             }
+            // If type get value
+            // @TODO: This is really dirty i think, should do it another way.
+            if($name === 'type') {
+              $this->getValue($field, $returnArray[$name]);
+            }
+
             continue;
           }
-          // Check if target_type is a view.
-          elseif ($targetType === 'view') {
-            // Get all fields from the view paragraph.
-            $fields = $field_item->getValue();
-            $renderer = \Drupal::service('renderer');
-            $embedded_view = views_embed_view($fields['target_id'], $fields['display_id']);
-            $rendered_view = $renderer->render($embedded_view);
-            $nodeObject[$name] = json_decode($rendered_view);
-            continue;
-          }
-          if (isset($field_item->value)) {
-            $nodeObject[$name] = $field_item->value;
-          }
-          elseif (isset($field_item->target_id)) {
-            $nodeObject[$name] = $field_item->target_id;
-          }
+
+          $this->getValue($field, $returnArray[$name]);
+
+          $moduleHandler->invokeAll('api_alter_field_data',
+            array(
+              'value' => $value,
+              'returnArray' => &$returnArray[$name],
+            ));
         }
+        $this->arrayOrObject($returnArray[$name]);
       }
     }
-    return $nodeObject;
+    return $returnArray;
   }
 
+  /**
+   * Get the value or target_id from a normal field
+   *
+   * @param $field
+   *   The field the value/target_id should be obtained from.
+   * @param $returnArray
+   *   A referenced array
+   */
+  private function getValue($field, &$returnArray) {
+    if (isset($field->value)) {
+      $returnArray[] = $field->value;
+    }
+    elseif (isset($field->target_id)) {
+      $returnArray[] = $field->target_id;
+    }
+  }
+
+  /**
+   * Get the full node for a referenced Item.
+   *
+   * @param $entity
+   *   A Entity you want the full node from.
+   * @param $name
+   *   The name of the field.
+   * @param $returnArray
+   *   The referenced array.
+   */
+  private function getReferencedNode($entity, $name, &$returnArray) {
+    if (method_exists($entity, 'getFields')) {
+      $node = $this->getFullNode($entity);
+      $returnArray[$name][] = $node;
+    }
+  }
+
+  /**
+   * This function checks if it should be a array. If there is just 1 value
+   * then return only that value
+   *
+   * @param $returnArray
+   *   A referenced array
+   */
+  private function arrayOrObject(&$returnArray) {
+    if (is_array($returnArray) && count($returnArray) == 1) {
+      $returnArray = $returnArray[0];
+    }
+  }
 }

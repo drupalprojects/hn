@@ -90,15 +90,21 @@ trait Language {
    *   Returns all possible options
    */
   private static function getSelectedLanguages() {
-    $config = \Drupal::configFactory();
+    $config = \Drupal::configFactory()->get('pvm.settings');
+
+    // Get languageManager.
+    $languageManger = \Drupal::languageManager();
+
+    $selected_languages = $config->get('general.selected_languages');
+
+    if ($selected_languages && count($selected_languages) > 0) {
+
+    }
 
     // Check if the selectedLanguages are set in pvm.settings.
     if ($selected_languages = $config->get('pvm.settings')->get('general.selected_languages')) {
       return $selected_languages;
     }
-
-    // Get languageManager.
-    $languageManger = \Drupal::languageManager();
 
     // Get all languages.
     $options = array();
