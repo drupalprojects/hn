@@ -20,6 +20,13 @@ function api_nodes_help($route_name) {
 
 /**
  * Implements api_alter_entity_reference_dat().
+ *
+ * @param $entity
+ *   Entity
+ * @param $value
+ *   Value which the entity comes from
+ * @param $returnArray
+ *   Referenced entity
  */
 function api_nodes_api_alter_entity_reference_data($entity, $value, &$returnArray) {
   switch (TRUE) {

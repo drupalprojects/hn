@@ -127,6 +127,9 @@ class SettingsRestResource extends ResourceBase {
     return $output;
   }
 
+  /**
+   * Get social settings.
+   */
   private function getSocialSettings() {
     $output = [];
 

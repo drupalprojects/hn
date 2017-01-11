@@ -34,7 +34,10 @@ trait FileUrlsTrait {
     return $output;
   }
 
-  static function getFileUri($file) {
+  /**
+   * Add uri to file fields.
+   */
+  static public function getFileUri($file) {
     $fields['filemime'] = $file->getMimeType();
     $fields['url'] = $file->url();
     $mimeParts = explode('/', $fields['filemime']);
@@ -44,7 +47,10 @@ trait FileUrlsTrait {
     return $fields;
   }
 
-  static function getImageStyles($uri) {
+  /**
+   * Generate uri for each image style.
+   */
+  static public function getImageStyles($uri) {
     $output = [];
     $imageStyleStorage = \Drupal::entityTypeManager()->getStorage('image_style');
     foreach (\Drupal::entityQuery('image_style')->execute() as $name) {
@@ -53,4 +59,5 @@ trait FileUrlsTrait {
     }
     return $output;
   }
+
 }

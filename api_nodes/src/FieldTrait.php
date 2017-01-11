@@ -2,15 +2,28 @@
 
 namespace Drupal\api_nodes;
 
+use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
+use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 
 /**
- * Functions for adding file uri's to file fields.
+ * Function for getting the fields from a node.
  */
 trait FieldTrait {
 
-  private function getFullNode($node = NULL, array $returnArray = array()) {
+  /**
+   * This function gets all fields from a given node.
+   *
+   * @param Entity $node
+   *   A entity which you want all fields from.
+   * @param array|null $returnArray
+   *   The array that should be returned.
+   *
+   * @return array
+   *   The full node.
+   */
+  private function getFullNode(Entity $node = NULL, $returnArray = array()) {
     $moduleHandler = \Drupal::moduleHandler();
 
     if ($node) {
@@ -23,11 +36,9 @@ trait FieldTrait {
 
           // Check if the value is a entity reference.
           if ($value instanceof EntityReferenceItem) {
-            $targetType = $field->getSetting('target_type');
 
             // Loop through all the properties.
             foreach ($value->getProperties(TRUE) as $property) {
-
               // Check if property is a entityReference and not a type,
               // because when it is a type the property->getValue()
               // doesn't work.
@@ -47,9 +58,9 @@ trait FieldTrait {
                   'returnArray' => &$returnArray[$name],
                 ));
             }
-            // If type get value
+            // If type get value.
             // @TODO: This is really dirty i think, should do it another way.
-            if($name === 'type') {
+            if ($name === 'type') {
               $this->getValue($field, $returnArray[$name]);
             }
 
@@ -71,14 +82,14 @@ trait FieldTrait {
   }
 
   /**
-   * Get the value or target_id from a normal field
+   * Get the value or target_id from a normal field.
    *
-   * @param $field
+   * @param FieldItemList $field
    *   The field the value/target_id should be obtained from.
-   * @param $returnArray
-   *   A referenced array
+   * @param array|null $returnArray
+   *   A referenced array.
    */
-  private function getValue($field, &$returnArray) {
+  private function getValue(FieldItemList $field, &$returnArray) {
     if (isset($field->value)) {
       $returnArray[] = $field->value;
     }
@@ -90,14 +101,14 @@ trait FieldTrait {
   /**
    * Get the full node for a referenced Item.
    *
-   * @param $entity
+   * @param Entity $entity
    *   A Entity you want the full node from.
-   * @param $name
+   * @param string $name
    *   The name of the field.
-   * @param $returnArray
+   * @param array|null $returnArray
    *   The referenced array.
    */
-  private function getReferencedNode($entity, $name, &$returnArray) {
+  private function getReferencedNode(Entity $entity, $name, &$returnArray) {
     if (method_exists($entity, 'getFields')) {
       $node = $this->getFullNode($entity);
       $returnArray[$name][] = $node;
@@ -105,15 +116,15 @@ trait FieldTrait {
   }
 
   /**
-   * This function checks if it should be a array. If there is just 1 value
-   * then return only that value
+   * This function checks if it should be a array.
    *
-   * @param $returnArray
-   *   A referenced array
+   * @param array|null $returnArray
+   *   A referenced array.
    */
   private function arrayOrObject(&$returnArray) {
     if (is_array($returnArray) && count($returnArray) == 1) {
       $returnArray = $returnArray[0];
     }
   }
+
 }
