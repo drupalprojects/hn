@@ -100,6 +100,7 @@ class SettingsRestResource extends ResourceBase {
         'languages' => Language::getLanguages(),
         'menu' => Menu::get(),
         'qa' => $this->getQaSettings(),
+        'social' => $this->getSocialSettings(),
       ),
     );
 
@@ -122,6 +123,18 @@ class SettingsRestResource extends ResourceBase {
 
     $output['showShareButtons'] = (bool) $config->get('general.show_share_buttons');
     $output['countriesLink'] = $config->get('general.countries_link');
+
+    return $output;
+  }
+
+  private function getSocialSettings() {
+    $output = [];
+
+    $config = \Drupal::config('pvm.settings');
+
+    $output['social_settings'] = $config->get('social');
+
+    $output['social_channels'] = $config->get('social_channels');
 
     return $output;
   }
