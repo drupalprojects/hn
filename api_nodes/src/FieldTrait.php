@@ -2,7 +2,6 @@
 
 namespace Drupal\api_nodes;
 
-use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
@@ -15,7 +14,7 @@ trait FieldTrait {
   /**
    * This function gets all fields from a given node.
    *
-   * @param Entity $node
+   * @param \Drupal\Core\Entity\Entity|null $node
    *   A entity which you want all fields from.
    * @param array|null $returnArray
    *   The array that should be returned.
@@ -23,7 +22,7 @@ trait FieldTrait {
    * @return array
    *   The full node.
    */
-  private function getFullNode(Entity $node = NULL, $returnArray = array()) {
+  private function getFullNode($node = NULL, $returnArray = array()) {
     $moduleHandler = \Drupal::moduleHandler();
 
     if ($node) {
@@ -101,14 +100,14 @@ trait FieldTrait {
   /**
    * Get the full node for a referenced Item.
    *
-   * @param Entity $entity
+   * @param \Drupal\Core\Entity\Entity|null $entity
    *   A Entity you want the full node from.
    * @param string $name
    *   The name of the field.
    * @param array|null $returnArray
    *   The referenced array.
    */
-  private function getReferencedNode(Entity $entity, $name, &$returnArray) {
+  private function getReferencedNode($entity, $name, &$returnArray) {
     if (method_exists($entity, 'getFields')) {
       $node = $this->getFullNode($entity);
       $returnArray[$name][] = $node;
