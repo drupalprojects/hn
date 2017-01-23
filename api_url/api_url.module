@@ -1,0 +1,70 @@
+<?php
+
+use \Drupal\api_nodes\FileUrlsTrait;
+
+/**
+ * Implements hook_help().
+ */
+function api_nodes_help($route_name) {
+  switch ($route_name) {
+    // Main module help for the api_nodes module.
+    case 'help.page.api_nodes':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Url endpoint') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements api_alter_entity_reference_dat().
+ *
+ * @param $entity
+ *   Entity
+ * @param $value
+ *   Value which the entity comes from
+ * @param $returnArray
+ *   Referenced entity
+ */
+function api_nodes_api_alter_entity_reference_data($entity, $value, &$returnArray) {
+  switch (TRUE) {
+    case $entity instanceof \Drupal\file\Entity\File:
+      $file = FileUrlsTrait::getFileUri($entity);
+      $returnArray = $file;
+      break;
+    case $entity instanceof \Drupal\user\Entity\User:
+      $returnArray = $entity->id();
+      break;
+    case $entity instanceof \Drupal\views\Entity\View:
+      $view = $value->getValue();
+      $renderer = \Drupal::service('renderer');
+      $embedded_view = views_embed_view($view['target_id'], 'rest_export_1');
+      $rendered_view = $renderer->render($embedded_view);
+      $returnArray = json_decode($rendered_view);
+      break;
+  }
+}
+
+/**
+ * Implements api_alter_entity_reference_dat().
+ */
+function api_nodes_api_alter_field_data($value, &$returnArray) {
+  switch (TRUE) {
+    case $value instanceof \Drupal\link\Plugin\Field\FieldType\LinkItem:
+      $url = $value->getUrl();
+
+      $uri = NULL;
+      if ($url->isRouted()) {
+        $uri = $url->toString();
+      }
+      elseif ($url->isExternal()) {
+        $uri = $url->getUri();
+      }
+
+      $returnArray = $value->getValue();
+      $returnArray['uri'] = $uri;
+      break;
+  }
+}
