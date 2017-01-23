@@ -1,0 +1,18 @@
+{
+    "name": "drupal/headless-drupal",
+    "description": "Base modules for headless drupal setup",
+    "type": "drupal-module",
+    "license": "GPL-2.0+",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Niels Otten (Nylsoo)",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "issues": "https://gitlab.com/burstdigital/headless-drupal/issues",
+        "source": "https://gitlab.com/burst-public/headless-drupal"
+    },
+    "require": {}
+}

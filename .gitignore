@@ -1,3 +1,5 @@
 # phpstorm .idea
 /.idea
 
+
+/vendor/
