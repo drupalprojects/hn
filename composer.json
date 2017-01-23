@@ -12,7 +12,7 @@
     ],
     "support": {
         "issues": "https://gitlab.com/burstdigital/headless-drupal/issues",
-        "source": "https://gitlab.com/burst-public/headless-drupal"
+        "source": "http://cgit.drupalcode.org/sandbox-Nylsoo-2845914"
     },
     "require": {}
 }
