@@ -1,6 +1,6 @@
-name: Api nodes
+name: Api url
 type: module
-description: Base for getting nodes via rest
+description: Url endpoint
 core: 8.x
 package: API
 dependencies:
