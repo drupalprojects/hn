@@ -6,10 +6,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
-use Drupal\api_settings\Helpers\Language;
-use Drupal\api_settings\Helpers\Menu;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -23,7 +20,6 @@ use Drupal\api_settings\Helpers\Menu;
  * )
  */
 class SettingsRestResource extends ResourceBase {
-  use \Drupal\api_nodes\FileUrlsTrait;
 
   /**
    * A current user instance.
@@ -87,99 +83,33 @@ class SettingsRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get() {
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
+
+    $moduleHandler = \Drupal::moduleHandler();
+    $config = \Drupal::configFactory()->get('api_settings.general');
+
+    $responseArray = array();
+
+    $hookTypes = $config->get('hookTypes');
+    // Invoke all modules to fill the response array.
+    $moduleHandler->invokeAll('api_alter_settings_data',
+      array(
+        'responseArray' => &$responseArray,
+      ));
+
+    // Invoke module for each hookType
+    if ($hookTypes && count($hookTypes) > 0) {
+      foreach ($hookTypes as $hookType) {
+        $moduleHandler->invokeAll('api_alter_settings_data_' . $hookType,
+          array(
+            'responseArray' => &$responseArray,
+          ));
+      }
     }
 
-    $responseArray = array(
-      'response' => array(
-        'general' => $this->getGeneralSettings(),
-        'logos' => $this->getLogos(),
-        'languages' => Language::getLanguages(),
-        'menu' => Menu::get(),
-        'qa' => $this->getQaSettings(),
-        'social' => $this->getSocialSettings(),
-      ),
-    );
-
+    // Encode the php array to json.
     $data = json_encode($responseArray);
     $response = new Response($data);
 
     return $response;
   }
-
-  /**
-   * Get general settings.
-   */
-  private function getGeneralSettings() {
-    $output = [];
-
-    $config = \Drupal::config('system.site');
-    $output['siteName'] = $config->get('name');
-
-    $config = \Drupal::config('pvm.settings');
-
-    $output['showShareButtons'] = (bool) $config->get('general.show_share_buttons');
-    $output['countriesLink'] = $config->get('general.countries_link');
-
-    return $output;
-  }
-
-  /**
-   * Get social settings.
-   */
-  private function getSocialSettings() {
-    $output = [];
-
-    $config = \Drupal::config('pvm.settings');
-
-    $output['social_settings'] = $config->get('social');
-
-    $output['social_channels'] = $config->get('social_channels');
-
-    return $output;
-  }
-
-  /**
-   * Get site logo's.
-   */
-  protected function getLogos() {
-    $config = \Drupal::config('pvm.settings');
-    $output = [];
-
-    foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $languageId = $language->getId();
-
-      $fid = $config->get("logo.$languageId");
-
-      if (empty($fid)) {
-        $output[$language->getId()] = NULL;
-      }
-      if (!empty($fid)) {
-        $file = ['fid' => $fid];
-        $this->addFileUri($file);
-        $output[$languageId] = $file;
-      }
-    }
-    return $output;
-  }
-
-  /**
-   * Get Q&A settings.
-   */
-  protected function getQaSettings() {
-    $config = \Drupal::config('pvm.settings');
-    $output = [];
-    foreach (\Drupal::languageManager()->getLanguages() as $language) {
-      $languageId = $language->getId();
-      $output[$languageId] = [
-        'q' => $config->get("QA.q.$languageId"),
-        'a' => $config->get("QA.a.$languageId"),
-      ];
-    }
-    return $output;
-  }
-
 }

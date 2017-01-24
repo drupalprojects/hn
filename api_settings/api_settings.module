@@ -5,7 +5,9 @@
  * Contains api_settings.module..
  */
 
-use Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\api_settings\Helpers\Language;
+use \Drupal\api_settings\Helpers\Menu;
+
 
 /**
  * Implements hook_help().
@@ -21,4 +23,37 @@ function api_settings_help($route_name) {
 
     default:
   }
+}
+
+/**
+ * Implements hook_install().
+ */
+function api_settings_install() {
+  $config = \Drupal::configFactory()->get('api_settings.general');
+
+  $hooks = array('menu', 'language');
+  $hookTypes = $config->get('hookTypes');
+
+  if (!empty($hookTypes) && is_array($hookTypes)) {
+    $hooks = array_merge($hooks + $hookTypes);
+  }
+
+  $config = \Drupal::configFactory()->getEditable('api_settings.general');
+
+  $config->set('hookTypes', $hooks);
+  $config->save();
+}
+
+/**
+ * Implements hook_api_alter_settings_data_HOOK_TYPE() 'menu'.
+ */
+function api_settings_api_alter_settings_data_menu(&$responseArray) {
+  $responseArray['menu'] = Menu::get();
+}
+
+/**
+ * Implements hook_api_alter_settings_data_HOOK_TYPE() for 'language'.
+ */
+function api_settings_api_alter_settings_data_language(&$responseArray) {
+  $responseArray['language'] = Language::getLanguages();
 }
