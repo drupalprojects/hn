@@ -9,6 +9,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -85,65 +86,81 @@ class FormRestResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function post($values, $data) {
-    $response = NULL;
+  public function post($values) {
+    return $this->PostSubmission($values);
+  }
 
-    $form_id = !empty($values['form_id']) ? $values['form_id'] : NULL;
+  private function PostSubmission($values) {
+    $form_id = empty($values['form_id']) === FALSE ? $values['form_id'] : NULL;
 
-    if ($form_id) {
-      unset($values['form_id']);
-
-      // Create a submission
-      $webform_submission = \Drupal\webform\Entity\WebformSubmission::create([
-        'webform_id' => $form_id,
-        'uri' => '/form/' . $form_id
-      ]);
-
-      if (empty($values['in_draft']) === FALSE && $values['in_draft']) {
-        unset($values['in_draft']);
-        $webform_submission->set('in_draft', TRUE);
-      }
-
-      // Get the form object.
-      $entity_form_object = \Drupal::entityTypeManager()
-                                   ->getFormObject('webform_submission', 'default');
-      $entity_form_object->setEntity($webform_submission);
-
-      // Initialize the form state.
-      $form_state = (new FormState())->setValues($values);
-      \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
-
-      $errors = [];
-
-      foreach ($form_state->getErrors() as $key => $error) {
-        if ($error instanceof TranslatableMarkup) {
-          $errors[] = $error->jsonSerialize();
-        } else {
-          $errors[$key] = $error;
-        }
-      }
-
-      $response = new \stdClass();
-
-      if (empty($errors)) {
-        if ($webform_submission->save()) {
-          $response->status = 200;
-          $response->id = $webform_submission->id();
-          $response->uuid = $webform_submission->uuid();
-        } else {
-          $response->errors[] = 'Saving went wrong';
-        }
-      } else {
-        $response->errors = $errors;
-      }
-      $response = json_encode($response);
+    if (is_null($form_id) === TRUE) {
+      return $this->getErrorResponse(401);
     }
 
-    $response = new Response($response);
+    // Unset Form_id, because later we are going to use values to create a new
+    // submission.
+    unset($values['form_id']);
 
+    // Create webformsubmission
+    $webform_submission = $this->createSubmission($form_id);
+
+    if (empty($webform_submission)) {
+      return $this->getErrorResponse(401);
+    }
+
+    // Get the form object.
+    $entity_form_object = \Drupal::entityTypeManager()
+                                 ->getFormObject('webform_submission', 'default');
+    $entity_form_object->setEntity($webform_submission);
+
+    // Initialize the form state.
+    $form_state = (new FormState())->setValues($values);
+    \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
+
+    $errors = [];
+
+    // Check if there are any validation errors.
+    foreach ($form_state->getErrors() as $key => $error) {
+      if ($error instanceof TranslatableMarkup) {
+        $errors[] = $error->jsonSerialize();
+      } else {
+        $errors[$key] = $error;
+      }
+    }
+
+    $data = new \stdClass();
+
+    if (empty($errors)) {
+      if ($webform_submission->save()) {
+        $data->status = 200;
+        $data->id = $webform_submission->id();
+        $data->uuid = $webform_submission->uuid();
+      } else {
+        $data->errors[] = 'Saving went wrong';
+      }
+    } else {
+      $data->errors = $errors;
+    }
+
+    $data = json_encode($data);
+
+    $response = new Response($data);
     $response->setStatusCode(200);
 
-    // Throw an exception if it is required.
     return $response;
+  }
+
+  private function getErrorResponse($code) {
+    switch ($code) {
+      case 401:
+        throw new BadRequestHttpException();
+    }
+  }
+
+  private function createSubmission($form_id) {
+    return \Drupal\webform\Entity\WebformSubmission::create([
+      'webform_id' => $form_id,
+      'uri' => '/form/' . $form_id
+    ]);
   }
 }
