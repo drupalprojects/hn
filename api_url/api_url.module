@@ -15,6 +15,7 @@ function api_url_help($route_name) {
       return $output;
 
     default:
+      return '';
   }
 }
 
