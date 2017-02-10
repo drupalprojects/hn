@@ -4,6 +4,7 @@ namespace Drupal\api_form\Plugin\rest\resource;
 
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -85,55 +86,6 @@ class FormRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function post($values, $data) {
-//    $formValidator = new FormValidator();
-//    $form_state = new FormState();
-//    $form_id = 'webform_submission_test_form';
-//    $webform = Webform::load('test');
-//    $webform_submission = \Drupal\webform\Entity\WebformSubmission::create([
-//      'webform_id' => 'test',
-//      'data' => [
-//        'test_field' => 'test',
-//      ],
-//      'uri'=> '/form/test'
-//    ]);
-//    $form = $webform->getSubmissionForm([
-//      'webform_id' => 'test',
-//      'data' => [
-//        'test_field' => 'test',
-//      ],
-//      'uri'=> '/form/test'
-//    ]);
-//
-//    $form_state->setCompleteForm($form);
-//    $form_state->setValues(['test_field' => 'test']);
-//
-//    kint($form);
-//    kint($webform);
-//    kint($form_state);
-//    $webform_submission->setValidationRequired(TRUE);
-//    kint($webform_submission);
-//    $violations = $webform_submission->validate();
-//    $form_data = $webform->getSubmissionForm();
-//    $form_state = new FormState();
-//    $form_state->setValues(['checkbox' => '1',
-//      'name' => 'test',]);
-
-//    kint($form_state);
-
-//    $webform->invokeHandlers('validateForm', $form_data, $form_state, $webform_submission);
-
-//    kint($violations);
-//    kint($webform_submission);
-//    $webform_submission->save();
-//    kint($webform_submission->id());
-//    kint($webform_submission);
-//    kint($webform_submission);
-//    kint($form);
-//    kint($formBase->validateForm($form, $form_state));
-//    kint($form);
-//    kint($form->getSubmissionForm());
-//    die();
-
     $response = NULL;
 
     $form_id = !empty($values['form_id']) ? $values['form_id'] : NULL;
@@ -147,6 +99,11 @@ class FormRestResource extends ResourceBase {
         'uri' => '/form/' . $form_id
       ]);
 
+      if (empty($values['in_draft']) === FALSE && $values['in_draft']) {
+        unset($values['in_draft']);
+        $webform_submission->set('in_draft', TRUE);
+      }
+
       // Get the form object.
       $entity_form_object = \Drupal::entityTypeManager()
                                    ->getFormObject('webform_submission', 'default');
@@ -157,8 +114,13 @@ class FormRestResource extends ResourceBase {
       \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
 
       $errors = [];
-      foreach ($form_state->getErrors() as $error) {
-        $errors[] = $error->jsonSerialize();
+
+      foreach ($form_state->getErrors() as $key => $error) {
+        if ($error instanceof TranslatableMarkup) {
+          $errors[] = $error->jsonSerialize();
+        } else {
+          $errors[$key] = $error;
+        }
       }
 
       $response = new \stdClass();
@@ -167,6 +129,7 @@ class FormRestResource extends ResourceBase {
         if ($webform_submission->save()) {
           $response->status = 200;
           $response->id = $webform_submission->id();
+          $response->uuid = $webform_submission->uuid();
         } else {
           $response->errors[] = 'Saving went wrong';
         }
@@ -176,10 +139,11 @@ class FormRestResource extends ResourceBase {
       $response = json_encode($response);
     }
 
-    kint($response);
-    die();
+    $response = new Response($response);
+
+    $response->setStatusCode(200);
 
     // Throw an exception if it is required.
-    return new Response($response);
+    return $response;
   }
 }
