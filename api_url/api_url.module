@@ -47,6 +47,8 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
     case $entity instanceof Drupal\webform\Entity\Webform:
       $settings = $entity->getSettings();
       $elements = $entity->getElementsDecoded();
+      kint($entity);
+      die();
       $returnArray = ['settings' => $settings, 'elements'=> $elements];
       break;
   }
