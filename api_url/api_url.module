@@ -44,6 +44,11 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       $rendered_view = $renderer->render($embedded_view);
       $returnArray = json_decode($rendered_view);
       break;
+    case $entity instanceof Drupal\webform\Entity\Webform:
+      $settings = $entity->getSettings();
+      $elements = $entity->getElementsDecoded();
+      $returnArray = ['settings' => $settings, 'elements'=> $elements];
+      break;
   }
 }
 

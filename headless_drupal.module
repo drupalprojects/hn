@@ -5,13 +5,13 @@ use \Drupal\headless_drupal;
 /**
  * Implements hook_help().
  */
-function api_url_help($route_name) {
+function headless_drupal_help($route_name) {
   switch ($route_name) {
     // Main module help for the api_url module.
-    case 'help.page.api_url':
+    case 'help.page.headless_drupal':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Url endpoint') . '</p>';
+      $output .= '<p>' . t('Base for Headless drupal') . '</p>';
       return $output;
 
     default:

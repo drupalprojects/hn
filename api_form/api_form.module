@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * Contains api_settings.module..
+ */
+
+use \Drupal\api_settings\Helpers\Language;
+use \Drupal\api_settings\Helpers\Menu;
+
+
+/**
+ * Implements hook_help().
+ */
+function api_form_help($route_name) {
+  switch ($route_name) {
+    // Main module help for the api_form module.
+    case 'help.page.api_form':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Endpoint to post all forms to') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+

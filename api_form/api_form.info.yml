@@ -1,0 +1,8 @@
+name: Api form
+type: module
+description: Endpoint to post all forms to
+core: 8.x
+package: API
+dependencies:
+  - rest
+  - language

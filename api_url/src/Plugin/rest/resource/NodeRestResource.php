@@ -1,6 +1,7 @@
 <?php
 
-namespace Drupal\api_nodes\Plugin\rest\resource;
+namespace Drupal\api_url\Plugin\rest\resource;
+
 
 use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -24,8 +25,8 @@ use Symfony\Component\HttpFoundation\Response;
  * )
  */
 class NodeRestResource extends ResourceBase {
-  use \Drupal\api_nodes\FileUrlsTrait;
-  use \Drupal\api_nodes\FieldTrait;
+  use \Drupal\api_url\FileUrlsTrait;
+  use \Drupal\api_url\FieldTrait;
 
   /**
    * A current user instance.
@@ -75,7 +76,7 @@ class NodeRestResource extends ResourceBase {
       $plugin_id,
       $plugin_definition,
       $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('api_nodes'),
+      $container->get('logger.factory')->get('api_url'),
       $container->get('current_user')
     );
   }
@@ -143,6 +144,7 @@ class NodeRestResource extends ResourceBase {
 
       // Check if the user has permissions to view this node.
       if (!$node->access()) {
+        var_dump('no access');
         return $this->getErrorResponse(403, $url);
       }
 
@@ -186,7 +188,8 @@ class NodeRestResource extends ResourceBase {
 
       }
     }
-    return $this->getResponseByUrl($url, $code);
+    // TODO: This line can cause a infinite loop. Rework it.
+//    return $this->getResponseByUrl($url, $code);
   }
 
   /**
