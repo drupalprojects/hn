@@ -5,7 +5,6 @@ namespace Drupal\api_form\Plugin\rest\resource;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
-use MyProject\Proxies\__CG__\OtherProject\Proxies\__CG__\stdClass;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -135,48 +134,52 @@ class FormRestResource extends ResourceBase {
 //    kint($form->getSubmissionForm());
 //    die();
 
-//    $response = new stdClass();
-//
-//    $form_id = !empty($values['form_id']) ? $values['form_id'] : NULL;
-//
-//    if ($form_id) {
-//      unset($values['form_id']);
-//
-//      // Create a submission
-//      $webform_submission = \Drupal\webform\Entity\WebformSubmission::create([
-//        'webform_id' => $form_id,
-//        'uri' => '/form/' . $form_id
-//      ]);
-//
-//      // Get the form object.
-//      $entity_form_object = \Drupal::entityTypeManager()
-//                                   ->getFormObject('webform_submission', 'default');
-//      $entity_form_object->setEntity($webform_submission);
-//
-//      // Initialize the form state.
-//      $form_state = (new FormState())->setValues($values);
-//      \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
-//
-//      $errors = [];
-//      foreach ($form_state->getErrors() as $error) {
-//        $errors[] = $error->jsonSerialize();
-//      }
-//
-//      if (empty($errors)) {
-//        if ($webform_submission->save()) {
-//          $response->status = 200;
-//          $response->id = $webform_submission->id();
-//        } else {
-//          $response->errors[] = 'Saving went wrong';
-//        }
-//      } else {
-//        $response->errors = $errors;
-//      }
-//    }
-//
-//    $response = json_encode($response);
-//
-//    // Throw an exception if it is required.
-//    return new Response($response);
+    $response = NULL;
+
+    $form_id = !empty($values['form_id']) ? $values['form_id'] : NULL;
+
+    if ($form_id) {
+      unset($values['form_id']);
+
+      // Create a submission
+      $webform_submission = \Drupal\webform\Entity\WebformSubmission::create([
+        'webform_id' => $form_id,
+        'uri' => '/form/' . $form_id
+      ]);
+
+      // Get the form object.
+      $entity_form_object = \Drupal::entityTypeManager()
+                                   ->getFormObject('webform_submission', 'default');
+      $entity_form_object->setEntity($webform_submission);
+
+      // Initialize the form state.
+      $form_state = (new FormState())->setValues($values);
+      \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
+
+      $errors = [];
+      foreach ($form_state->getErrors() as $error) {
+        $errors[] = $error->jsonSerialize();
+      }
+
+      $response = new \stdClass();
+
+      if (empty($errors)) {
+        if ($webform_submission->save()) {
+          $response->status = 200;
+          $response->id = $webform_submission->id();
+        } else {
+          $response->errors[] = 'Saving went wrong';
+        }
+      } else {
+        $response->errors = $errors;
+      }
+      $response = json_encode($response);
+    }
+
+    kint($response);
+    die();
+
+    // Throw an exception if it is required.
+    return new Response($response);
   }
 }

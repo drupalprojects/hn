@@ -1,15 +1,6 @@
 <?php
 
 /**
- * @file
- * Contains api_settings.module..
- */
-
-use \Drupal\api_settings\Helpers\Language;
-use \Drupal\api_settings\Helpers\Menu;
-
-
-/**
  * Implements hook_help().
  */
 function api_form_help($route_name) {
