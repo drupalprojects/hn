@@ -15,7 +15,6 @@ function api_url_help($route_name) {
       return $output;
 
     default:
-      return '';
   }
 }
 
@@ -46,9 +45,16 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       $returnArray = json_decode($rendered_view);
       break;
     case $entity instanceof Drupal\webform\Entity\Webform:
+      $form_id = $entity->id();
       $settings = $entity->getSettings();
       $elements = $entity->getElementsInitialized();
-      $returnArray = ['settings' => $settings, 'elements'=> $elements];
+      $token = \Drupal::csrfToken()->get('token');
+      $returnArray = [
+        'form_id' => $form_id,
+        'settings' => $settings,
+        'elements'=> $elements,
+        'token' => $token
+      ];
       break;
   }
 }
