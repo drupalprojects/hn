@@ -30,6 +30,13 @@ trait FieldTrait {
       foreach ($node->getFields() as $field) {
         $name = $field->getName();
 
+        // This variable shows how many values are allowed in a field.
+        // -1 means unlimited.
+        $cardinality = -1;
+        if ($fieldDefinition = $field->getFieldDefinition()) {
+          $cardinality = $fieldDefinition->getFieldStorageDefinition()->getCardinality();
+        }
+
         // Loop through all the values in a field.
         foreach ($field as $value) {
 
@@ -74,7 +81,7 @@ trait FieldTrait {
               'returnArray' => &$returnArray[$name],
             ));
         }
-        $this->arrayOrObject($returnArray[$name]);
+        $this->arrayOrObject($returnArray[$name], $cardinality);
       }
     }
     return $returnArray;
@@ -120,8 +127,8 @@ trait FieldTrait {
    * @param array|null $returnArray
    *   A referenced array.
    */
-  private function arrayOrObject(&$returnArray) {
-    if (is_array($returnArray) && count($returnArray) == 1) {
+  private function arrayOrObject(&$returnArray, $cardinality) {
+    if (is_array($returnArray) && count($returnArray) == 1 && $cardinality !== -1 && $cardinality === 1) {
       $returnArray = $returnArray[0];
     }
   }
