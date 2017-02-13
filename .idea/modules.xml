@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../headless_drupal/.idea/headless_drupal.iml" filepath="$PROJECT_DIR$/../headless_drupal/.idea/headless_drupal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/headless_drupal.iml" filepath="$PROJECT_DIR$/.idea/headless_drupal.iml" />
     </modules>
   </component>
 </project>
