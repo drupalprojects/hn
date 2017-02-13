@@ -2,16 +2,14 @@
 
 namespace Drupal\api_url\Plugin\rest\resource;
 
-
 use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
+use Drupal\headless_drupal\ResponseHelper;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -27,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 class NodeRestResource extends ResourceBase {
   use \Drupal\api_url\FileUrlsTrait;
   use \Drupal\api_url\FieldTrait;
+
 
   /**
    * A current user instance.
@@ -148,6 +147,7 @@ class NodeRestResource extends ResourceBase {
 //        return $this->getErrorResponse(403, $url);
 //      }
 
+
       $nodeObject = $this->getFullNode($node);
 
       $response = new \stdClass();
@@ -179,17 +179,11 @@ class NodeRestResource extends ResourceBase {
     if ($originalUrl == $url) {
       // Error page is not found or accessible by itself.
       // Prevent inifinite recursion.
-      switch ($code) {
-        case 403:
-          throw new AccessDeniedHttpException();
-
-        case 404:
-          throw new NotFoundHttpException();
-
-      }
+      ResponseHelper::throwResponse($code);
     }
     // TODO: This line can cause a infinite loop. Rework it.
 //    return $this->getResponseByUrl($url, $code);
+
   }
 
   /**
