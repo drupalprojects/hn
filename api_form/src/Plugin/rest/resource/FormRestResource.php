@@ -9,7 +9,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Drupal\headless_drupal\ResponseHelper;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -87,14 +87,14 @@ class FormRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function post($values) {
-    return $this->PostSubmission($values);
+    return $this->postSubmission($values);
   }
 
-  private function PostSubmission($values) {
+  private function postSubmission($values) {
     $form_id = empty($values['form_id']) === FALSE ? $values['form_id'] : NULL;
 
     if (is_null($form_id) === TRUE) {
-      return $this->getErrorResponse(401);
+      ResponseHelper::throwResponse(400);
     }
 
     // Unset Form_id, because later we are going to use values to create a new
@@ -105,7 +105,7 @@ class FormRestResource extends ResourceBase {
     $webform_submission = $this->createSubmission($form_id);
 
     if (empty($webform_submission)) {
-      return $this->getErrorResponse(401);
+      ResponseHelper::throwResponse(400);
     }
 
     // Get the form object.
@@ -148,13 +148,6 @@ class FormRestResource extends ResourceBase {
     $response->setStatusCode(200);
 
     return $response;
-  }
-
-  private function getErrorResponse($code) {
-    switch ($code) {
-      case 401:
-        throw new BadRequestHttpException();
-    }
   }
 
   private function createSubmission($form_id) {
