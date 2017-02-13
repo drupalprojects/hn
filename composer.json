@@ -1,5 +1,5 @@
 {
-    "name": "drupal/headless-drupal",
+    "name": "burst/headless-drupal",
     "description": "Base modules for headless drupal setup",
     "type": "drupal-module",
     "license": "GPL-2.0+",
