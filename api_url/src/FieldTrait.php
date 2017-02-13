@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_nodes;
+namespace Drupal\api_url;
 
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Field\FieldItemList;
