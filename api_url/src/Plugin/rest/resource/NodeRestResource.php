@@ -2,7 +2,6 @@
 
 namespace Drupal\api_url\Plugin\rest\resource;
 
-
 use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
@@ -27,6 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 class NodeRestResource extends ResourceBase {
   use \Drupal\api_url\FileUrlsTrait;
   use \Drupal\api_url\FieldTrait;
+
 
   /**
    * A current user instance.
@@ -148,6 +148,7 @@ class NodeRestResource extends ResourceBase {
 //        return $this->getErrorResponse(403, $url);
 //      }
 
+
       $nodeObject = $this->getFullNode($node);
 
       $response = new \stdClass();
@@ -190,6 +191,7 @@ class NodeRestResource extends ResourceBase {
     }
     // TODO: This line can cause a infinite loop. Rework it.
 //    return $this->getResponseByUrl($url, $code);
+
   }
 
   /**
