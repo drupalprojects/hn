@@ -9,6 +9,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Drupal\webform\Entity\WebformSubmission;
 use Drupal\headless_drupal\ResponseHelper;
 
 /**
@@ -90,7 +91,16 @@ class FormRestResource extends ResourceBase {
     return $this->postSubmission($values);
   }
 
-  private function postSubmission($values) {
+  /**
+   * Validates all values and returns a form response.
+   *
+   * @param array $values
+   *   Array with post data.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   Response.
+   */
+  private function postSubmission(array $values) {
     $form_id = empty($values['form_id']) === FALSE ? $values['form_id'] : NULL;
 
     if (is_null($form_id) === TRUE) {
@@ -101,7 +111,7 @@ class FormRestResource extends ResourceBase {
     // submission.
     unset($values['form_id']);
 
-    // Create webformsubmission
+    // Create webformsubmission.
     $webform_submission = $this->createSubmission($form_id);
 
     if (empty($webform_submission)) {
@@ -110,7 +120,7 @@ class FormRestResource extends ResourceBase {
 
     // Get the form object.
     $entity_form_object = \Drupal::entityTypeManager()
-                                 ->getFormObject('webform_submission', 'default');
+      ->getFormObject('webform_submission', 'default');
     $entity_form_object->setEntity($webform_submission);
 
     // Initialize the form state.
@@ -123,22 +133,19 @@ class FormRestResource extends ResourceBase {
     foreach ($form_state->getErrors() as $key => $error) {
       if ($error instanceof TranslatableMarkup) {
         $errors[] = $error->jsonSerialize();
-      } else {
-        $errors[$key] = $error;
+        continue;
       }
+      $errors[$key] = $error;
     }
 
     $data = new \stdClass();
 
     if (empty($errors)) {
-      if ($webform_submission->save()) {
-        $data->status = 200;
-        $data->id = $webform_submission->id();
-        $data->uuid = $webform_submission->uuid();
-      } else {
-        $data->errors[] = 'Saving went wrong';
-      }
-    } else {
+      $data->status = 200;
+      $data->id = $webform_submission->id();
+      $data->uuid = $webform_submission->uuid();
+    }
+    elseif (empty($errors) === FALSE) {
       $data->errors = $errors;
     }
 
@@ -150,10 +157,20 @@ class FormRestResource extends ResourceBase {
     return $response;
   }
 
+  /**
+   * Create a submission.
+   *
+   * @param int $form_id
+   *   Form id.
+   *
+   * @return WebformSubmission
+   *   Returns the webformsubmission or false.
+   */
   private function createSubmission($form_id) {
-    return \Drupal\webform\Entity\WebformSubmission::create([
+    return WebformSubmission::create([
       'webform_id' => $form_id,
-      'uri' => '/form/' . $form_id
+      'uri' => '/form/' . $form_id,
     ]);
   }
+
 }

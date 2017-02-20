@@ -142,11 +142,10 @@ class NodeRestResource extends ResourceBase {
       $node = $node->getTranslation($this->language);
 
       // Check if the user has permissions to view this node.
-//      if (!$node->access()) {
-//        var_dump('no access');
-//        return $this->getErrorResponse(403, $url);
-//      }
-
+      /* if (!$node->access()) {
+      var_dump('no access');
+      return $this->getErrorResponse(403, $url);
+      } */
 
       $nodeObject = $this->getFullNode($node);
 
@@ -182,7 +181,7 @@ class NodeRestResource extends ResourceBase {
       ResponseHelper::throwResponse($code);
     }
     // TODO: This line can cause a infinite loop. Rework it.
-//    return $this->getResponseByUrl($url, $code);
+    /* return $this->getResponseByUrl($url, $code); */
 
   }
 

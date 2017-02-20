@@ -96,7 +96,7 @@ class SettingsRestResource extends ResourceBase {
         'responseArray' => &$responseArray,
       ));
 
-    // Invoke module for each hookType
+    // Invoke module for each hookType.
     if ($hookTypes && count($hookTypes) > 0) {
       foreach ($hookTypes as $hookType) {
         $moduleHandler->invokeAll('api_alter_settings_data_' . $hookType,
@@ -112,4 +112,5 @@ class SettingsRestResource extends ResourceBase {
 
     return $response;
   }
+
 }

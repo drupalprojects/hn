@@ -6,24 +6,31 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+/**
+ * This class helps to get a good response.
+ */
 class ResponseHelper {
 
   /**
    * Function wich returns the correct response.
    *
-   * @param $code int
-   *    Status code
-   * @param $data array|string|null
-   *    Data that should be returned with the response
+   * @param int $code
+   *    Status code.
+   * @param array|string|null $data
+   *    Data that should be returned with the response.
    */
   public static function throwResponse($code, $data = NULL) {
     switch ($code) {
       case 400:
-        throw new BadRequestHttpException();
+        throw new BadRequestHttpException($data);
+
       case 403:
-        throw new AccessDeniedHttpException();
+        throw new AccessDeniedHttpException($data);
+
       case 404:
-        throw new NotFoundHttpException();
+        throw new NotFoundHttpException($data);
+
     }
   }
+
 }
