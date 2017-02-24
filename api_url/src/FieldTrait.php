@@ -3,8 +3,8 @@
 namespace Drupal\api_url;
 
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
-use Drupal\Core\Field\FieldItemList;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
+use Drupal\Core\TypedData\TypedData;
 
 /**
  * Function for getting the fields from a node.
@@ -73,7 +73,7 @@ trait FieldTrait {
             continue;
           }
 
-          $this->getValue($field, $returnArray[$name]);
+          $this->getValue($value, $returnArray[$name]);
 
           $moduleHandler->invokeAll('api_alter_field_data',
             array(
@@ -90,17 +90,17 @@ trait FieldTrait {
   /**
    * Get the value or target_id from a normal field.
    *
-   * @param FieldItemList $field
+   * @param TypedData $fieldValue
    *   The field the value/target_id should be obtained from.
    * @param array|null $returnArray
    *   A referenced array.
    */
-  private function getValue(FieldItemList $field, &$returnArray) {
-    if (isset($field->value)) {
-      $returnArray[] = $field->value;
+  private function getValue(TypedData $fieldValue, &$returnArray) {
+    if (isset($fieldValue->value)) {
+      $returnArray[] = $fieldValue->value;
     }
-    elseif (isset($field->target_id)) {
-      $returnArray[] = $field->target_id;
+    elseif (isset($fieldValue->target_id)) {
+      $returnArray[] = $fieldValue->target_id;
     }
   }
 
