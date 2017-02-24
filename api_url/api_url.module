@@ -67,7 +67,7 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
 }
 
 /**
- * Implements api_alter_entity_reference_dat().
+ * Implements api_alter_entity_reference_data().
  */
 function api_url_api_alter_field_data($value, &$returnArray) {
   switch (TRUE) {

@@ -2,15 +2,15 @@
 
 namespace Drupal\api_form\Plugin\rest\resource;
 
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\rest\Plugin\ResourceBase;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Drupal\webform\Entity\WebformSubmission;
-use Drupal\headless_drupal\ResponseHelper;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -97,26 +97,24 @@ class FormRestResource extends ResourceBase {
    * @param array $values
    *   Array with post data.
    *
-   * @return \Symfony\Component\HttpFoundation\Response
+   * @return \Symfony\Component\HttpFoundation\Response|\Exception
    *   Response.
    */
   private function postSubmission(array $values) {
-    $form_id = empty($values['form_id']) === FALSE ? $values['form_id'] : NULL;
 
-    if (is_null($form_id) === TRUE) {
-      ResponseHelper::throwResponse(400);
+    // Check if Form_id isset
+    if (empty($values['form_id'])) {
+      return new Response('', 400);
     }
+
+    // Create webformsubmission.
+    $webform_submission = $this->createSubmission($values['form_id']);
 
     // Unset Form_id, because later we are going to use values to create a new
     // submission.
     unset($values['form_id']);
 
-    // Create webformsubmission.
-    $webform_submission = $this->createSubmission($form_id);
-
-    if (empty($webform_submission)) {
-      ResponseHelper::throwResponse(400);
-    }
+    $webform_submission->setData($values);
 
     // Get the form object.
     $entity_form_object = \Drupal::entityTypeManager()
@@ -127,34 +125,27 @@ class FormRestResource extends ResourceBase {
     $form_state = (new FormState())->setValues($values);
     \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
 
-    $errors = [];
+    $errors = $form_state->getErrors();
 
-    // Check if there are any validation errors.
-    foreach ($form_state->getErrors() as $key => $error) {
-      if ($error instanceof TranslatableMarkup) {
-        $errors[] = $error->jsonSerialize();
-        continue;
-      }
-      $errors[$key] = $error;
+    if (empty($errors) === FALSE) {
+      return new Response(json_encode($errors), 200);
     }
 
-    $data = new \stdClass();
+    try {
+      $webform_submission->save();
+      $status = 200;
+      $id = $webform_submission->id();
+      $uuid = $webform_submission->uuid();
 
-    if (empty($errors)) {
-      $data->status = 200;
-      $data->id = $webform_submission->id();
-      $data->uuid = $webform_submission->uuid();
+      return new Response(json_encode([
+        'status' => $status,
+        'submission_id' => $id,
+        'uuid' => $uuid,
+      ]), 201);
     }
-    elseif (empty($errors) === FALSE) {
-      $data->errors = $errors;
+    catch (EntityStorageException $e) {
+      return new HttpException(500, 'Internal server error', $e);
     }
-
-    $data = json_encode($data);
-
-    $response = new Response($data);
-    $response->setStatusCode(200);
-
-    return $response;
   }
 
   /**
