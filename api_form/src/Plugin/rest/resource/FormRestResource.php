@@ -144,6 +144,13 @@ class FormRestResource extends ResourceBase {
       $data->status = 200;
       $data->id = $webform_submission->id();
       $data->uuid = $webform_submission->uuid();
+
+      $moduleHandler = \Drupal::moduleHandler();
+      $moduleHandler->invokeAll('api_form_save',
+        array(
+          'data' => $data,
+          'values' => $values,
+        ));
     }
     elseif (empty($errors) === FALSE) {
       $data->errors = $errors;
