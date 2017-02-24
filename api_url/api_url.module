@@ -54,7 +54,7 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
     case $entity instanceof Drupal\webform\Entity\Webform:
       $form_id = $entity->id();
       $settings = $entity->getSettings();
-      $elements = $entity->getElementsInitialized();
+      $elements = array_values($entity->getElementsInitialized());
       $token = \Drupal::csrfToken()->get('token');
       $returnArray = [
         'form_id' => $form_id,
