@@ -35,6 +35,8 @@ class FormRestResource extends ResourceBase {
 
   private $language;
 
+  protected $moduleHandler;
+
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
@@ -61,6 +63,8 @@ class FormRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->moduleHandler = \Drupal::moduleHandler();
 
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
@@ -107,8 +111,10 @@ class FormRestResource extends ResourceBase {
       return new Response('', 400);
     }
 
+    $form_id = $values['form_id'];
+
     // Create webformsubmission.
-    $webform_submission = $this->createSubmission($values['form_id']);
+    $webform_submission = $this->createSubmission($form_id);
 
     // Unset Form_id, because later we are going to use values to create a new
     // submission.
@@ -136,6 +142,12 @@ class FormRestResource extends ResourceBase {
       $status = 200;
       $id = $webform_submission->id();
       $uuid = $webform_submission->uuid();
+
+      $this->moduleHandler->invokeAll('api_form_save', [
+        'webform_submission' => $webform_submission,
+        'values' => $values,
+        'form_id' => $form_id,
+      ]);
 
       return new Response(json_encode([
         'status' => $status,
