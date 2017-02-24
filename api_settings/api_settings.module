@@ -34,8 +34,8 @@ function api_settings_install() {
   $hooks = array('menu', 'language');
   $hookTypes = $config->get('hookTypes');
 
-  if (!empty($hookTypes) && is_array($hookTypes)) {
-    $hooks = array_merge($hooks + $hookTypes);
+  if (empty($hookTypes) === FALSE && is_array($hookTypes)) {
+    $hooks = array_merge($hooks, $hookTypes);
   }
 
   $config = \Drupal::configFactory()->getEditable('api_settings.general');
