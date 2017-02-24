@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Contains view_serializer.module..
+ */
+
+
+/**
+ * Implements hook_help().
+ */
+function view_serializer_help($route_name) {
+  switch ($route_name) {
+    // Main module help for the pvm_view_serializer module.
+    case 'help.page.view_serializer':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This serializer adds everything you need to a rest export view.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
