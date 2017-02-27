@@ -52,7 +52,7 @@ trait FieldTrait {
               if ($property instanceof EntityReference && $name !== 'type') {
                 $property = $property->getValue();
 
-                $this->getReferencedNode($property, $name, $returnArray);
+                self::getReferencedNode($property, $name, $returnArray);
               }
 
               // Call hook if you want to return custom data for a entity
@@ -67,13 +67,13 @@ trait FieldTrait {
             // If type get value.
             // @TODO: This is really dirty i think, should do it another way.
             if ($name === 'type') {
-              $this->getValue($field, $returnArray[$name]);
+              self::getValue($field, $returnArray[$name]);
             }
 
             continue;
           }
 
-          $this->getValue($value, $returnArray[$name]);
+          self::getValue($value, $returnArray[$name]);
 
           $moduleHandler->invokeAll('api_alter_field_data',
             array(
@@ -81,7 +81,7 @@ trait FieldTrait {
               'returnArray' => &$returnArray[$name],
             ));
         }
-        $this->arrayOrObject($returnArray[$name], $cardinality);
+        self::arrayOrObject($returnArray[$name], $cardinality);
       }
     }
     return $returnArray;
@@ -116,7 +116,7 @@ trait FieldTrait {
    */
   private function getReferencedNode($entity, $name, &$returnArray) {
     if (method_exists($entity, 'getFields')) {
-      $node = $this->getFullNode($entity);
+      $node = self::getFullNode($entity);
       $returnArray[$name][] = $node;
     }
   }
@@ -131,6 +131,10 @@ trait FieldTrait {
     if (is_array($returnArray) && count($returnArray) == 1 && $cardinality !== -1 && $cardinality === 1) {
       $returnArray = $returnArray[0];
     }
+  }
+
+  static function getFields($node, $returnArray) {
+    return self::getFullNode($node, $returnArray);
   }
 
 }

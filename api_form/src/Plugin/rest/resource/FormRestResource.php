@@ -137,6 +137,7 @@ class FormRestResource extends ResourceBase {
       return new Response(json_encode($errors), 200);
     }
 
+
     try {
       $webform_submission->save();
       $status = 200;
