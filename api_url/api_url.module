@@ -57,21 +57,26 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       $elements = array_values($entity->getElementsInitialized());
       $element_manager = \Drupal::service('plugin.manager.webform.element');
       foreach ($elements as &$element) {
-        if (isset($element['#webform_composite']) && $element['#webform_composite']) {
-          // Get custom Composite Element class from custom_elements
-          $element_handler = $element_manager->getElementInstance($element);
-          // Initialize the element.
-          $element_handler->initialize($element);
-          // If method getCompositeElements is callable and has correct rights (public vs. protected)
-          if (is_callable([$element_handler, 'getCompositeElements'])) {
-            $element['composite_elements'] = $element_handler->getCompositeElements();
-          }
-          foreach ($element['composite_elements'] as &$composite_element) {
-            // Get the actual options list instead of references
-            if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
-              $composite_element['#options'] = \Drupal\webform\Entity\WebformOptions::getElementOptions($composite_element);
+        // Check for fieldset property
+        if (isset($element['#type']) && $element['#type'] === 'fieldset') {
+          // Searched for 'loose' fieldset child elements with same parent key
+          foreach ($element as $key => $fieldset_key) {
+            if ($fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
+
+              if (isset($fieldset_key['#webform_composite']) && $fieldset_key['#webform_composite']) {
+                // Get composite elements
+                getCompositeElements($fieldset_key, $element_manager);
+              }
+              // Appends child to parent's array for easy rendering.
+              $element['composite_elements'][] = $fieldset_key;
+              // Remove unnecessary element
+              unset($element[$key]);
             }
           }
+        }
+        if (isset($element['#webform_composite']) && $element['#webform_composite']) {
+          // Get composite elements
+          getCompositeElements($element, $element_manager);
         }
       }
       $token = \Drupal::csrfToken()->get('token');
@@ -83,6 +88,33 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       ];
       break;
   }
+}
+
+/**
+ * Finds the composite elements for an element.
+ * @param $element
+ * @param $element_manager
+ * @return bool
+ */
+function getCompositeElements(&$element, $element_manager) {
+  if (!$element) {
+    return false;
+  }
+  // Get custom Composite Element class from custom_elements
+  $element_handler = $element_manager->getElementInstance($element);
+  // Initialize the element.
+  $element_handler->initialize($element);
+  // If method getCompositeElements is callable and has correct rights (public vs. protected)
+  if (is_callable([$element_handler, 'getCompositeElements'])) {
+    $element['composite_elements'] = $element_handler->getCompositeElements();
+  }
+  foreach ($element['composite_elements'] as &$composite_element) {
+    // Get the actual options list instead of references
+    if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
+      $composite_element['#options'] = \Drupal\webform\Entity\WebformOptions::getElementOptions($composite_element);
+    }
+  }
+  return $element;
 }
 
 /**
