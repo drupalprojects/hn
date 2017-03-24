@@ -66,6 +66,12 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
           if (is_callable([$element_handler, 'getCompositeElements'])) {
             $element['composite_elements'] = $element_handler->getCompositeElements();
           }
+          foreach ($element['composite_elements'] as &$composite_element) {
+            // Get the actual options list instead of references
+            if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
+              $composite_element['#options'] = \Drupal\webform\Entity\WebformOptions::getElementOptions($composite_element);
+            }
+          }
         }
       }
       $token = \Drupal::csrfToken()->get('token');
