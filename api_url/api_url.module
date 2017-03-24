@@ -59,20 +59,8 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       foreach ($elements as &$element) {
         // Check for fieldset property
         if (isset($element['#type']) && $element['#type'] === 'fieldset') {
-          // Searched for 'loose' fieldset child elements with same parent key
-          foreach ($element as $key => $fieldset_key) {
-            if ($fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
-
-              if (isset($fieldset_key['#webform_composite']) && $fieldset_key['#webform_composite']) {
-                // Get composite elements
-                getCompositeElements($fieldset_key, $element_manager);
-              }
-              // Appends child to parent's array for easy rendering.
-              $element['composite_elements'][] = $fieldset_key;
-              // Remove unnecessary element
-              unset($element[$key]);
-            }
-          }
+          // Recursively searches for 'loose' fieldset child elements with same parent key
+          getRecursiveFieldsetElements($element, $element_manager);
         }
         if (isset($element['#webform_composite']) && $element['#webform_composite']) {
           // Get composite elements
@@ -88,6 +76,37 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       ];
       break;
   }
+}
+
+/**
+ * Recursively finds fieldset elements for an element.
+ * @param $element
+ * @param $element_manager
+ * @return bool
+ */
+function getRecursiveFieldsetElements(&$element, $element_manager) {
+  if (!$element) {
+    return false;
+  }
+  if (isset($element['#type']) && $element['#type'] === 'fieldset') {
+    // Searches for 'loose' fieldset child elements with same parent key
+    foreach ($element as $key => $fieldset_key) {
+      if ($fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
+        if ($fieldset_key['#type'] === 'fieldset') {
+          getRecursiveFieldsetElements($fieldset_key, $element_manager);
+        }
+        if (isset($fieldset_key['#webform_composite']) && $fieldset_key['#webform_composite']) {
+          // Get composite elements
+          getCompositeElements($fieldset_key, $element_manager);
+        }
+        // Appends child to parent's array for easy rendering.
+        $element['composite_elements'][] = $fieldset_key;
+        // Remove unnecessary element
+        unset($element[$key]);
+      }
+    }
+  }
+  return true;
 }
 
 /**
