@@ -16,8 +16,10 @@
     },
     "require": {},
     "require-dev": {
+        "drupal/coder": "^2.12",
         "drupal/drupal": "^8.2",
-        "drupal/webform": "^5.0@beta"
+        "drupal/webform": "^5.0@beta",
+        "squizlabs/php_codesniffer": "2.*"
     },
     "repositories": {
         "drupal": {
