@@ -14,5 +14,16 @@
         "issues": "https://gitlab.com/burstdigital/headless-drupal/issues",
         "source": "http://cgit.drupalcode.org/sandbox-Nylsoo-2845914"
     },
-    "require": {}
+    "require": {
+        "drupal/webform": "^5.0@beta"
+    },
+    "require-dev": {
+        "drupal/drupal": "^8.2"
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    }
 }

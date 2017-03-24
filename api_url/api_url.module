@@ -55,6 +55,19 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
       $form_id = $entity->id();
       $settings = $entity->getSettings();
       $elements = array_values($entity->getElementsInitialized());
+      $element_manager = \Drupal::service('plugin.manager.webform.element');
+      foreach ($elements as &$element) {
+        if (isset($element['#webform_composite']) && $element['#webform_composite']) {
+          // Get custom Composite Element class from custom_elements
+          $element_handler = $element_manager->getElementInstance($element);
+          // Initialize the element.
+          $element_handler->initialize($element);
+          // If method getCompositeElements is callable and has correct rights (public vs. protected)
+          if (is_callable([$element_handler, 'getCompositeElements'])) {
+            $element['composite_elements'] = $element_handler->getCompositeElements();
+          }
+        }
+      }
       $token = \Drupal::csrfToken()->get('token');
       $returnArray = [
         'form_id' => $form_id,
