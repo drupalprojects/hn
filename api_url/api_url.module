@@ -97,7 +97,6 @@ function getRecursiveFieldsetElements(&$element, $element_manager) {
   }
   if (isset($element['#type']) && $element['#type'] === 'fieldset') {
     // Searches for 'loose' fieldset child elements with same parent key.
-    $element['#webform_composite'] = TRUE;
     foreach ($element as $key => $fieldset_key) {
       if ($fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
         // Get recursive fieldset elements:
