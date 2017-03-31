@@ -144,23 +144,12 @@ class FormRestResource extends ResourceBase {
       $id = $webform_submission->id();
       $uuid = $webform_submission->uuid();
     
-      $responses = $this->moduleHandler->invokeAll('api_form_save', [
+      $this->moduleHandler->invokeAll('api_form_save', [
         'webform_submission' => $webform_submission,
         'values' => $values,
         'form_id' => $form_id,
       ]);
-    
-      $responses = is_array($responses[0]) ? $responses : [$responses]; // Turn into array if not already.
-    
-      foreach($responses as $response) {
-        if($response['status'] >= 400) { // If at least one error, return it
-          return new Response(json_encode([
-            'status' => $response['status'],
-            'message' => $response['message'],
-          ]), $response['status']);
-        }
-      }
-    
+      
       return new Response(json_encode([
         'status' => $status,
         'submission_id' => $id,
