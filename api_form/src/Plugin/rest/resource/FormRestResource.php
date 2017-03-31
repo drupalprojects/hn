@@ -6,9 +6,9 @@ use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Psr\Log\LoggerInterface;
 use Drupal\webform\Entity\WebformSubmission;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -25,18 +25,18 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  * )
  */
 class FormRestResource extends ResourceBase {
-
+  
   /**
    * A current user instance.
    *
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
-
+  
   private $language;
-
+  
   protected $moduleHandler;
-
+  
   /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
@@ -53,36 +53,24 @@ class FormRestResource extends ResourceBase {
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   A current user instance.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    AccountProxyInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger, AccountProxyInterface $current_user) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-
+    
     $this->currentUser = $current_user;
-
+    
     $this->moduleHandler = \Drupal::moduleHandler();
-
+    
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
-
+  
   /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('api_settings'),
-      $container->get('current_user')
-    );
+    return new static($configuration, $plugin_id, $plugin_definition, $container->getParameter('serializer.formats'), $container->get('logger.factory')
+      ->get('api_settings'), $container->get('current_user'));
   }
-
+  
   /**
    * Responds to POST requests.
    *
@@ -94,7 +82,7 @@ class FormRestResource extends ResourceBase {
   public function post($values) {
     return $this->postSubmission($values);
   }
-
+  
   /**
    * Validates all values and returns a form response.
    *
@@ -105,53 +93,55 @@ class FormRestResource extends ResourceBase {
    *   Response.
    */
   private function postSubmission(array $values) {
-
+    
     // Check if Form_id isset
     if (empty($values['form_id'])) {
       return new Response('', 400);
     }
-
+    
     $form_id = $values['form_id'];
-
+    
     // Create webformsubmission.
     $webform_submission = $this->createSubmission($form_id);
-
+    
     // Unset Form_id, because later we are going to use values to create a new
     // submission.
     unset($values['form_id']);
-
+    
     $webform_submission->setData($values);
-
+    
     // Get the form object.
     $entity_form_object = \Drupal::entityTypeManager()
       ->getFormObject('webform_submission', 'default');
     $entity_form_object->setEntity($webform_submission);
-
+    
     // Initialize the form state.
     $form_state = (new FormState())->setValues($values);
     \Drupal::formBuilder()->submitForm($entity_form_object, $form_state);
-
+    
     $errors = $form_state->getErrors();
-
+    
     if (empty($errors) === FALSE) {
       return new Response(json_encode([
         'status' => 400,
         'message' => $errors,
       ]), 400);
     }
-  
+    
     try {
       $webform_submission->save();
       $status = 200;
       $message = 'OK';
       $id = $webform_submission->id();
       $uuid = $webform_submission->uuid();
-    
-      $this->moduleHandler->invokeAll('api_form_save', [
-        'webform_submission' => $webform_submission,
-        'values' => $values,
-        'form_id' => $form_id,
-      ]);
+      
+      register_shutdown_function(function ($webform_submission, $values, $form_id) {
+        $this->moduleHandler->invokeAll('api_form_save', [
+          'webform_submission' => $webform_submission,
+          'values' => $values,
+          'form_id' => $form_id,
+        ]);
+      }, $webform_submission, $values, $form_id);
       
       return new Response(json_encode([
         'status' => $status,
@@ -159,12 +149,11 @@ class FormRestResource extends ResourceBase {
         'uuid' => $uuid,
         'message' => $message,
       ]), 201);
-    }
-    catch (EntityStorageException $e) {
+    } catch (EntityStorageException $e) {
       return new HttpException(500, 'Internal server error', $e);
     }
   }
-
+  
   /**
    * Create a submission.
    *
@@ -180,5 +169,5 @@ class FormRestResource extends ResourceBase {
       'uri' => '/form/' . $form_id,
     ]);
   }
-
+  
 }
