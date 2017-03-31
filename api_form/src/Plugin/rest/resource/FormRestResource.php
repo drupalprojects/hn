@@ -134,7 +134,10 @@ class FormRestResource extends ResourceBase {
     $errors = $form_state->getErrors();
 
     if (empty($errors) === FALSE) {
-      return new Response(json_encode($errors), 200);
+      return new Response(json_encode([
+        'status' => 400,
+        'message' => $errors,
+      ]), 400);
     }
   
     try {
