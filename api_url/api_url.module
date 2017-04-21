@@ -98,7 +98,7 @@ function getRecursiveFieldsetElements(&$element, $element_manager) {
   if (isset($element['#type']) && $element['#type'] === 'fieldset') {
     // Searches for 'loose' fieldset child elements with same parent key.
     foreach ($element as $key => $fieldset_key) {
-      if ($fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
+      if (isset($fieldset_key['#webform_parent_key']) && $fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
         // Get recursive fieldset elements:
         getRecursiveFieldsetElements($fieldset_key, $element_manager);
         // Get composite elements:
@@ -132,13 +132,15 @@ function getCompositeElements(&$element, $element_manager) {
     if (is_callable([$element_handler, 'getCompositeElements'])) {
       $element['composite_elements'] = array_values($element_handler->getCompositeElements());
     }
+    if (empty($element['composite_elements'])) {
+      return false;
+    }
     foreach ($element['composite_elements'] as &$composite_element) {
       // Get the actual options list instead of references:
       if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
         $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
       }
     }
-    return $element;
   }
   return TRUE;
 }
