@@ -127,7 +127,7 @@ trait FieldTrait {
    * @param array|null $returnArray
    *   A referenced array.
    */
-  private function arrayOrObject(&$returnArray, $cardinality) {
+  public static function arrayOrObject(&$returnArray, $cardinality) {
     if (is_array($returnArray) && count($returnArray) == 1 && $cardinality !== -1 && $cardinality === 1) {
       $returnArray = $returnArray[0];
     }

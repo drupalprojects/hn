@@ -1,6 +1,13 @@
 <?php
 
-use \Drupal\api_url\FileUrlsTrait;
+
+use Drupal\api_url\FileUrlsTrait;
+use Drupal\webform\Entity\WebformOptions;
+use Drupal\link\Plugin\Field\FieldType\LinkItem;
+use Drupal\file\Entity\File;
+use Drupal\user\Entity\User;
+use Drupal\views\Entity\View;
+use Drupal\webform\Entity\Webform;
 
 /**
  * Implements hook_help().
@@ -35,40 +42,44 @@ function api_url_help($route_name) {
  */
 function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray) {
   switch (TRUE) {
-    case $entity instanceof \Drupal\file\Entity\File:
+    case $entity instanceof File:
       $fid = $value->target_id;
-      $file = \Drupal::entityTypeManager()->getStorage('file')->load($fid);
+      $file = Drupal::entityTypeManager()->getStorage('file')->load($fid);
       $fullFile = FileUrlsTrait::getFileUri($file);
       $returnArray[count($returnArray) - 1] = $fullFile;
       break;
-    case $entity instanceof \Drupal\user\Entity\User:
+
+    case $entity instanceof User:
       $returnArray = $entity->id();
       break;
-    case $entity instanceof \Drupal\views\Entity\View:
+
+    case $entity instanceof View:
       $view = $value->getValue();
-      $renderer = \Drupal::service('renderer');
+      $renderer = Drupal::service('renderer');
       $embedded_view = views_embed_view($view['target_id'], 'rest_export_1');
       $rendered_view = $renderer->render($embedded_view);
       $returnArray = json_decode($rendered_view);
       break;
-    case $entity instanceof Drupal\webform\Entity\Webform:
+
+    case $entity instanceof Webform:
       $form_id = $entity->id();
       $settings = $entity->getSettings();
       $elements = array_values($entity->getElementsInitialized());
-      $element_manager = \Drupal::service('plugin.manager.webform.element');
+      $element_manager = Drupal::service('plugin.manager.webform.element');
       foreach ($elements as &$element) {
         // Check for fieldset property
-        // Recursively searches for 'loose' fieldset child elements with same parent key
+        // Recursively searches for 'loose' fieldset child elements
+        // with same parent key:
         getRecursiveFieldsetElements($element, $element_manager);
-        // Get composite elements
+        // Get composite elements:
         getCompositeElements($element, $element_manager);
       }
-      $token = \Drupal::csrfToken()->get('token');
+      $token = Drupal::csrfToken()->get('token');
       $returnArray = [
         'form_id' => $form_id,
         'settings' => $settings,
-        'elements'=> $elements,
-        'token' => $token
+        'elements' => $elements,
+        'token' => $token,
       ];
       break;
   }
@@ -82,24 +93,24 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
  */
 function getRecursiveFieldsetElements(&$element, $element_manager) {
   if (!$element) {
-    return false;
+    return FALSE;
   }
   if (isset($element['#type']) && $element['#type'] === 'fieldset') {
-    // Searches for 'loose' fieldset child elements with same parent key
+    // Searches for 'loose' fieldset child elements with same parent key.
     foreach ($element as $key => $fieldset_key) {
       if ($fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
-        // Get recursive fieldset elements
+        // Get recursive fieldset elements:
         getRecursiveFieldsetElements($fieldset_key, $element_manager);
-        // Get composite elements
+        // Get composite elements:
         getCompositeElements($fieldset_key, $element_manager);
         // Appends child to parent's array for easy rendering.
         $element['composite_elements'][] = $fieldset_key;
-        // Remove unnecessary element
+        // Remove unnecessary element:
         unset($element[$key]);
       }
     }
   }
-  return true;
+  return TRUE;
 }
 
 /**
@@ -110,26 +121,26 @@ function getRecursiveFieldsetElements(&$element, $element_manager) {
  */
 function getCompositeElements(&$element, $element_manager) {
   if (!$element) {
-    return false;
+    return FALSE;
   }
   if (isset($element['#webform_composite']) && $element['#webform_composite']) {
-    // Get custom Composite Element class from custom_elements
+    // Get custom Composite Element class from custom_elements:
     $element_handler = $element_manager->getElementInstance($element);
-    // Initialize the element.
+    // Initialize the element:
     $element_handler->initialize($element);
-    // If method getCompositeElements is callable and has correct rights (public vs. protected)
+    // If method getCompositeElements is callable:
     if (is_callable([$element_handler, 'getCompositeElements'])) {
       $element['composite_elements'] = array_values($element_handler->getCompositeElements());
     }
     foreach ($element['composite_elements'] as &$composite_element) {
-      // Get the actual options list instead of references
+      // Get the actual options list instead of references:
       if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
-        $composite_element['#options'] = \Drupal\webform\Entity\WebformOptions::getElementOptions($composite_element);
+        $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
       }
     }
     return $element;
   }
-  return true;
+  return TRUE;
 }
 
 /**
@@ -137,7 +148,7 @@ function getCompositeElements(&$element, $element_manager) {
  */
 function api_url_api_alter_field_data($value, &$returnArray) {
   switch (TRUE) {
-    case $value instanceof \Drupal\link\Plugin\Field\FieldType\LinkItem:
+    case $value instanceof LinkItem:
       $url = $value->getUrl();
 
       $uri = NULL;
