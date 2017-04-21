@@ -119,7 +119,7 @@ function getCompositeElements(&$element, $element_manager) {
     $element_handler->initialize($element);
     // If method getCompositeElements is callable and has correct rights (public vs. protected)
     if (is_callable([$element_handler, 'getCompositeElements'])) {
-      $element['composite_elements'] = $element_handler->getCompositeElements();
+      $element['composite_elements'] = array_values($element_handler->getCompositeElements());
     }
     foreach ($element['composite_elements'] as &$composite_element) {
       // Get the actual options list instead of references
