@@ -86,66 +86,6 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
 }
 
 /**
- * Recursively finds fieldset elements for an element.
- * @param $element
- * @param $element_manager
- * @return bool
- */
-function getRecursiveFieldsetElements(&$element, $element_manager) {
-  if (!$element) {
-    return FALSE;
-  }
-  if (isset($element['#type']) && $element['#type'] === 'fieldset') {
-    // Searches for 'loose' fieldset child elements with same parent key.
-    foreach ($element as $key => $fieldset_key) {
-      if (isset($fieldset_key['#webform_parent_key']) && $fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
-        // Get recursive fieldset elements:
-        getRecursiveFieldsetElements($fieldset_key, $element_manager);
-        // Get composite elements:
-        getCompositeElements($fieldset_key, $element_manager);
-        // Appends child to parent's array for easy rendering.
-        $element['composite_elements'][] = $fieldset_key;
-        // Remove unnecessary element:
-        unset($element[$key]);
-      }
-    }
-  }
-  return TRUE;
-}
-
-/**
- * Finds the composite elements for an element.
- * @param $element
- * @param $element_manager
- * @return bool
- */
-function getCompositeElements(&$element, $element_manager) {
-  if (!$element) {
-    return FALSE;
-  }
-  if (isset($element['#webform_composite']) && $element['#webform_composite']) {
-    // Get custom Composite Element class from custom_elements:
-    $element_handler = $element_manager->getElementInstance($element);
-    // Initialize the element:
-    $element_handler->initialize($element);
-    // If method getCompositeElements is callable:
-    if (is_callable([$element_handler, 'getCompositeElements'])) {
-      $element['composite_elements'] = array_values($element_handler->getCompositeElements());
-    }
-    if (empty($element['composite_elements'])) {
-      return false;
-    }
-    foreach ($element['composite_elements'] as &$composite_element) {
-      // Get the actual options list instead of references:
-      if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
-        $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
-      }
-    }
-  }
-  return TRUE;
-}
-
-/**
  * Implements api_alter_entity_reference_data().
  */
 function api_url_api_alter_field_data($value, &$returnArray) {

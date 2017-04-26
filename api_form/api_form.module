@@ -12,3 +12,150 @@ function api_form_help($route_name) {
       return $output;
   }
 }
+
+/**
+ * Implements hook_form_alter().
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ * @param $form_id
+ */
+function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Only alter webform forms.
+  if ($form['#form_id'] === 'webform_ui_element_form') {
+
+    $elements = [
+      'requiredError' => [
+        '#key' => 'requiredError',
+        '#type' => 'textfield',
+        '#title' => t('Custom required error message'),
+        '#description' => t('If set, this message will be used when a required webform element is empty.'),
+        '#default_value' => t('Vul alsjeblieft iets in bij :name.'),
+      ],
+      'patternError' => [
+        '#key' => 'patternError',
+        '#type' => 'webform_select_other',
+        '#title' => t('Custom pattern error message'),
+        '#description' => t('If set, this message will be used when an element with a pattern doesn\'t match it'),
+        '#default_value' => 'alpha',
+        '#options' => [
+          'alpha' => t('Alleen letters zijn toegestaan.'),
+          'numeric' => t('Alleen cijfers zijn toegestaan.'),
+        ],
+      ]
+    ];
+
+    $overrides = getOverrides($elements);
+
+    $element_properties = $form_state->get('element_properties');
+
+    _custom_element_process_altered_element($elements, $element_properties);
+    _custom_element_process_altered_element($overrides, $element_properties);
+
+    $form_state->set('element_properties', $element_properties);
+
+    $form['properties']['overrides'] = array(
+      '#type' => 'details',
+      '#title' => t('Default value Overrides'),
+      '#description' => t('Please check all fields of which you want the value to be decoupled from the master template.'),
+      '#open' => FALSE,
+    );
+    $form['properties']['overrides'] += $overrides;
+
+    $form['properties']['messages'] = [
+      '#type' => 'details',
+      '#title' => t('Messages'),
+      '#description' => t('Define all (error/validation) messages for this form.'),
+    ];
+    $form['properties']['messages']['requiredError'] = $elements['requiredError'];
+    $form['properties']['messages']['patternError'] = $elements['patternError'];
+  }
+}
+
+function _custom_element_process_altered_element(&$array, &$element_properties) {
+  foreach($array as $element) {
+    if(!isset($element_properties[$element['#key']])) {
+      $element_properties[$element['#key']] = $element['#default_value'];
+    } else {
+      $element['#default_value'] = $element_properties[$element['#key']];
+    }
+    $element['#parents'] = ['properties', $element['#key']];
+    $array[$element['#key']] = $element;
+  }
+}
+
+function getOverrides($formElements) {
+  $elements = [];
+
+  foreach ($formElements as $element) {
+    $key = 'override_' . $element['#key'];
+    $elements[$key] = [
+      '#key' => $key,
+      '#type' => 'checkbox',
+      '#title' => $element['#title'],
+      '#default_value' => FALSE,
+    ];
+  }
+
+  return $elements;
+}
+
+
+/**
+ * Recursively finds fieldset elements for an element.
+ * @param $element
+ * @param $element_manager
+ * @return bool
+ */
+function getRecursiveFieldsetElements(&$element, $element_manager) {
+  if (!$element) {
+    return FALSE;
+  }
+  if (isset($element['#type']) && $element['#type'] === 'fieldset') {
+    // Searches for 'loose' fieldset child elements with same parent key.
+    foreach ($element as $key => $fieldset_key) {
+      if (isset($fieldset_key['#webform_parent_key']) && $fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
+        // Get recursive fieldset elements:
+        getRecursiveFieldsetElements($fieldset_key, $element_manager);
+        // Get composite elements:
+        getCompositeElements($fieldset_key, $element_manager);
+        // Appends child to parent's array for easy rendering.
+        $element['composite_elements'][] = $fieldset_key;
+        // Remove unnecessary element:
+        unset($element[$key]);
+      }
+    }
+  }
+  return TRUE;
+}
+
+/**
+ * Finds the composite elements for an element.
+ * @param $element
+ * @param $element_manager
+ * @return bool
+ */
+function getCompositeElements(&$element, $element_manager) {
+  if (!$element) {
+    return FALSE;
+  }
+  if (isset($element['#webform_composite']) && $element['#webform_composite']) {
+    // Get custom Composite Element class from custom_elements:
+    $element_handler = $element_manager->getElementInstance($element);
+    // Initialize the element:
+    $element_handler->initialize($element);
+    // If method getCompositeElements is callable:
+    if (is_callable([$element_handler, 'getCompositeElements'])) {
+      $element['composite_elements'] = array_values($element_handler->getCompositeElements());
+    }
+    if (empty($element['composite_elements'])) {
+      return false;
+    }
+    foreach ($element['composite_elements'] as &$composite_element) {
+      // Get the actual options list instead of references:
+      if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
+        $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
+      }
+    }
+  }
+  return TRUE;
+}
