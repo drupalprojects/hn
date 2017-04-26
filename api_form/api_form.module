@@ -94,12 +94,15 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
 
     $form_state->set('element_properties', $element_properties);
 
-    $form['properties']['overrides'] = array(
-      '#type' => 'details',
-      '#title' => t('Default value Overrides'),
-      '#description' => t('Please check all fields of which you want the value to be decoupled from the master template.'),
-      '#open' => FALSE,
-    );
+    if(!isset($form['properties'])) {
+      $form['properties']['overrides'] = [
+        '#type' => 'details',
+        '#title' => t('Default value Overrides'),
+        '#description' => t('Please check all fields of which you want the value to be decoupled from the master template.'),
+        '#open' => FALSE,
+      ];
+    }
+
     $form['properties']['overrides'] += $overrides;
 
     $form['properties']['messages'] = [
