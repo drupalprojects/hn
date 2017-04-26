@@ -80,8 +80,14 @@ function get_custom_elements() {
  * @param $form_id
  */
 function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
-  // Only alter webform forms.
-  if ($form['#form_id'] === 'webform_ui_element_form') {
+
+  // Only alter webform submissions forms.
+  if (strpos($form_id, 'webform_submission') !== FALSE) {
+    $form['#validate'][] = 'custom_element_form_validate';
+  }
+
+  // Only alter webform UI element forms.
+  if ($form_id === 'webform_ui_element_form') {
 
     $elements = get_custom_elements();
 
