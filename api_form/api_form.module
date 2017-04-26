@@ -94,7 +94,7 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
 
     $form_state->set('element_properties', $element_properties);
 
-    if(!isset($form['properties'])) {
+    if(!isset($form['properties']['overrides'])) {
       $form['properties']['overrides'] = [
         '#type' => 'details',
         '#title' => t('Default value Overrides'),
