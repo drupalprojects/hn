@@ -194,9 +194,33 @@ function getRecursiveFieldsetElements(&$element, $element_manager) {
  * @return bool
  */
 function getCompositeElements(&$element, $element_manager) {
+
+  /**
+   * If no element, do nothing
+   */
   if (!$element) {
     return FALSE;
   }
+
+  /**
+   * If there is a #options available, make sure to make it
+   * JSON friendly. So an array (sortable) instead of an object.
+   */
+  if(isset($element['#options'])) {
+
+    $json_friendly_array = [];
+
+    foreach($element['#options'] as $key => $value) {
+      $json_friendly_array[] = [
+        'key' => $key,
+        'value' => $value
+      ];
+    }
+
+    $element['#options'] = $json_friendly_array;
+
+  }
+
   if (isset($element['#webform_composite']) && $element['#webform_composite']) {
     // Get custom Composite Element class from custom_elements:
     $element_handler = $element_manager->getElementInstance($element);
@@ -210,6 +234,7 @@ function getCompositeElements(&$element, $element_manager) {
       return false;
     }
     foreach ($element['composite_elements'] as &$composite_element) {
+
       // Get the actual options list instead of references:
       if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
         $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
@@ -221,11 +246,18 @@ function getCompositeElements(&$element, $element_manager) {
 
 function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray) {
 
+  /**
+   * This module only resolves references to the Webform element.
+   */
   if($entity instanceof Webform) {
+
     $form_id = $entity->id();
     $settings = $entity->getSettings();
-    $elements = array_values($entity->getElementsInitialized());
+    $token = Drupal::csrfToken()->get('token');
     $element_manager = Drupal::service('plugin.manager.webform.element');
+
+    $elements = array_values($entity->getElementsInitialized());
+
     foreach ($elements as &$element) {
       // Check for fieldset property
       // Recursively searches for 'loose' fieldset child elements
@@ -234,7 +266,6 @@ function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray
       // Get composite elements:
       getCompositeElements($element, $element_manager);
     }
-    $token = Drupal::csrfToken()->get('token');
     $returnArray = [
       'form_id' => $form_id,
       'settings' => $settings,
