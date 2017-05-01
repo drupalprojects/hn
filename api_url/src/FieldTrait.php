@@ -18,11 +18,13 @@ trait FieldTrait {
    *   A entity which you want all fields from.
    * @param array|null $returnArray
    *   The array that should be returned.
+   * @param array $parents
+   *   Array with all the parent nodes.
    *
-   * @return array
-   *   The full node.
+   * @return array The full node.
+   * The full node.
    */
-  private function getFullNode($node = NULL, $returnArray = array()) {
+  private function getFullNode($node = NULL, $returnArray = [], $parents = []) {
     $moduleHandler = \Drupal::moduleHandler();
 
     if ($node) {
@@ -52,17 +54,16 @@ trait FieldTrait {
               if ($property instanceof EntityReference && $name !== 'type') {
                 $property = $property->getValue();
 
-                self::getReferencedNode($property, $name, $returnArray);
+                self::getReferencedNode($property, $name, $returnArray, $parents);
               }
 
               // Call hook if you want to return custom data for a entity
               // reference value.
-              $moduleHandler->invokeAll('api_alter_entity_reference_data',
-                array(
-                  'property' => $property,
-                  'value' => $value,
-                  'returnArray' => &$returnArray[$name],
-                ));
+              $moduleHandler->invokeAll('api_alter_entity_reference_data', [
+                'property' => $property,
+                'value' => $value,
+                'returnArray' => &$returnArray[$name],
+              ]);
             }
             // If type get value.
             // @TODO: This is really dirty i think, should do it another way.
@@ -75,11 +76,10 @@ trait FieldTrait {
 
           self::getValue($value, $returnArray[$name]);
 
-          $moduleHandler->invokeAll('api_alter_field_data',
-            array(
-              'value' => $value,
-              'returnArray' => &$returnArray[$name],
-            ));
+          $moduleHandler->invokeAll('api_alter_field_data', [
+            'value' => $value,
+            'returnArray' => &$returnArray[$name],
+          ]);
         }
         self::arrayOrObject($returnArray[$name], $cardinality);
       }
@@ -113,11 +113,26 @@ trait FieldTrait {
    *   The name of the field.
    * @param array|null $returnArray
    *   The referenced array.
+   * @param array|null $parents
+   *   Array with all the parent nodes.
+   *
+   * @return array
    */
-  private function getReferencedNode($entity, $name, &$returnArray) {
+  private function getReferencedNode($entity, $name, &$returnArray, $parents) {
     if (method_exists($entity, 'getFields')) {
-      $node = self::getFullNode($entity);
-      $returnArray[$name][] = $node;
+
+      foreach ($parents as $parent) {
+        if ($parent == $entity) {
+          return $returnArray[$name][] = [
+            'uuid' => $parent->uuid->getValue()[0]['value'],
+            'type' => $parent->type->getValue()[0]['target_id'],
+          ];
+        }
+      }
+
+      $parents[] = $entity;
+      $node = self::getFullNode($entity, [], $parents);
+      return $returnArray[$name][] = $node;
     }
   }
 
