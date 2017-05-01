@@ -1,4 +1,8 @@
 <?php
+
+use Drupal\webform\Entity\Webform;
+use Drupal\webform\Entity\WebformOptions;
+
 /**
  * Implements hook_help().
  */
@@ -213,4 +217,29 @@ function getCompositeElements(&$element, $element_manager) {
     }
   }
   return TRUE;
+}
+
+function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray) {
+
+  if($entity instanceof Webform) {
+    $form_id = $entity->id();
+    $settings = $entity->getSettings();
+    $elements = array_values($entity->getElementsInitialized());
+    $element_manager = Drupal::service('plugin.manager.webform.element');
+    foreach ($elements as &$element) {
+      // Check for fieldset property
+      // Recursively searches for 'loose' fieldset child elements
+      // with same parent key:
+      getRecursiveFieldsetElements($element, $element_manager);
+      // Get composite elements:
+      getCompositeElements($element, $element_manager);
+    }
+    $token = Drupal::csrfToken()->get('token');
+    $returnArray = [
+      'form_id' => $form_id,
+      'settings' => $settings,
+      'elements' => $elements,
+      'token' => $token,
+    ];
+  }
 }
