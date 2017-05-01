@@ -184,14 +184,14 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
    * If there is a #options available, make sure to make it
    * JSON friendly. So an array (sortable) instead of an object.
    */
-  if(isset($element['#options'])) {
+  if(is_array($element['#options'])) {
 
     $json_friendly_array = [];
 
-    foreach($element['#options'] as $key => $value) {
+    foreach($element['#options'] as $value => $text) {
       $json_friendly_array[] = [
-        'key' => $key,
-        'value' => $value
+        'value' => $value,
+        'text' => $text
       ];
     }
 
