@@ -1,7 +1,9 @@
 <?php
 
+use Drupal\Core\Render\Element;
 use Drupal\webform\Entity\Webform;
 use Drupal\webform\Entity\WebformOptions;
+use Drupal\webform\WebformElementManagerInterface;
 
 /**
  * Implements hook_help().
@@ -158,48 +160,24 @@ function getOverrides($formElements) {
   return $elements;
 }
 
-
 /**
- * Recursively finds fieldset elements for an element.
  * @param $element
  * @param $element_manager
- * @return bool
  */
-function getRecursiveFieldsetElements(&$element, $element_manager) {
-  if (!$element) {
-    return FALSE;
-  }
-  if (isset($element['#type']) && $element['#type'] === 'fieldset') {
-    // Searches for 'loose' fieldset child elements with same parent key.
-    foreach ($element as $key => $fieldset_key) {
-      if (isset($fieldset_key['#webform_parent_key']) && $fieldset_key['#webform_parent_key'] === $element['#webform_key']) {
-        // Get recursive fieldset elements:
-        getRecursiveFieldsetElements($fieldset_key, $element_manager);
-        // Get composite elements:
-        getCompositeElements($fieldset_key, $element_manager);
-        // Appends child to parent's array for easy rendering.
-        $element['composite_elements'][] = $fieldset_key;
-        // Remove unnecessary element:
-        unset($element[$key]);
-      }
-    }
-  }
-  return TRUE;
-}
+function api_form_recursively_parse_elements(array &$element, WebformElementManagerInterface $element_manager) {
 
-/**
- * Finds the composite elements for an element.
- * @param $element
- * @param $element_manager
- * @return bool
- */
-function getCompositeElements(&$element, $element_manager) {
+  // Get all children of this element
+  $children_keys = Element::children($element);
 
-  /**
-   * If no element, do nothing
-   */
-  if (!$element) {
-    return FALSE;
+  // If it has children, parse them first.
+  foreach ($children_keys as $child_key) {
+    $child_element = $element[$child_key];
+
+    api_form_recursively_parse_elements($child_element, $element_manager);
+
+    // To make the children more accessible, move them to the 'composite_elements' property
+    $element['composite_elements'][] = $child_element;
+    unset($element[$child_key]);
   }
 
   /**
@@ -221,6 +199,11 @@ function getCompositeElements(&$element, $element_manager) {
 
   }
 
+  /**
+   * Some elements consist of multiple fields. For example, the address field
+   * contains the street, postal code and country fields.
+   * To resolve these, use webform_composite.
+   */
   if (isset($element['#webform_composite']) && $element['#webform_composite']) {
     // Get custom Composite Element class from custom_elements:
     $element_handler = $element_manager->getElementInstance($element);
@@ -231,17 +214,16 @@ function getCompositeElements(&$element, $element_manager) {
       $element['composite_elements'] = array_values($element_handler->getCompositeElements());
     }
     if (empty($element['composite_elements'])) {
-      return false;
+      return;
     }
     foreach ($element['composite_elements'] as &$composite_element) {
-
       // Get the actual options list instead of references:
       if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
         $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
       }
     }
   }
-  return TRUE;
+
 }
 
 function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray) {
@@ -258,18 +240,12 @@ function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray
 
     $elements = array_values($entity->getElementsInitialized());
 
-    foreach ($elements as &$element) {
-      // Check for fieldset property
-      // Recursively searches for 'loose' fieldset child elements
-      // with same parent key:
-      getRecursiveFieldsetElements($element, $element_manager);
-      // Get composite elements:
-      getCompositeElements($element, $element_manager);
-    }
+    api_form_recursively_parse_elements($elements, $element_manager);
+
     $returnArray = [
       'form_id' => $form_id,
       'settings' => $settings,
-      'elements' => $elements,
+      'elements' => $elements['composite_elements'],
       'token' => $token,
     ];
   }
