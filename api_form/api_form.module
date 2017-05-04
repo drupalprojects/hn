@@ -237,6 +237,7 @@ function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray
 
     $form_id = $entity->id();
     $settings = $entity->getSettings();
+    $settings['custom_elements'] = get_custom_elements(); // Seems ugly.
     $token = Drupal::csrfToken()->get('token');
     $element_manager = Drupal::service('plugin.manager.webform.element');
 
