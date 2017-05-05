@@ -40,7 +40,7 @@ function api_url_help($route_name) {
  * @param $returnArray
  *   Referenced entity
  */
-function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray) {
+function api_url_api_alter_field_entity_reference($entity, $value, &$returnArray) {
   switch (TRUE) {
     case $entity instanceof File:
       $fid = $value->target_id;
@@ -66,7 +66,7 @@ function api_url_api_alter_entity_reference_data($entity, $value, &$returnArray)
 /**
  * Implements api_alter_entity_reference_data().
  */
-function api_url_api_alter_field_data($value, &$returnArray) {
+function api_url_api_alter_field_value($value, &$returnArray) {
   switch (TRUE) {
     case $value instanceof LinkItem:
       $url = $value->getUrl();
@@ -85,4 +85,11 @@ function api_url_api_alter_field_data($value, &$returnArray) {
       $returnArray = $link;
       break;
   }
+}
+
+/**
+ * Implements api_alter_field().
+ */
+function api_url_api_alter_field($field, &$returnArray) {
+
 }

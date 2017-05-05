@@ -59,7 +59,7 @@ trait FieldTrait {
 
               // Call hook if you want to return custom data for a entity
               // reference value.
-              $moduleHandler->invokeAll('api_alter_entity_reference_data', [
+              $moduleHandler->invokeAll('api_alter_field_entity_reference', [
                 'property' => $property,
                 'value' => $value,
                 'returnArray' => &$returnArray[$name],
@@ -76,14 +76,21 @@ trait FieldTrait {
 
           self::getValue($value, $returnArray[$name]);
 
-          $moduleHandler->invokeAll('api_alter_field_data', [
+          $moduleHandler->invokeAll('api_alter_field_value', [
             'value' => $value,
             'returnArray' => &$returnArray[$name],
           ]);
         }
+
+        $moduleHandler->invokeAll('api_alter_field', [
+          'field' => $field,
+          'returnArray' => &$returnArray[$name],
+        ]);
+
         self::arrayOrObject($returnArray[$name], $cardinality);
       }
     }
+
     return $returnArray;
   }
 
