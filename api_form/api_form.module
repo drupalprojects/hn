@@ -196,6 +196,7 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
 
     $element['composite_elements'][] = [
       '#type' => 'webform_wizard_pages',
+      '#webform_key' => 'wizard_pages',
       'composite_elements' => $wizard_pages
     ];
 
