@@ -2,6 +2,7 @@
 
 
 use Drupal\api_url\FileUrlsTrait;
+use Drupal\path\Plugin\Field\FieldType\PathFieldItemList;
 use Drupal\webform\Entity\WebformOptions;
 use Drupal\link\Plugin\Field\FieldType\LinkItem;
 use Drupal\file\Entity\File;
@@ -91,5 +92,9 @@ function api_url_api_alter_field_value($value, &$returnArray) {
  * Implements api_alter_field().
  */
 function api_url_api_alter_field($field, &$returnArray) {
-
+  switch (TRUE) {
+    case $field instanceof PathFieldItemList:
+      $returnArray = $field->getEntity()->toUrl()->toString();
+      break;
+  }
 }
