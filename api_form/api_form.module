@@ -170,16 +170,37 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
   // Get all children of this element
   $children_keys = Element::children($element);
 
+  $wizard_pages = [];
+
   // If it has children, parse them first.
   foreach ($children_keys as $child_key) {
     $child_element = $element[$child_key];
 
     api_form_recursively_parse_elements($child_element, $element_manager);
 
-    // To make the children more accessible, move them to the 'composite_elements' property
-    $element['composite_elements'][] = $child_element;
+    // To make the children more accessible, remove them from the parent array
     unset($element[$child_key]);
+
+    // If it is a wizard_page, add it to it's own array
+    if(isset($child_element['#type']) && $child_element['#type'] == 'webform_wizard_page') {
+      $wizard_pages[] = $child_element;
+    }
+    // If it is a normal element, move it to the composite_elements array
+    else {
+      $element['composite_elements'][] = $child_element;
+    }
   }
+
+  // If there are wizard pages, group them in a webform_wizard_pages element
+  if(!empty($wizard_pages)){
+
+    $element['composite_elements'][] = [
+      '#type' => 'webform_wizard_pages',
+      'composite_elements' => $wizard_pages
+    ];
+
+  }
+
 
   /**
    * If there is a #options available, make sure to make it
