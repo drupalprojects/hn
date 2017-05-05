@@ -251,7 +251,7 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
 
 }
 
-function api_form_api_alter_entity_reference_data($entity, $value, &$returnArray) {
+function api_form_api_alter_field_entity_reference($entity, $value, &$returnArray) {
 
   /**
    * This module only resolves references to the Webform element.
