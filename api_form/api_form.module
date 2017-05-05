@@ -134,6 +134,7 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
     $form['properties']['messages']['requiredError'] = $elements['requiredError'];
     $form['properties']['messages']['patternError'] = $elements['patternError'];
     $form['properties']['messages']['emailError'] = $elements['emailError'];
+    $form['properties']['messages']['relationError'] = $elements['relationError'];
     $form['properties']['messages']['dateError'] = $elements['dateError'];
     $form['properties']['messages']['dateBeforeError'] = $elements['dateBeforeError'];
     $form['properties']['messages']['dateAfterError'] = $elements['dateAfterError'];
