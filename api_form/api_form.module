@@ -240,10 +240,10 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
       return;
     }
     foreach ($element['composite_elements'] as &$composite_element) {
-      api_form_recursively_parse_elements($composite_element, $element_manager);
       $composite_element['#webform_key'] .= '-' . $element['#webform_key'];
+      api_form_recursively_parse_elements($composite_element, $element_manager);
       // Get the actual options list instead of references:
-      if ($composite_element['#type'] == 'select' && isset($composite_element['#options'])) {
+      if ($composite_element['#type'] === 'select' && isset($composite_element['#options'])) {
         $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
       }
     }
