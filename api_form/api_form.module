@@ -46,6 +46,13 @@ function get_custom_elements() {
       '#description' => t('If set, this message will be used when an email element is invalid.'),
       '#default_value' => t('Controleer het e-mailadres.'),
     ],
+    'relationError' => [
+      '#key' => 'relationError',
+      '#type' => 'textfield',
+      '#title' => t('Custom relation error message'),
+      '#description' => t('If set, this message will be used when the relation number + postcode combination is not recognised.'),
+      '#default_value' => t('We herkennen de combinatie lidnummer en postcode niet. Controleer het alsjeblieft, of ga door.'),
+    ],
     'dateError' => [
       '#key' => 'dateError',
       '#type' => 'textfield',
@@ -56,23 +63,23 @@ function get_custom_elements() {
     'dateBeforeError' => [
       '#key' => 'dateBeforeError',
       '#type' => 'textfield',
-      '#title' => t('Custom date range error message'),
-      '#description' => t('If set, this message will be used when a date is not before min value.'),
-      '#default_value' => t('Vul alsjeblieft een datum voor :min in.'),
+      '#title' => t('Custom date before error message'),
+      '#description' => t('If set, this message will be used when a date is not before max value.'),
+      '#default_value' => t('Vul alsjeblieft een datum voor :max in.'),
     ],
     'dateAfterError' => [
       '#key' => 'dateAfterError',
       '#type' => 'textfield',
-      '#title' => t('Custom date range error message'),
+      '#title' => t('Custom date after error message'),
       '#description' => t('If set, this message will be used when a date is not after max value.'),
-      '#default_value' => t('Vul alsjeblieft een datum na :max in.'),
+      '#default_value' => t('Vul alsjeblieft een datum na :min in.'),
     ],
     'dateRangeError' => [
       '#key' => 'dateRangeError',
       '#type' => 'textfield',
       '#title' => t('Custom date range error message'),
       '#description' => t('If set, this message will be used when a date is not between min and max value.'),
-      '#default_value' => t('Vul alsjeblieft een datum tussen :min en :max in.'),
+      '#default_value' => t('Vul alsjeblieft een datum na :min en voor :max in.'),
     ],
   ];
 
