@@ -53,6 +53,13 @@ function get_custom_elements() {
       '#description' => t('If set, this message will be used when the relation number + postcode combination is not recognised.'),
       '#default_value' => t('We herkennen de combinatie lidnummer en postcode niet. Controleer het alsjeblieft, of ga door.'),
     ],
+    'neverBounceError' => [
+      '#key' => 'neverBounceError',
+      '#type' => 'textfield',
+      '#title' => t('Custom neverbounce error message'),
+      '#description' => t('If set, this message will be used when the email is rejected by neverbounce.'),
+      '#default_value' => t('Vul alsjeblieft een geldig e-mailadres in.'),
+    ],
     'dateError' => [
       '#key' => 'dateError',
       '#type' => 'textfield',
@@ -135,6 +142,7 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
     $form['properties']['messages']['patternError'] = $elements['patternError'];
     $form['properties']['messages']['emailError'] = $elements['emailError'];
     $form['properties']['messages']['relationError'] = $elements['relationError'];
+    $form['properties']['messages']['neverBounceError'] = $elements['neverBounceError'];
     $form['properties']['messages']['dateError'] = $elements['dateError'];
     $form['properties']['messages']['dateBeforeError'] = $elements['dateBeforeError'];
     $form['properties']['messages']['dateAfterError'] = $elements['dateAfterError'];
