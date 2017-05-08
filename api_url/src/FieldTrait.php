@@ -24,7 +24,7 @@ trait FieldTrait {
    * @return array The full node.
    * The full node.
    */
-  private function getFullNode($node = NULL, $returnArray = [], $parents = []) {
+  static private function getFullNode($node = NULL, $returnArray = [], $parents = []) {
     $moduleHandler = \Drupal::moduleHandler();
 
     if ($node) {
@@ -102,7 +102,7 @@ trait FieldTrait {
    * @param array|null $returnArray
    *   A referenced array.
    */
-  private function getValue(TypedData $fieldValue, &$returnArray) {
+  static private function getValue(TypedData $fieldValue, &$returnArray) {
     if (isset($fieldValue->value)) {
       $returnArray[] = $fieldValue->value;
     }
@@ -125,7 +125,7 @@ trait FieldTrait {
    *
    * @return array
    */
-  private function getReferencedNode($entity, $name, &$returnArray, $parents) {
+  static private function getReferencedNode($entity, $name, &$returnArray, $parents) {
     if (method_exists($entity, 'getFields')) {
 
       foreach ($parents as $parent) {
