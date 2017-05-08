@@ -104,10 +104,6 @@ class FormRestResource extends ResourceBase {
     // Create webformsubmission.
     $webform_submission = $this->createSubmission($form_id);
 
-    // Unset Form_id, because later we are going to use values to create a new
-    // submission.
-    unset($values['form_id']);
-
     $webform_submission->setData($values);
 
     // Get the form object.
