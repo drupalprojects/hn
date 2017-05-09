@@ -88,6 +88,13 @@ function get_custom_elements() {
       '#description' => t('If set, this message will be used when a date is not between min and max value.'),
       '#default_value' => t('Vul alsjeblieft een datum na :min en voor :max in.'),
     ],
+    'ibanError' => [
+      '#key' => 'ibanError',
+      '#type' => 'textfield',
+      '#title' => t('Custom iban error message'),
+      '#description' => t('If set, this message will be used when an IBAN is invalid.'),
+      '#default_value' => t('Vul een geldig IBAN-nummer in, bijvoorbeeld NL01ABCD0123456789'),
+    ],
   ];
 
   return $elements;
@@ -147,6 +154,7 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
     $form['properties']['messages']['dateBeforeError'] = $elements['dateBeforeError'];
     $form['properties']['messages']['dateAfterError'] = $elements['dateAfterError'];
     $form['properties']['messages']['dateRangeError'] = $elements['dateRangeError'];
+    $form['properties']['messages']['ibanError'] = $elements['ibanError'];
   }
 }
 
