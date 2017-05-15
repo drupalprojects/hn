@@ -19,86 +19,79 @@ function api_form_help($route_name) {
   }
 }
 
-function get_custom_elements() {
-  $elements = [
-    'requiredError' => [
-      '#key' => 'requiredError',
-      '#type' => 'textfield',
-      '#title' => t('Custom required error message'),
-      '#description' => t('If set, this message will be used when a required webform element is empty.'),
-      '#default_value' => t('Vul alsjeblieft iets in bij :name.'),
-    ],
-    'patternError' => [
-      '#key' => 'patternError',
-      '#type' => 'webform_select_other',
-      '#title' => t('Custom pattern error message'),
-      '#description' => t('If set, this message will be used when an element with a pattern doesn\'t match it'),
-      '#default_value' => 'alpha',
-      '#options' => [
-        'alpha' => t('Alleen letters zijn toegestaan.'),
-        'numeric' => t('Alleen cijfers zijn toegestaan.'),
-      ],
-    ],
-    'emailError' => [
-      '#key' => 'emailError',
-      '#type' => 'textfield',
-      '#title' => t('Custom email error message'),
-      '#description' => t('If set, this message will be used when an email element is invalid.'),
-      '#default_value' => t('Controleer het e-mailadres.'),
-    ],
-    'relationError' => [
-      '#key' => 'relationError',
-      '#type' => 'textfield',
-      '#title' => t('Custom relation error message'),
-      '#description' => t('If set, this message will be used when the relation number + postcode combination is not recognised.'),
-      '#default_value' => t('We herkennen de combinatie lidnummer en postcode niet. Controleer het alsjeblieft, of ga door.'),
-    ],
-    'neverBounceError' => [
-      '#key' => 'neverBounceError',
-      '#type' => 'textfield',
-      '#title' => t('Custom neverbounce error message'),
-      '#description' => t('If set, this message will be used when the email is rejected by neverbounce.'),
-      '#default_value' => t('Vul alsjeblieft een geldig e-mailadres in.'),
-    ],
-    'dateError' => [
-      '#key' => 'dateError',
-      '#type' => 'textfield',
-      '#title' => t('Custom date error message'),
-      '#description' => t('If set, this message will be used when a date value is invalid.'),
-      '#default_value' => t('Vul alsjeblieft een geldige datum in. (dd/mm/yyyy)'),
-    ],
-    'dateBeforeError' => [
-      '#key' => 'dateBeforeError',
-      '#type' => 'textfield',
-      '#title' => t('Custom date before error message'),
-      '#description' => t('If set, this message will be used when a date is not before max value.'),
-      '#default_value' => t('Vul alsjeblieft een datum voor :max in.'),
-    ],
-    'dateAfterError' => [
-      '#key' => 'dateAfterError',
-      '#type' => 'textfield',
-      '#title' => t('Custom date after error message'),
-      '#description' => t('If set, this message will be used when a date is not after max value.'),
-      '#default_value' => t('Vul alsjeblieft een datum na :min in.'),
-    ],
-    'dateRangeError' => [
-      '#key' => 'dateRangeError',
-      '#type' => 'textfield',
-      '#title' => t('Custom date range error message'),
-      '#description' => t('If set, this message will be used when a date is not between min and max value.'),
-      '#default_value' => t('Vul alsjeblieft een datum na :min en voor :max in.'),
-    ],
-    'ibanError' => [
-      '#key' => 'ibanError',
-      '#type' => 'textfield',
-      '#title' => t('Custom iban error message'),
-      '#description' => t('If set, this message will be used when an IBAN is invalid.'),
-      '#default_value' => t('Vul een geldig IBAN-nummer in, bijvoorbeeld NL01ABCD0123456789'),
-    ],
-  ];
-
-  return $elements;
-}
+//function get_custom_elements() {
+//    $elements = [
+//        'requiredError' => [
+//            '#key' => 'requiredError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom required error message'),
+//            '#description' => t('If set, this message will be used when a required webform element is empty.'),
+//            '#default_value' => t('Vul alsjeblieft iets in bij :name.'),
+//        ],
+//        'patternError' => [
+//            '#key' => 'patternError',
+//            '#type' => 'webform_select_other',
+//            '#title' => t('Custom pattern error message'),
+//            '#description' => t('If set, this message will be used when an element with a pattern doesn\'t match it'),
+//            '#default_value' => 'alpha',
+//            '#options' => [
+//                'alpha' => t('Alleen letters zijn toegestaan.'),
+//                'numeric' => t('Alleen cijfers zijn toegestaan.'),
+//            ],
+//        ],
+//        'emailError' => [
+//            '#key' => 'emailError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom email error message'),
+//            '#description' => t('If set, this message will be used when an email element is invalid.'),
+//            '#default_value' => t('Controleer het e-mailadres.'),
+//        ],
+//        'neverBounceError' => [
+//            '#key' => 'neverBounceError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom neverbounce error message'),
+//            '#description' => t('If set, this message will be used when the email is rejected by neverbounce.'),
+//            '#default_value' => t('Vul alsjeblieft een geldig e-mailadres in.'),
+//        ],
+//        'dateError' => [
+//            '#key' => 'dateError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom date error message'),
+//            '#description' => t('If set, this message will be used when a date value is invalid.'),
+//            '#default_value' => t('Vul alsjeblieft een geldige datum in. (dd/mm/yyyy)'),
+//        ],
+//        'dateBeforeError' => [
+//            '#key' => 'dateBeforeError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom date before error message'),
+//            '#description' => t('If set, this message will be used when a date is not before max value.'),
+//            '#default_value' => t('Vul alsjeblieft een datum voor :max in.'),
+//        ],
+//        'dateAfterError' => [
+//            '#key' => 'dateAfterError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom date after error message'),
+//            '#description' => t('If set, this message will be used when a date is not after max value.'),
+//            '#default_value' => t('Vul alsjeblieft een datum na :min in.'),
+//        ],
+//        'dateRangeError' => [
+//            '#key' => 'dateRangeError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom date range error message'),
+//            '#description' => t('If set, this message will be used when a date is not between min and max value.'),
+//            '#default_value' => t('Vul alsjeblieft een datum na :min en voor :max in.'),
+//        ],
+//        'ibanError' => [
+//            '#key' => 'ibanError',
+//            '#type' => 'textfield',
+//            '#title' => t('Custom iban error message'),
+//            '#description' => t('If set, this message will be used when an IBAN is invalid.'),
+//            '#default_value' => t('Vul een geldig IBAN-nummer in, bijvoorbeeld NL01ABCD0123456789'),
+//        ]
+//    ];
+//
+//    return $elements;
+//}
 
 /**
  * Implements hook_form_alter().
@@ -115,59 +108,10 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
 
   // Only alter webform UI element forms.
   if ($form_id === 'webform_ui_element_form') {
-
-    $elements = get_custom_elements();
-
-    $overrides = getOverrides($elements);
-
-    $element_properties = $form_state->get('element_properties');
-
-    _custom_element_process_altered_element($elements, $element_properties);
-    _custom_element_process_altered_element($overrides, $element_properties);
-
-    $form_state->set('element_properties', $element_properties);
-
     unset($form['properties']['form']['input_mask']);
 
-    if(!isset($form['properties']['overrides'])) {
-      $form['properties']['overrides'] = [
-        '#type' => 'details',
-        '#title' => t('Default value Overrides'),
-        '#description' => t('Please check all fields of which you want the value to be decoupled from the master template.'),
-        '#open' => FALSE,
-      ];
-    }
-
-    $form['properties']['overrides'] += $overrides;
-
-    $form['properties']['messages'] = [
-      '#type' => 'details',
-      '#title' => t('Messages'),
-      '#description' => t('Define all (error/validation) messages for this form.'),
-    ];
-    $form['properties']['messages']['requiredError'] = $elements['requiredError'];
-    $form['properties']['messages']['patternError'] = $elements['patternError'];
-    $form['properties']['messages']['emailError'] = $elements['emailError'];
-    $form['properties']['messages']['relationError'] = $elements['relationError'];
-    $form['properties']['messages']['neverBounceError'] = $elements['neverBounceError'];
-    $form['properties']['messages']['dateError'] = $elements['dateError'];
-    $form['properties']['messages']['dateBeforeError'] = $elements['dateBeforeError'];
-    $form['properties']['messages']['dateAfterError'] = $elements['dateAfterError'];
-    $form['properties']['messages']['dateRangeError'] = $elements['dateRangeError'];
-    $form['properties']['messages']['ibanError'] = $elements['ibanError'];
   }
-}
 
-function _custom_element_process_altered_element(&$array, &$element_properties) {
-  foreach($array as $element) {
-    if(!isset($element_properties[$element['#key']])) {
-      $element_properties[$element['#key']] = $element['#default_value'];
-    } else {
-      $element['#default_value'] = $element_properties[$element['#key']];
-    }
-    $element['#parents'] = ['properties', $element['#key']];
-    $array[$element['#key']] = $element;
-  }
 }
 
 function getOverrides($formElements) {
@@ -284,7 +228,10 @@ function api_form_api_alter_field_entity_reference($entity, $value, &$returnArra
 
     $form_id = $entity->id();
     $settings = $entity->getSettings();
-    $settings['custom_elements'] = get_custom_elements(); // Seems ugly.
+
+    $moduleHandler = \Drupal::moduleHandler();
+    $moduleHandler->alter('api_form_settings', $settings);
+
     $token = Drupal::csrfToken()->get('token');
     $element_manager = Drupal::service('plugin.manager.webform.element');
 
