@@ -40,22 +40,6 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
 
 }
 
-function getOverrides($formElements) {
-  $elements = [];
-
-  foreach ($formElements as $element) {
-    $key = 'override_' . $element['#key'];
-    $elements[$key] = [
-      '#key' => $key,
-      '#type' => 'checkbox',
-      '#title' => $element['#title'],
-      '#default_value' => FALSE,
-    ];
-  }
-
-  return $elements;
-}
-
 /**
  * @param $element
  * @param $element_manager
