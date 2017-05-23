@@ -5,6 +5,7 @@ namespace Drupal\api_url;
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;
 use Drupal\Core\TypedData\TypedData;
+use Drupal\paragraphs\Entity\Paragraph;
 
 /**
  * Function for getting the fields from a node.
@@ -132,13 +133,13 @@ trait FieldTrait {
 
         if ($parent == $entity) {
           return $returnArray[$name][] = [
-            'uuid' => $parent->uuid->getValue()[0]['value'],
+            'test_uuid' => $parent->uuid->getValue()[0]['value'],
             'type' => $parent->type->getValue()[0]['target_id'],
           ];
         }
       }
 
-      if (count($parents) >= 2) {
+      if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
         return $returnArray;
       }
 
