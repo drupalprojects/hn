@@ -125,7 +125,7 @@ trait FieldTrait {
    *
    * @return array
    */
-  static private function getReferencedNode($entity, $name, &$returnArray, $parents) {
+  static function getReferencedNode($entity, $name, &$returnArray, $parents) {
     if (method_exists($entity, 'getFields')) {
 
       foreach ($parents as $parent) {
