@@ -129,12 +129,17 @@ trait FieldTrait {
     if (method_exists($entity, 'getFields')) {
 
       foreach ($parents as $parent) {
+
         if ($parent == $entity) {
           return $returnArray[$name][] = [
             'uuid' => $parent->uuid->getValue()[0]['value'],
             'type' => $parent->type->getValue()[0]['target_id'],
           ];
         }
+      }
+
+      if (count($parents) >= 2) {
+        return $returnArray;
       }
 
       $parents[] = $entity;
