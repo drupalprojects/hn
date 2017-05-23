@@ -54,7 +54,7 @@ trait FieldTrait {
               if ($property instanceof EntityReference && $name !== 'type') {
                 $property = $property->getValue();
 
-                self::getReferencedNode($property, $name, $returnArray, $parents);
+                FieldTrait::getReferencedNode($property, $name, $returnArray, $parents);
               }
 
               // Call hook if you want to return custom data for a entity
