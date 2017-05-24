@@ -5,6 +5,7 @@ use Drupal\api_url\FileUrlsTrait;
 use Drupal\path\Plugin\Field\FieldType\PathFieldItemList;
 use Drupal\link\Plugin\Field\FieldType\LinkItem;
 use Drupal\file\Entity\File;
+use Drupal\taxonomy\Entity\Term;
 use Drupal\user\Entity\User;
 use Drupal\views\Entity\View;
 
@@ -58,6 +59,10 @@ function api_url_api_alter_field_entity_reference($entity, $value, &$returnArray
       $embedded_view = views_embed_view($view['target_id'], 'rest_export_1');
       $rendered_view = $renderer->render($embedded_view);
       $returnArray = json_decode($rendered_view);
+      break;
+
+    case $entity instanceof Term:
+      $returnArray = \Drupal\api_url\FieldTrait::getFullNode($entity, $returnArray, []);
       break;
   }
 }
