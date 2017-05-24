@@ -60,10 +60,6 @@ function api_url_api_alter_field_entity_reference($entity, $value, &$returnArray
       $rendered_view = $renderer->render($embedded_view);
       $returnArray = json_decode($rendered_view);
       break;
-
-    case $entity instanceof Term:
-      $returnArray = \Drupal\api_url\FieldTrait::getFullNode($entity, [], []);
-      break;
   }
 }
 
