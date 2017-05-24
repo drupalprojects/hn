@@ -25,7 +25,7 @@ trait FieldTrait {
    * @return array The full node.
    * The full node.
    */
-  static private function getFullNode($node = NULL, $returnArray = [], $parents = []) {
+  static function getFullNode($node = NULL, $returnArray = [], $parents = []) {
     $moduleHandler = \Drupal::moduleHandler();
 
     if ($node) {
@@ -139,9 +139,9 @@ trait FieldTrait {
         }
       }
 
-      if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
-        return $returnArray;
-      }
+//      if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
+//        return $returnArray;
+//      }
 
       $parents[] = $entity;
       $node = self::getFullNode($entity, [], $parents);
