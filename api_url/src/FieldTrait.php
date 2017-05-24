@@ -139,7 +139,7 @@ trait FieldTrait {
         }
       }
 
-      if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
+      if (count($parents) >= 3 && $entity instanceOf Paragraph == FALSE) {
         return $returnArray[$name] = NULL;
       }
 
