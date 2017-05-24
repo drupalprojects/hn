@@ -62,7 +62,7 @@ function api_url_api_alter_field_entity_reference($entity, $value, &$returnArray
       break;
 
     case $entity instanceof Term:
-      $returnArray = \Drupal\api_url\FieldTrait::getFullNode($entity, $returnArray, []);
+      $returnArray = \Drupal\api_url\FieldTrait::getFullNode($entity, [], []);
       break;
   }
 }

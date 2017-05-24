@@ -140,7 +140,7 @@ trait FieldTrait {
       }
 
       if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
-        return $returnArray;
+        return $returnArray[$name] = NULL;
       }
 
       $parents[] = $entity;
