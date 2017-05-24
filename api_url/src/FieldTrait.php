@@ -139,9 +139,9 @@ trait FieldTrait {
         }
       }
 
-//      if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
-//        return $returnArray;
-//      }
+      if (count($parents) >= 2 && $entity instanceOf Paragraph == FALSE) {
+        return $returnArray;
+      }
 
       $parents[] = $entity;
       $node = self::getFullNode($entity, [], $parents);
