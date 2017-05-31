@@ -1,7 +1,7 @@
-name: View Serializer
+name: Headless Ninja API Views
 type: module
 description: This serializer adds everything you need to a rest export view.
 core: 8.x
-package: PvM
+package: Headless Ninja
 dependencies:
   - field

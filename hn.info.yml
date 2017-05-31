@@ -1,8 +1,8 @@
-name: Api url
+name: Headless Ninja API
 type: module
-description: Url endpoint
+description: Provides an REST endpoint for getting entity details by a path.
 core: 8.x
-package: API
+package: Headless Ninja
 dependencies:
   - rest
   - language

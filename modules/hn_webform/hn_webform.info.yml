@@ -1,8 +1,9 @@
-name: Api form
+name: Headless Ninja API Webform
 type: module
-description: Endpoint to post all forms to
+description: Returns webform options if requested in the API, and provides an endpoint for submitting submissions.
 core: 8.x
-package: API
+package: Headless Ninja
 dependencies:
   - rest
   - language
+  - webform
