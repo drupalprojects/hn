@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_url;
+namespace Drupal\hn;
 
 /**
  * Functions for adding file uri's to file fields.

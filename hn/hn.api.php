@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Hooks from the api_url module.
+ * Hooks from the hn module.
  */
 
 /**

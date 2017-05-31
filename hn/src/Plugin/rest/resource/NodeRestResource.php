@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_url\Plugin\rest\resource;
+namespace Drupal\hn\Plugin\rest\resource;
 
 use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -23,8 +23,8 @@ use Drupal\headless_drupal\ResponseHelper;
  * )
  */
 class NodeRestResource extends ResourceBase {
-  use \Drupal\api_url\FileUrlsTrait;
-  use \Drupal\api_url\FieldTrait;
+  use \Drupal\hn\FileUrlsTrait;
+  use \Drupal\hn\FieldTrait;
 
 
   /**
@@ -75,7 +75,7 @@ class NodeRestResource extends ResourceBase {
       $plugin_id,
       $plugin_definition,
       $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('api_url'),
+      $container->get('logger.factory')->get('hn'),
       $container->get('current_user')
     );
   }

@@ -8,10 +8,10 @@ use Drupal\webform\WebformElementManagerInterface;
 /**
  * Implements hook_help().
  */
-function api_form_help($route_name) {
+function hn_webform_help($route_name) {
   switch ($route_name) {
-    // Main module help for the api_form module.
-    case 'help.page.api_form':
+    // Main module help for the hn_webform module.
+    case 'help.page.hn_webform':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('Endpoint to post all forms to') . '</p>';
@@ -44,7 +44,7 @@ function custom_element_form_alter(&$form, \Drupal\Core\Form\FormStateInterface 
  * @param $element
  * @param $element_manager
  */
-function api_form_recursively_parse_elements(array &$element, WebformElementManagerInterface $element_manager) {
+function hn_webform_recursively_parse_elements(array &$element, WebformElementManagerInterface $element_manager) {
   // Get all children of this element
   $children_keys = Element::children($element);
 
@@ -54,7 +54,7 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
   foreach ($children_keys as $child_key) {
     $child_element = $element[$child_key];
 
-    api_form_recursively_parse_elements($child_element, $element_manager);
+    hn_webform_recursively_parse_elements($child_element, $element_manager);
 
     // To make the children more accessible, remove them from the parent array
     unset($element[$child_key]);
@@ -119,7 +119,7 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
     }
     foreach ($element['composite_elements'] as &$composite_element) {
       $composite_element['#webform_key'] .= '-' . $element['#webform_key'];
-      api_form_recursively_parse_elements($composite_element, $element_manager);
+      hn_webform_recursively_parse_elements($composite_element, $element_manager);
       // Get the actual options list instead of references:
       if ($composite_element['#type'] === 'select' && isset($composite_element['#options'])) {
         $composite_element['#options'] = WebformOptions::getElementOptions($composite_element);
@@ -129,7 +129,7 @@ function api_form_recursively_parse_elements(array &$element, WebformElementMana
 
 }
 
-function api_form_api_alter_field_entity_reference($entity, $value, &$returnArray) {
+function hn_webform_api_alter_field_entity_reference($entity, $value, &$returnArray) {
 
   /**
    * This module only resolves references to the Webform element.
@@ -140,14 +140,14 @@ function api_form_api_alter_field_entity_reference($entity, $value, &$returnArra
     $settings = $entity->getSettings();
 
     $moduleHandler = \Drupal::moduleHandler();
-    $moduleHandler->alter('api_form_settings', $settings);
+    $moduleHandler->alter('hn_webform_settings', $settings);
 
     $token = Drupal::csrfToken()->get('token');
     $element_manager = Drupal::service('plugin.manager.webform.element');
 
     $elements = array_values($entity->getElementsInitialized());
 
-    api_form_recursively_parse_elements($elements, $element_manager);
+    hn_webform_recursively_parse_elements($elements, $element_manager);
 
     $returnArray = [
       'form_id' => $form_id,

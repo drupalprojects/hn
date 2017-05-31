@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_url;
+namespace Drupal\hn;
 
 use Drupal\Core\Entity\Plugin\DataType\EntityReference;
 use Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem;

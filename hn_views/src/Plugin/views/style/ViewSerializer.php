@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\view_serializer\Plugin\views\style;
+namespace Drupal\hn_views\Plugin\views\style;
 
 use Drupal\Core\Render\Markup;
 use Drupal\rest\Plugin\views\style\Serializer;
@@ -11,7 +11,7 @@ use Drupal\rest\Plugin\views\style\Serializer;
  * @ingroup views_style_plugins
  *
  * @ViewsStyle(
- *   id = "view_serializer",
+ *   id = "hn_views",
  *   title = @Translation("View Serializer"),
  *   help = @Translation("Serializes views."),
  *   display_types = {"data"}

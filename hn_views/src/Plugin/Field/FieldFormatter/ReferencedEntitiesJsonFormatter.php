@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\view_serializer\Plugin\Field\FieldFormatter;
+namespace Drupal\hn_views\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -24,8 +24,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class ReferencedEntitiesJsonFormatter extends EntityReferenceRevisionsFormatterBase implements ContainerFactoryPluginInterface {
-  use \Drupal\api_url\FieldTrait;
-  use \Drupal\api_url\FileUrlsTrait;
+  use \Drupal\hn\FieldTrait;
+  use \Drupal\hn\FileUrlsTrait;
 
 
   /**

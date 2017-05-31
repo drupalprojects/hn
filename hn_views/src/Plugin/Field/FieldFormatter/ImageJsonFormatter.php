@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\view_serializer\Plugin\Field\FieldFormatter;
+namespace Drupal\hn_views\Plugin\Field\FieldFormatter;
 
-use Drupal\api_url\FileUrlsTrait;
+use Drupal\hn\FileUrlsTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -27,7 +27,7 @@ use Drupal\Core\Form\FormStateInterface;
  * )
  */
 class ImageJsonFormatter extends ImageFormatterBase implements ContainerFactoryPluginInterface {
-  use \Drupal\api_url\FileUrlsTrait;
+  use \Drupal\hn\FileUrlsTrait;
 
   /**
    * The current user.

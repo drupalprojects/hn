@@ -3,6 +3,6 @@
 ## From beginning to end
 
 - User makes request to /url?
-- api_url NodeRestResource get()
+- hn NodeRestResource get()
 - getFullNode (FieldTrait.php)
-- api_url.module hook_alter_entity_reference_data
+- hn.module hook_alter_entity_reference_data

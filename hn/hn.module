@@ -1,7 +1,7 @@
 <?php
 
 
-use Drupal\api_url\FileUrlsTrait;
+use Drupal\hn\FileUrlsTrait;
 use Drupal\path\Plugin\Field\FieldType\PathFieldItemList;
 use Drupal\link\Plugin\Field\FieldType\LinkItem;
 use Drupal\file\Entity\File;
@@ -12,10 +12,10 @@ use Drupal\views\Entity\View;
 /**
  * Implements hook_help().
  */
-function api_url_help($route_name) {
+function hn_help($route_name) {
   switch ($route_name) {
-    // Main module help for the api_url module.
-    case 'help.page.api_url':
+    // Main module help for the hn module.
+    case 'help.page.hn':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('Url endpoint') . '</p>';
@@ -40,7 +40,7 @@ function api_url_help($route_name) {
  * @param $returnArray
  *   Referenced entity
  */
-function api_url_api_alter_field_entity_reference($entity, $value, &$returnArray) {
+function hn_api_alter_field_entity_reference($entity, $value, &$returnArray) {
   switch (TRUE) {
     case $entity instanceof File:
       $fid = $value->target_id;
@@ -66,7 +66,7 @@ function api_url_api_alter_field_entity_reference($entity, $value, &$returnArray
 /**
  * Implements api_alter_entity_reference_data().
  */
-function api_url_api_alter_field_value($value, &$returnArray) {
+function hn_api_alter_field_value($value, &$returnArray) {
   switch (TRUE) {
     case $value instanceof LinkItem:
       $url = $value->getUrl();
@@ -90,7 +90,7 @@ function api_url_api_alter_field_value($value, &$returnArray) {
 /**
  * Implements api_alter_field().
  */
-function api_url_api_alter_field($field, &$returnArray) {
+function hn_api_alter_field($field, &$returnArray) {
   switch (TRUE) {
     case $field instanceof PathFieldItemList:
       $returnArray = $field->getEntity()->toUrl()->toString();

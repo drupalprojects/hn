@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\api_form\Plugin\rest\resource;
+namespace Drupal\hn_webform\Plugin\rest\resource;
 
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Form\FormState;
@@ -132,7 +132,7 @@ class FormRestResource extends ResourceBase {
       $uuid = $webform_submission->uuid();
 
       register_shutdown_function(function ($webform_submission, $values, $form_id) {
-        $this->moduleHandler->invokeAll('api_form_save', [
+        $this->moduleHandler->invokeAll('hn_webform_save', [
           'webform_submission' => $webform_submission,
           'values' => $values,
           'form_id' => $form_id,

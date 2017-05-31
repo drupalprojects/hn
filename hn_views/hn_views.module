@@ -2,17 +2,17 @@
 
 /**
  * @file
- * Contains view_serializer.module..
+ * Contains hn_views.module..
  */
 
 
 /**
  * Implements hook_help().
  */
-function view_serializer_help($route_name) {
+function hn_views_help($route_name) {
   switch ($route_name) {
-    // Main module help for the pvm_view_serializer module.
-    case 'help.page.view_serializer':
+    // Main module help for the pvm_hn_views module.
+    case 'help.page.hn_views':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('This serializer adds everything you need to a rest export view.') . '</p>';
