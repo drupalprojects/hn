@@ -9,7 +9,9 @@ use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Drupal\headless_drupal\ResponseHelper;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -178,7 +180,17 @@ class NodeRestResource extends ResourceBase {
     if ($originalUrl == $url) {
       // Error page is not found or accessible by itself.
       // Prevent inifinite recursion.
-      ResponseHelper::throwResponse($code);
+      switch ($code) {
+        case 400:
+          throw new BadRequestHttpException(NULL);
+
+        case 403:
+          throw new AccessDeniedHttpException(NULL);
+
+        case 404:
+          throw new NotFoundHttpException(NULL);
+
+      }
     }
     // TODO: This line can cause a infinite loop. Rework it.
     /* return $this->getResponseByUrl($url, $code); */
