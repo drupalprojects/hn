@@ -1,5 +1,0 @@
-name: Headless drupal
-type: module
-description: Base for Headless drupal
-core: 8.x
-package: API
