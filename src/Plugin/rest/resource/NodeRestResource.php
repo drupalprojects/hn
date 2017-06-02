@@ -2,15 +2,20 @@
 
 namespace Drupal\hn\Plugin\rest\resource;
 
-use Drupal\node\Entity\Node;
+use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Core\Cache\CacheableResponseInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
+use Drupal\node\Entity\Node;
 use Drupal\rest\Plugin\ResourceBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\rest\ResourceResponse;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -18,16 +23,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * @RestResource(
  *   id = "node_rest_resource",
- *   label = @Translation("Node rest resource"),
+ *   label = @Translation("Path endpoint"),
  *   uri_paths = {
  *     "canonical" = "/api/v1/url"
  *   }
  * )
  */
 class NodeRestResource extends ResourceBase {
-  use \Drupal\hn\FileUrlsTrait;
-  use \Drupal\hn\FieldTrait;
-
 
   /**
    * A current user instance.
@@ -35,6 +37,13 @@ class NodeRestResource extends ResourceBase {
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
+
+  /**
+   * The link relation type manager used to create HTTP header links.
+   *
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
+   */
+  protected $linkRelationTypeManager;
 
   private $language;
 
@@ -53,6 +62,10 @@ class NodeRestResource extends ResourceBase {
    *   A logger instance.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   A current user instance.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   A config factory.
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $link_relation_type_manager
+   *   The link relation type manager.
    */
   public function __construct(
     array $configuration,
@@ -60,10 +73,14 @@ class NodeRestResource extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
-    AccountProxyInterface $current_user) {
+    AccountProxyInterface $current_user,
+    ConfigFactoryInterface $config_factory,
+    PluginManagerInterface $link_relation_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+    $this->configFactory = $config_factory;
+    $this->linkRelationTypeManager = $link_relation_type_manager;
 
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
@@ -78,7 +95,9 @@ class NodeRestResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('hn'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('config.factory'),
+      $container->get('plugin.manager.link_relation_type')
     );
   }
 
@@ -91,7 +110,6 @@ class NodeRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get() {
-
     return $this->getResponseByUrl(\Drupal::request()->get('url', ''));
   }
 
@@ -138,63 +156,35 @@ class NodeRestResource extends ResourceBase {
       // Get the node.
       $node = Node::load($matches[1]);
       if (!$node) {
-        return $this->getErrorResponse(404, $url);
+        return new NotFoundHttpException();
       }
 
+      $entity_access = $node->access('view', NULL, TRUE);
+      if (!$entity_access->isAllowed()) {
+        throw new AccessDeniedHttpException($entity_access->getReason() ?: $this->generateFallbackAccessDeniedMessage($node, 'view'));
+      }
       $node = $node->getTranslation($this->language);
 
-      // Check if the user has permissions to view this node.
-      /* if (!$node->access()) {
-      var_dump('no access');
-      return $this->getErrorResponse(403, $url);
-      } */
+      $response = new ResourceResponse($node, 200);
+      $response->addCacheableDependency($node);
+      $response->addCacheableDependency($entity_access);
 
-      $nodeObject = $this->getFullNode($node);
+      if ($node instanceof FieldableEntityInterface) {
+        foreach ($node as $field_name => $field) {
+          /** @var \Drupal\Core\Field\FieldItemListInterface $field */
+          $field_access = $field->access('view', NULL, TRUE);
+          $response->addCacheableDependency($field_access);
 
-      $response = new \stdClass();
-      $response->content = $nodeObject;
-      $response->meta = $this->getMetatags($node);
-
-      $data = json_encode($response);
-      $httpResponse = new Response($data);
-
-      // Set status code.
-      if ($statusCode != 200) {
-        $httpResponse->setStatusCode($statusCode);
+          if (!$field_access->isAllowed()) {
+            $node->set($field_name, NULL);
+          }
+        }
       }
 
-      return $httpResponse;
-    }
-    if (!preg_match('/node\/(\d+)/', $path, $matches)) {
-      return $this->getErrorResponse(404, $url);
+      $this->addLinkHeaders($node, $response);
     }
 
     return $response;
-  }
-
-  /**
-   * Generate HTTP response for error page.
-   */
-  private function getErrorResponse($code, $originalUrl) {
-    $url = \Drupal::config('system.site')->get("page.$code");
-    if ($originalUrl == $url) {
-      // Error page is not found or accessible by itself.
-      // Prevent inifinite recursion.
-      switch ($code) {
-        case 400:
-          throw new BadRequestHttpException(NULL);
-
-        case 403:
-          throw new AccessDeniedHttpException(NULL);
-
-        case 404:
-          throw new NotFoundHttpException(NULL);
-
-      }
-    }
-    // TODO: This line can cause a infinite loop. Rework it.
-    /* return $this->getResponseByUrl($url, $code); */
-
   }
 
   /**
@@ -235,4 +225,54 @@ class NodeRestResource extends ResourceBase {
     ];
   }
 
+  /**
+   * Generates a fallback access denied message, when no specific reason is set.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity object.
+   * @param string $operation
+   *   The disallowed entity operation.
+   *
+   * @return string
+   *   The proper message to display in the AccessDeniedHttpException.
+   */
+  protected function generateFallbackAccessDeniedMessage(EntityInterface $entity, $operation) {
+    $message = "You are not authorized to {$operation} this {$entity->getEntityTypeId()} entity";
+
+    if ($entity->bundle() !== $entity->getEntityTypeId()) {
+      $message .= " of bundle {$entity->bundle()}";
+    }
+    return "{$message}.";
+  }
+
+  /**
+   * Adds link headers to a response.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface|\Drupal\hn\Plugin\rest\resource\EntityInterface $entity
+   *   The entity.
+   * @param \Drupal\hn\Plugin\rest\resource\Response|\Symfony\Component\HttpFoundation\Response $response
+   *   The response.
+   *
+   * @see https://tools.ietf.org/html/rfc5988#section-5
+   */
+  protected function addLinkHeaders(EntityInterface $entity, Response $response) {
+    foreach ($entity->getEntityType()->getLinkTemplates() as $relation_name => $link_template) {
+      if ($definition = $this->linkRelationTypeManager->getDefinition($relation_name, FALSE)) {
+        $generator_url = $entity->toUrl($relation_name)
+                                ->setAbsolute(TRUE)
+                                ->toString(TRUE);
+        if ($response instanceof CacheableResponseInterface) {
+          $response->addCacheableDependency($generator_url);
+        }
+        $uri = $generator_url->getGeneratedUrl();
+        $relationship = $relation_name;
+        if (!empty($definition['uri'])) {
+          $relationship = $definition['uri'];
+        }
+
+        $link_header = '<' . $uri . '>; rel="' . $relationship . '"';
+        $response->headers->set('Link', $link_header, FALSE);
+      }
+    }
+  }
 }
