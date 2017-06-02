@@ -1,4 +1,5 @@
-<?php namespace Drupal\hn\Normalizer;
+<?php
+namespace Drupal\hn\Normalizer;
 
 use Drupal\serialization\Normalizer\NormalizerBase;
 
