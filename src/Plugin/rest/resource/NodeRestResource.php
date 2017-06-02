@@ -168,6 +168,7 @@ class NodeRestResource extends ResourceBase {
       $response = new ResourceResponse($node, 200);
       $response->addCacheableDependency($node);
       $response->addCacheableDependency($entity_access);
+      $response->addCacheableDependency(['#cache' => ['max-age' => 0],]);
 
       if ($node instanceof FieldableEntityInterface) {
         foreach ($node as $field_name => $field) {
@@ -180,8 +181,6 @@ class NodeRestResource extends ResourceBase {
           }
         }
       }
-
-      $this->addLinkHeaders($node, $response);
     }
 
     return $response;
@@ -243,36 +242,5 @@ class NodeRestResource extends ResourceBase {
       $message .= " of bundle {$entity->bundle()}";
     }
     return "{$message}.";
-  }
-
-  /**
-   * Adds link headers to a response.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface|\Drupal\hn\Plugin\rest\resource\EntityInterface $entity
-   *   The entity.
-   * @param \Drupal\hn\Plugin\rest\resource\Response|\Symfony\Component\HttpFoundation\Response $response
-   *   The response.
-   *
-   * @see https://tools.ietf.org/html/rfc5988#section-5
-   */
-  protected function addLinkHeaders(EntityInterface $entity, Response $response) {
-    foreach ($entity->getEntityType()->getLinkTemplates() as $relation_name => $link_template) {
-      if ($definition = $this->linkRelationTypeManager->getDefinition($relation_name, FALSE)) {
-        $generator_url = $entity->toUrl($relation_name)
-                                ->setAbsolute(TRUE)
-                                ->toString(TRUE);
-        if ($response instanceof CacheableResponseInterface) {
-          $response->addCacheableDependency($generator_url);
-        }
-        $uri = $generator_url->getGeneratedUrl();
-        $relationship = $relation_name;
-        if (!empty($definition['uri'])) {
-          $relationship = $definition['uri'];
-        }
-
-        $link_header = '<' . $uri . '>; rel="' . $relationship . '"';
-        $response->headers->set('Link', $link_header, FALSE);
-      }
-    }
   }
 }
