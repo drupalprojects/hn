@@ -1,0 +1,5 @@
+services:
+  hn.typed_data:
+    class: Drupal\hn\Normalizer\TypedDataNormalizer
+    tags:
+      - { name: normalizer, priority: 20 }

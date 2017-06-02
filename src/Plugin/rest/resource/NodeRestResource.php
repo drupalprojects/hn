@@ -3,7 +3,6 @@
 namespace Drupal\hn\Plugin\rest\resource;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
-use Drupal\Core\Cache\CacheableResponseInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -23,6 +22,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *
  * @RestResource(
  *   id = "node_rest_resource",
+ *   serialization_class = "Drupal\Core\Entity\Entity",
  *   label = @Translation("Path endpoint"),
  *   uri_paths = {
  *     "canonical" = "/api/v1/url"
