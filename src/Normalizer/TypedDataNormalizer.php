@@ -1,29 +1,41 @@
 <?php
 namespace Drupal\hn\Normalizer;
 
-use Drupal\serialization\Normalizer\NormalizerBase;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\serialization\Normalizer\TypedDataNormalizer as SerializationTypedDataNormalizer;
 
-/** * Converts typed data objects to arrays. */
-class TypedDataNormalizer extends NormalizerBase {
+/**
+ * {@inheritDoc}
+ */
+class TypedDataNormalizer extends SerializationTypedDataNormalizer {
 
-  /** * The interface or class that this Normalizer supports. * * @var string */
-  protected $supportedInterfaceOrClass = 'Drupal\Core\TypedData\TypedDataInterface';
+  protected $format = ['hn'];
 
-  /** * {@inheritdoc} */
+  /**
+   * {@inheritdoc}
+   * @param \Drupal\Core\TypedData\TypedDataInterface $object
+   */
   public function normalize($object, $format = NULL, array $context = []) {
-    // This variable shows how many values are allowed in a field.
-    // -1 means unlimited.
-    $cardinality = -1;
-    if ($fieldDefinition = $object->getFieldDefinition()) {
-      $cardinality = $fieldDefinition->getFieldStorageDefinition()->getCardinality();
-    }
 
-    $value = $object->getValue();
-    if ($cardinality !== -1 && $cardinality === 1) {
-      if (isset($value[0]) && isset($value[0]['value'])) {
-        $value = $value[0]['value'];
+    $value = parent::normalize($object, $format, $context);
+
+    // If this is a field with never more then 1 value, show the first value.
+    if($object instanceof FieldItemListInterface) {
+      $cardinality = $object->getFieldDefinition()->getFieldStorageDefinition()->getCardinality();
+      if($cardinality === 1) {
+        if(isset($value[0])) $value = $value[0];
+        else $value = NULL;
       }
     }
+    else {
+      \Drupal::logger('hn')->notice('Interesting! ' . get_class($object) . ' is not a FieldItemList!');
+    }
+
+    // If the value is an associative array with 'value' as only key, return the value of 'value'.
+    if(is_array($value) && isset($value['value']) && count($value) === 1) {
+      $value = $value['value'];
+    }
+
     return $value;
   }
 }

@@ -1,5 +1,15 @@
 services:
-  hn.typed_data:
+  # The encoder and service provider add the _format=hn support.
+  serializer.encoder.hn:
+    class: Drupal\hn\Encoder\HnEncoder
+    tags:
+      - name: encoder
+        priority: 10
+        format: hn
+
+  # All normalizers make sure the entities are formatted in a nice way.
+  serializer.normalizer.hn.typed_data:
     class: Drupal\hn\Normalizer\TypedDataNormalizer
     tags:
-      - { name: normalizer, priority: 20 }
+      - name: normalizer
+        priority: 20
