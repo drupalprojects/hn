@@ -4,8 +4,8 @@ namespace Drupal\hn\Plugin\rest\resource;
 
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
@@ -113,8 +113,9 @@ class HnRestResource extends ResourceBase {
 
     $this->addEntity($entity);
 
-    $response = new ResourceResponse($this->response_data);
-    $response->addCacheableDependency(['#cache' => ['max-age' => 0]]);
+    $this->response_data['paths'][$path] = $entity->uuid();
+
+    $response = new ModifiedResourceResponse($this->response_data);
 
     return $response;
   }
@@ -135,16 +136,15 @@ class HnRestResource extends ResourceBase {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse("Implement REST State POST!");
+    return new ModifiedResourceResponse("Implement REST State POST!");
   }
 
   /**
    * @param \Drupal\Core\Entity\EntityInterface $entity
    */
   private function addEntity($entity) {
-    $uuid = $entity->uuid();
-    $this->response_data['data'][$uuid] = $entity;
-    $this->response_data['paths'][$entity->toUrl()->getInternalPath()] = $uuid;
+    $this->response_data['data'][$entity->uuid()] = $entity;
+    $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
   }
 
 }
