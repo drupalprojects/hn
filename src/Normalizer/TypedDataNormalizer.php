@@ -12,12 +12,31 @@ class TypedDataNormalizer extends SerializationTypedDataNormalizer {
   protected $format = ['hn'];
 
   /**
+   * @var \Symfony\Component\Serializer\Normalizer\NormalizerInterface
+   */
+  protected $serializer;
+
+  protected $serializingParent = false;
+
+  /**
+   * {@inheritDoc}
+   */
+  public function supportsNormalization($data, $format = NULL) {
+    if($this->serializingParent) return false; // Let parent handle it
+    return parent::supportsNormalization($data, $format);
+  }
+
+  /**
    * {@inheritdoc}
    * @param \Drupal\Core\TypedData\TypedDataInterface $object
    */
   public function normalize($object, $format = NULL, array $context = []) {
 
-    $value = parent::normalize($object, $format, $context);
+    if(!$this->serializer) $this->serializer = \Drupal::service('serializer');
+
+    $this->serializingParent = true;
+    $value = $this->serializer->normalize($object, $format, $context);
+    $this->serializingParent = false;
 
     // If this is a field with never more then 1 value, show the first value.
     if($object instanceof FieldItemListInterface) {
