@@ -12,6 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * Provides a resource to get view modes by entity and bundle.
@@ -34,6 +35,14 @@ class HnRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * A renderer interface.
+   *
+   * @var \Symfony\Component\Serializer\Normalizer\NormalizerInterface $normalizer
+   */
+  protected $normalizer;
+
+
+  /**
    * Constructs a new HnRestResource object.
    *
    * @param array $configuration
@@ -48,6 +57,8 @@ class HnRestResource extends ResourceBase {
    *   A logger instance.
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   A current user instance.
+   * @param \Symfony\Component\Serializer\Normalizer\NormalizerInterface $normalizer
+   *   A renderer instance.
    */
   public function __construct(
     array $configuration,
@@ -55,10 +66,12 @@ class HnRestResource extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
-    AccountProxyInterface $current_user) {
+    AccountProxyInterface $current_user,
+    NormalizerInterface $normalizer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+    $this->normalizer = $normalizer;
   }
 
   /**
@@ -71,7 +84,8 @@ class HnRestResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('hn'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('serializer')
     );
   }
 
@@ -125,29 +139,34 @@ class HnRestResource extends ResourceBase {
   private function addEntity($entity, $view_mode = 'default' ) {
 
     // If this entity is already being added, don't add again.
-
     if(isset($this->response_data['data'][$entity->uuid()])) return;
 
+    // If it isn't an fieldable entity, don't add.
     if(!$entity instanceof FieldableEntityInterface) return;
 
-
-    $this->response_data['data'][$entity->uuid()] = $entity;
-    $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
-
-    /**
-     * Find all fields that are hidden in this view
-     */
+    // Find all fields that are hidden in this view.
     $display = entity_get_display($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
     $hidden_fields = array_keys($display->toArray()['hidden']);
 
-    /** @var $field \Drupal\Core\Field\FieldItemList */
-    foreach ($entity as $field_name => $field) {
+    // Nullify all hidden fields, so they aren't normalized.
+    foreach ($entity->getFields() as $field_name => $field) {
 
-      /**
-       * Make sure we don't include hidden fields
-       */
       if (in_array($field_name, $hidden_fields)) {
         $entity->set($field_name, NULL);
+      }
+
+    }
+
+    $normalized_entity = ['__hn' => [
+      'view_modes' => [$view_mode],
+      'hidden_fields' => [],
+    ]] + $this->normalizer->normalize($entity);
+
+    // Now completely remove the hidden fields.
+    foreach ($entity->getFields() as $field_name => $field) {
+      if (in_array($field_name, $hidden_fields)) {
+        unset($normalized_entity[$field_name]);
+        $normalized_entity['__hn']['hidden_fields'][] = $field_name;
       }
 
       /**
@@ -168,6 +187,10 @@ class HnRestResource extends ResourceBase {
 
       }
     }
+
+    // Add the entity and the path to the response_data object.
+    $this->response_data['data'][$entity->uuid()] = $normalized_entity;
+    $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
   }
 
 }
