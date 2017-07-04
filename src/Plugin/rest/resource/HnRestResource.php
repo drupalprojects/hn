@@ -144,6 +144,9 @@ class HnRestResource extends ResourceBase {
     // If it isn't an fieldable entity, don't add.
     if(!$entity instanceof FieldableEntityInterface) return;
 
+    // If the current user doesn't have permission to view, don't add.
+    if(!$entity->access('view', $this->currentUser)) return;
+
     // Find all fields that are hidden in this view.
     $display = entity_get_display($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
     $hidden_fields = array_keys($display->toArray()['hidden']);
@@ -151,7 +154,7 @@ class HnRestResource extends ResourceBase {
     // Nullify all hidden fields, so they aren't normalized.
     foreach ($entity->getFields() as $field_name => $field) {
 
-      if (in_array($field_name, $hidden_fields)) {
+      if (in_array($field_name, $hidden_fields) || !$field->access('view', $this->currentUser)) {
         $entity->set($field_name, NULL);
       }
 
@@ -164,7 +167,7 @@ class HnRestResource extends ResourceBase {
 
     // Now completely remove the hidden fields.
     foreach ($entity->getFields() as $field_name => $field) {
-      if (in_array($field_name, $hidden_fields)) {
+      if (in_array($field_name, $hidden_fields) || !$field->access('view', $this->currentUser)) {
         unset($normalized_entity[$field_name]);
         $normalized_entity['__hn']['hidden_fields'][] = $field_name;
       }
