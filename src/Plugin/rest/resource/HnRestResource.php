@@ -6,6 +6,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
+use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -198,6 +199,11 @@ class HnRestResource extends ResourceBase {
 
     // Add the entity and the path to the response_data object.
     $this->response_data['data'][$entity->uuid()] = $normalized_entity;
+
+    // If entity is instance of paragraph don't add it to path.
+    // Paragraphs don't have a URL to add to the paths array.
+    if ($entity instanceof Paragraph) return;
+
     $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
   }
 
