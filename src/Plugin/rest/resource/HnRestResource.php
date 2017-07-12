@@ -118,7 +118,7 @@ class HnRestResource extends ResourceBase {
       $path = \Drupal::config('system.site')->get('page.front');
     }
 
-    // TODO: Use LanguageNegotiationUrl:getLangcode to get the language from the path url
+    // TODO: Use LanguageNegotiationUrl:getLangcode to get the language from the path url.
     $url = Url::fromUri('internal:/' . trim($path, '/'));
     if(!$url->isRouted()) {
       throw new NotFoundHttpException('Entity not found for path '.$path);
@@ -178,15 +178,13 @@ class HnRestResource extends ResourceBase {
         $normalized_entity['__hn']['hidden_fields'][] = $field_name;
       }
 
-      /**
-       * If this field is an entity reference, add the referenced entities too.
-       */
+      // If this field is an entity reference, add the referenced entities too.
       else if ($field instanceof EntityReferenceFieldItemListInterface) {
 
-        // Get all referenced entities
+        // Get all referenced entities.
         $referenced_entities = $field->referencedEntities();
 
-        // Get the referenced view mode (e.g. teaser) that is set in the current display (e.g. full)
+        // Get the referenced view mode (e.g. teaser) that is set in the current display (e.g. full).
         $referenced_entities_display = $display->getComponent($field_name);
         $referenced_entities_view_mode = $referenced_entities_display && $referenced_entities_display['type'] === 'entity_reference_entity_view' ? $referenced_entities_display['settings']['view_mode'] : 'default';
 
