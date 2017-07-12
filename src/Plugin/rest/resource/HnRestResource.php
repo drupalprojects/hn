@@ -112,6 +112,11 @@ class HnRestResource extends ResourceBase {
 
     $path = \Drupal::request()->get('path', '');
 
+    // If the ?path= is empty, get the frontpage.
+    if ($path == '/' || empty($path)) {
+      $path = \Drupal::config('system.site')->get('page.front');
+    }
+
     // TODO: Use LanguageNegotiationUrl:getLangcode to get the language from the path url
     $url = Url::fromUri('internal:/' . trim($path, '/'));
     if(!$url->isRouted()) {
