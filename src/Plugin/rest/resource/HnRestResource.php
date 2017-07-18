@@ -6,6 +6,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
+use Drupal\file\Entity\File;
 use Drupal\paragraphs\Entity\Paragraph;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
@@ -204,7 +205,7 @@ class HnRestResource extends ResourceBase {
 
     // If entity is instance of paragraph don't add it to path.
     // Paragraphs don't have a URL to add to the paths array.
-    if ($entity instanceof Paragraph) return;
+    if ($entity instanceof Paragraph || $entity instanceof File) return;
 
     $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
   }

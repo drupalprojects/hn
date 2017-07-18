@@ -13,3 +13,8 @@ services:
     tags:
       - name: normalizer
         priority: 20
+  serializer.normalizer.hn.file:
+      class: Drupal\hn\Normalizer\FileNormalizer
+      tags:
+        - name: normalizer
+          priority: 20
