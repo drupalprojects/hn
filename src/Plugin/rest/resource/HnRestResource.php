@@ -114,6 +114,7 @@ class HnRestResource extends ResourceBase {
     $path = \Drupal::request()->get('path', '');
 
     // If the ?path= is empty, get the frontpage.
+    // TODO: Check if this is the way to go.
     if ($path == '/' || empty($path)) {
       $path = \Drupal::config('system.site')->get('page.front');
     }
@@ -135,7 +136,10 @@ class HnRestResource extends ResourceBase {
 
     $this->response_data['paths'][$path] = $entity->uuid();
 
-    return new ModifiedResourceResponse($this->response_data);
+    $response = new ModifiedResourceResponse($this->response_data);
+    $response->headers->set('Cache-Control', 'public, max-age=3600');
+
+    return $response;
   }
 
   /**
@@ -147,7 +151,7 @@ class HnRestResource extends ResourceBase {
     // If this entity is already being added, don't add again.
     if(isset($this->response_data['data'][$entity->uuid()])) return;
 
-    // If it isn't an fieldable entity, don't add.
+    // If it isn't a fieldable entity, don't add.
     if(!$entity instanceof FieldableEntityInterface) return;
 
     // If the current user doesn't have permission to view, don't add.
