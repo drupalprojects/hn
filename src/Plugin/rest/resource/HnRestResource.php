@@ -205,9 +205,10 @@ class HnRestResource extends ResourceBase {
 
     // If entity is instance of paragraph don't add it to path.
     // Paragraphs don't have a URL to add to the paths array.
-    if ($entity instanceof Paragraph || $entity instanceof File) return;
-
-    $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
+    try {
+      $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
+    } catch (\Exception $exception) {
+      // Can't add url so do nothing
+    }
   }
-
 }
