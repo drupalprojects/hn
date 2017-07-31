@@ -43,7 +43,6 @@ class HnRestResource extends ResourceBase {
    */
   protected $normalizer;
 
-
   /**
    * Constructs a new HnRestResource object.
    *
@@ -112,18 +111,17 @@ class HnRestResource extends ResourceBase {
       'paths' => []
     ];
 
-    $path = \Drupal::request()->get('path', '');
-
-    // If the ?path= is empty, get the frontpage.
-    // TODO: Check if this is the way to go.
-    if ($path == '/' || empty($path)) {
-      $path = \Drupal::config('system.site')->get('page.front');
-    }
+    $path = \Drupal::request()->query->get('path', '');
 
     // TODO: Use LanguageNegotiationUrl:getLangcode to get the language from the path url.
     $url = Url::fromUri('internal:/' . trim($path, '/'));
+
     if(!$url->isRouted()) {
       throw new NotFoundHttpException('Entity not found for path '.$path);
+    }
+
+    if ($url->getRouteName() === '<front>') {
+      $url = Url::fromUri('internal:/' . trim(\Drupal::config('system.site')->get('page.front'), '/'));
     }
 
     $params = $url->getRouteParameters();
