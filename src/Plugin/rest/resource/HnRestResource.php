@@ -6,8 +6,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
-use Drupal\paragraphs\Entity\Paragraph;
-use Drupal\file\Entity\File;
+use Drupal\hn\EntitiesWithViews;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -42,6 +41,11 @@ class HnRestResource extends ResourceBase {
    * @var \Symfony\Component\Serializer\Normalizer\NormalizerInterface $normalizer
    */
   protected $normalizer;
+
+  /**
+   * @var \Drupal\hn\EntitiesWithViews
+   */
+  protected $entities_with_views;
 
   /**
    * Constructs a new HnRestResource object.
@@ -131,6 +135,8 @@ class HnRestResource extends ResourceBase {
     }
 
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
+
+    $this->entities_with_views = new EntitiesWithViews();
     $this->addEntity($entity);
 
     $this->response_data['paths'][$path] = $entity->uuid();
@@ -145,10 +151,7 @@ class HnRestResource extends ResourceBase {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    * @param string $view_mode
    */
-  private function addEntity($entity, $view_mode = 'default' ) {
-
-    // If this entity is already being added, don't add again.
-    if(isset($this->response_data['data'][$entity->uuid()])) return;
+  private function addEntity($entity, $view_mode = 'default') {
 
     // If it isn't a fieldable entity, don't add.
     if(!$entity instanceof FieldableEntityInterface) return;
@@ -156,9 +159,9 @@ class HnRestResource extends ResourceBase {
     // If the current user doesn't have permission to view, don't add.
     if(!$entity->access('view', $this->currentUser)) return;
 
-    // Find all fields that are hidden in this view.
-    $display = entity_get_display($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
-    $hidden_fields = array_keys($display->toArray()['hidden']);
+    $entity_with_views = $this->entities_with_views->addEntity($entity, $view_mode);
+
+    $hidden_fields = $entity_with_views->getHiddenFields();
 
     // Nullify all hidden fields, so they aren't normalized.
     foreach ($entity->getFields() as $field_name => $field) {
@@ -170,7 +173,7 @@ class HnRestResource extends ResourceBase {
     }
 
     $normalized_entity = ['__hn' => [
-      'view_modes' => [$view_mode],
+      'view_modes' => $entity_with_views->getViewModes(),
       'hidden_fields' => [],
     ]] + $this->normalizer->normalize($entity);
 
@@ -188,7 +191,7 @@ class HnRestResource extends ResourceBase {
         $referenced_entities = $field->referencedEntities();
 
         // Get the referenced view mode (e.g. teaser) that is set in the current display (e.g. full).
-        $referenced_entities_display = $display->getComponent($field_name);
+        $referenced_entities_display = $entity_with_views->getDisplay($view_mode)->getComponent($field_name);
         $referenced_entities_view_mode = $referenced_entities_display && $referenced_entities_display['type'] === 'entity_reference_entity_view' ? $referenced_entities_display['settings']['view_mode'] : 'default';
 
         foreach ($referenced_entities as $referenced_entity) {
