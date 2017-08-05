@@ -2,6 +2,7 @@
 
 namespace Drupal\hn\Plugin\rest\resource;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -38,14 +39,16 @@ class HnRestResource extends ResourceBase {
   /**
    * A renderer interface.
    *
-   * @var \Symfony\Component\Serializer\Normalizer\NormalizerInterface $normalizer
+   * @var \Symfony\Component\Serializer\Normalizer\NormalizerInterface
    */
   protected $normalizer;
 
   /**
+   * A list of entities and their views.
+   *
    * @var \Drupal\hn\EntitiesWithViews
    */
-  protected $entities_with_views;
+  protected $entitiesWithViews;
 
   /**
    * Constructs a new HnRestResource object.
@@ -94,7 +97,7 @@ class HnRestResource extends ResourceBase {
     );
   }
 
-  private $response_data;
+  private $responseData;
 
   /**
    * Responds to GET requests.
@@ -110,9 +113,9 @@ class HnRestResource extends ResourceBase {
       throw new AccessDeniedHttpException();
     }
 
-    $this->response_data = [
+    $this->responseData = [
       'data' => [],
-      'paths' => []
+      'paths' => [],
     ];
 
     $path = \Drupal::request()->query->get('path', '');
@@ -120,8 +123,8 @@ class HnRestResource extends ResourceBase {
     // TODO: Use LanguageNegotiationUrl:getLangcode to get the language from the path url.
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
-    if(!$url->isRouted()) {
-      throw new NotFoundHttpException('Entity not found for path '.$path);
+    if (!$url->isRouted()) {
+      throw new NotFoundHttpException('Entity not found for path ' . $path);
     }
 
     if ($url->getRouteName() === '<front>') {
@@ -130,36 +133,44 @@ class HnRestResource extends ResourceBase {
 
     $params = $url->getRouteParameters();
     $entity_type = key($params);
-    if(!$entity_type) {
-      throw new NotFoundHttpException('Path '.$path.' isn\'t an entity and is therefore not supported.');
+    if (!$entity_type) {
+      throw new NotFoundHttpException('Path ' . $path . ' isn\'t an entity and is therefore not supported.');
     }
 
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
 
-    $this->entities_with_views = new EntitiesWithViews();
+    $this->entitiesWithViews = new EntitiesWithViews();
     $this->addEntity($entity);
 
-    $this->response_data['paths'][$path] = $entity->uuid();
+    $this->responseData['paths'][$path] = $entity->uuid();
 
-    $response = new ModifiedResourceResponse($this->response_data);
+    $response = new ModifiedResourceResponse($this->responseData);
     $response->headers->set('Cache-Control', 'public, max-age=3600');
 
     return $response;
   }
 
   /**
+   * Adds an entity to $this->response_data.
+   *
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to be added.
    * @param string $view_mode
+   *   The view mode to be added.
    */
-  private function addEntity($entity, $view_mode = 'default') {
+  private function addEntity(EntityInterface $entity, $view_mode = 'default') {
 
     // If it isn't a fieldable entity, don't add.
-    if(!$entity instanceof FieldableEntityInterface) return;
+    if (!$entity instanceof FieldableEntityInterface) {
+      return;
+    }
 
     // If the current user doesn't have permission to view, don't add.
-    if(!$entity->access('view', $this->currentUser)) return;
+    if (!$entity->access('view', $this->currentUser)) {
+      return;
+    }
 
-    $entity_with_views = $this->entities_with_views->addEntity($entity, $view_mode);
+    $entity_with_views = $this->entitiesWithViews->addEntity($entity, $view_mode);
 
     $hidden_fields = $entity_with_views->getHiddenFields();
 
@@ -172,10 +183,12 @@ class HnRestResource extends ResourceBase {
 
     }
 
-    $normalized_entity = ['__hn' => [
-      'view_modes' => $entity_with_views->getViewModes(),
-      'hidden_fields' => [],
-    ]] + $this->normalizer->normalize($entity);
+    $normalized_entity = [
+      '__hn' => [
+        'view_modes' => $entity_with_views->getViewModes(),
+        'hidden_fields' => [],
+      ],
+    ] + $this->normalizer->normalize($entity);
 
     // Now completely remove the hidden fields.
     foreach ($entity->getFields() as $field_name => $field) {
@@ -185,12 +198,13 @@ class HnRestResource extends ResourceBase {
       }
 
       // If this field is an entity reference, add the referenced entities too.
-      else if ($field instanceof EntityReferenceFieldItemListInterface) {
+      elseif ($field instanceof EntityReferenceFieldItemListInterface) {
 
         // Get all referenced entities.
         $referenced_entities = $field->referencedEntities();
 
-        // Get the referenced view mode (e.g. teaser) that is set in the current display (e.g. full).
+        // Get the referenced view mode (e.g. teaser) that is set in the current
+        // display (e.g. full).
         $referenced_entities_display = $entity_with_views->getDisplay($view_mode)->getComponent($field_name);
         $referenced_entities_view_mode = $referenced_entities_display && $referenced_entities_display['type'] === 'entity_reference_entity_view' ? $referenced_entities_display['settings']['view_mode'] : 'default';
 
@@ -202,14 +216,16 @@ class HnRestResource extends ResourceBase {
     }
 
     // Add the entity and the path to the response_data object.
-    $this->response_data['data'][$entity->uuid()] = $normalized_entity;
+    $this->responseData['data'][$entity->uuid()] = $normalized_entity;
 
     // If entity is instance of paragraph don't add it to path.
     // Paragraphs don't have a URL to add to the paths array.
     try {
-      $this->response_data['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
-    } catch (\Exception $exception) {
-      // Can't add url so do nothing
+      $this->responseData['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
+    }
+    catch (\Exception $exception) {
+      // Can't add url so do nothing.
     }
   }
+
 }

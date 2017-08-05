@@ -13,4 +13,3 @@ Before we can move to a stable release, there are a few things that need to be f
     - Maybe use Drupal\rest\Plugin\rest\resource\EntityResource kind-of-way, and overwrite Normalizers if necessary.
     - Otherwise, create our own Plugin type that replaces the entity hook.
 - [ ] Return entities and references at root level, to make sure references aren't returned multiple times
-

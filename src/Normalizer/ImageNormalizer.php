@@ -8,22 +8,22 @@ use Drupal\image\Plugin\Field\FieldType\ImageItem;
 use Drupal\serialization\Normalizer\EntityReferenceFieldItemNormalizer;
 
 /**
- * {@inheritDoc}
+ * Normalizes an ImageItem.
  */
-class FileNormalizer extends EntityReferenceFieldItemNormalizer {
+class ImageNormalizer extends EntityReferenceFieldItemNormalizer {
 
   protected $format = ['hn'];
 
   /**
    * {@inheritdoc}
    */
-  protected $supportedInterfaceOrClass = ImageItem::class;
+  protected $supportedInterfaceOrClass = 'Drupal\image\Plugin\Field\FieldType\ImageItem';
 
   /**
    * {@inheritdoc}
-   * @param \Drupal\Core\TypedData\TypedDataInterface $object
    */
   public function normalize($object, $format = NULL, array $context = []) {
+    /* @var $object \Drupal\image\Plugin\Field\FieldType\ImageItem $object */
     $normalization = parent::normalize($object, $format, $context);
     if (!$object->isEmpty()) {
       $this->addStyles($object, $normalization, $context);
@@ -62,4 +62,5 @@ class FileNormalizer extends EntityReferenceFieldItemNormalizer {
       }
     }
   }
+
 }
