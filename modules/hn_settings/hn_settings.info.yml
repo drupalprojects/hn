@@ -1,8 +1,0 @@
-name: Headless Ninja Settings API
-type: module
-description: Provides an REST endpoint for getting global Drupal settings.
-core: 8.x
-package: Headless Ninja
-dependencies:
-  - rest
-  - language
