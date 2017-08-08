@@ -26,6 +26,7 @@ class TypedDataNormalizer extends SerializationTypedDataNormalizer {
    */
   public function supportsNormalization($data, $format = NULL) {
     if ($this->serializingParent) {
+      $this->serializingParent = FALSE;
       // Let parent handle it.
       return FALSE;
     }
