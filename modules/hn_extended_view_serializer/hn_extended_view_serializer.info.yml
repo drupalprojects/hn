@@ -1,0 +1,5 @@
+name: HN Extended view serializer
+type: module
+description: View serializer
+package: Headless Ninja
+core: 8.x
