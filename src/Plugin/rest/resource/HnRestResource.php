@@ -2,6 +2,7 @@
 
 namespace Drupal\hn\Plugin\rest\resource;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
@@ -10,10 +11,8 @@ use Drupal\Core\Url;
 use Drupal\hn\EntitiesWithViews;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
@@ -63,6 +62,7 @@ class HnRestResource extends ResourceBase {
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    * @param \Drupal\Core\Session\AccountProxyInterface $current_user
    *   A current user instance.
    * @param \Symfony\Component\Serializer\Normalizer\NormalizerInterface $normalizer
@@ -74,12 +74,14 @@ class HnRestResource extends ResourceBase {
     $plugin_definition,
     array $serializer_formats,
     LoggerInterface $logger,
+    ConfigFactoryInterface $config_factory,
     AccountProxyInterface $current_user,
     NormalizerInterface $normalizer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
     $this->normalizer = $normalizer;
+    $this->config = $config_factory;
   }
 
   /**
@@ -92,6 +94,7 @@ class HnRestResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('hn'),
+      $container->get('config.factory'),
       $container->get('current_user'),
       $container->get('serializer')
     );
@@ -110,7 +113,10 @@ class HnRestResource extends ResourceBase {
   public function get() {
 
     if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
+      $url = $this->config->get('system.site')->get('page.404');
+      $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Access Denied']);
+      $response->setStatusCode(403);
+      return $response;
     }
 
     $this->responseData = [
@@ -124,7 +130,10 @@ class HnRestResource extends ResourceBase {
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
-      throw new NotFoundHttpException('Entity not found for path ' . $path);
+      $url = $this->config->get('system.site')->get('page.404');
+      $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Entity not found for path ' . $path]);
+      $response->setStatusCode(404);
+      return $response;
     }
 
     if ($url->getRouteName() === '<front>') {
@@ -134,7 +143,10 @@ class HnRestResource extends ResourceBase {
     $params = $url->getRouteParameters();
     $entity_type = key($params);
     if (!$entity_type) {
-      throw new NotFoundHttpException('Path ' . $path . ' isn\'t an entity and is therefore not supported.');
+      $url = $this->config->get('system.site')->get('page.404');
+      $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Path ' . $path . ' isn\'t an entity and is therefore not supported.']);
+      $response->setStatusCode(404);
+      return $response;
     }
 
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
@@ -184,11 +196,11 @@ class HnRestResource extends ResourceBase {
     }
 
     $normalized_entity = [
-      '__hn' => [
-        'view_modes' => $entity_with_views->getViewModes(),
-        'hidden_fields' => [],
-      ],
-    ] + $this->normalizer->normalize($entity);
+        '__hn' => [
+          'view_modes' => $entity_with_views->getViewModes(),
+          'hidden_fields' => [],
+        ],
+      ] + $this->normalizer->normalize($entity);
 
     // Now completely remove the hidden fields.
     foreach ($entity->getFields() as $field_name => $field) {
