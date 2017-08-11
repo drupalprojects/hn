@@ -50,6 +50,11 @@ class HnRestResource extends ResourceBase {
   protected $entitiesWithViews;
 
   /**
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $config;
+
+  /**
    * Constructs a new HnRestResource object.
    *
    * @param array $configuration
