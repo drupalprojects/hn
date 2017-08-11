@@ -9,6 +9,7 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\Url;
 use Drupal\hn\EntitiesWithViews;
+use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
@@ -54,6 +55,8 @@ class HnRestResource extends ResourceBase {
    */
   protected $config;
 
+  protected $language;
+
   /**
    * Constructs a new HnRestResource object.
    *
@@ -87,6 +90,7 @@ class HnRestResource extends ResourceBase {
     $this->currentUser = $current_user;
     $this->normalizer = $normalizer;
     $this->config = $config_factory;
+    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
 
   /**
@@ -131,7 +135,6 @@ class HnRestResource extends ResourceBase {
 
     $path = \Drupal::request()->query->get('path', '');
 
-    // TODO: Use LanguageNegotiationUrl:getLangcode to get the language from the path url.
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
@@ -145,6 +148,25 @@ class HnRestResource extends ResourceBase {
       $url = Url::fromUri('internal:/' . trim(\Drupal::config('system.site')->get('page.front'), '/'));
     }
 
+    $language_negotiation = \Drupal::config('language.negotiation')->get('url');
+
+    // TODO: get language by domain.
+    if ($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
+
+      // The PATH_PREFIX method is used for language detection.
+      // This should be stripped of the url.
+      foreach ($language_negotiation['prefixes'] as $lang_id => $lang_prefix) {
+        if (empty($lang_prefix) && !isset($this->language)) {
+          $this->language = $lang_id;
+        }
+
+        if (!empty($lang_prefix) && strpos($path, $lang_prefix) === 1) {
+          // Change the language.
+          $this->language = $lang_id;
+        }
+      }
+    }
+
     $params = $url->getRouteParameters();
     $entity_type = key($params);
     if (!$entity_type) {
@@ -155,6 +177,7 @@ class HnRestResource extends ResourceBase {
     }
 
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
+    $entity = $entity->getTranslation($this->language);
 
     $this->entitiesWithViews = new EntitiesWithViews();
     $this->addEntity($entity);
