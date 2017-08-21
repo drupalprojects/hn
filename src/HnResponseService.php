@@ -41,7 +41,7 @@ class HnResponseService {
    *
    * @var \Drupal\hn\EntitiesWithViews
    */
-  protected $entitiesWithViews;
+  public $entitiesWithViews;
 
   /**
    * Constructs a new HnResponseService object.
@@ -63,6 +63,8 @@ class HnResponseService {
    *   Throws exception expected.
    */
   public function newResponse() {
+    $this->log('Creating new Headless Ninja response..');
+
     if (!$this->currentUser->hasPermission('access content')) {
       $url = $this->config->get('system.site')->get('page.404');
       $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Access Denied']);
@@ -121,6 +123,11 @@ class HnResponseService {
 
     $this->responseData['paths'][$path] = $entity->uuid();
 
+    $this->log('Done building response data.');
+
+    $this->responseData['__hn']['log'] = $this->log;
+    $this->log = [];
+
     $response = new ModifiedResourceResponse($this->responseData);
     $response->headers->set('Cache-Control', 'public, max-age=3600');
 
@@ -135,80 +142,60 @@ class HnResponseService {
    * @param string $view_mode
    *   The view mode to be added.
    */
-  private function addEntity(EntityInterface $entity, $view_mode = 'default') {
+  public function addEntity(EntityInterface $entity, $view_mode = 'default') {
 
-    // If it isn't a fieldable entity, don't add.
-    if (!$entity instanceof FieldableEntityInterface) {
+    /** @var \Drupal\hn\Plugin\HnEntityManagerPluginManager $hnEntityManagerPluginManager */
+    $hnEntityManagerPluginManager = \Drupal::getContainer()->get('plugin.manager.hn_entity_manager_plugin');
+
+    $entityHandler = $hnEntityManagerPluginManager->getEntityHandler($entity);
+
+    if (!$entityHandler) {
+      $this->log('Not adding entity of type ' . get_class($entity));
       return;
     }
 
-    // If the current user doesn't have permission to view, don't add.
-    if (!$entity->access('view', $this->currentUser)) {
+    $this->log('Handling entity ' . $entity->uuid() . ' with ' . $entityHandler->getPluginId());
+
+    $normalized_entity = $entityHandler->handle($entity, $view_mode);
+
+    if ($normalized_entity === NULL){
       return;
-    }
-
-    $entity_with_views = $this->entitiesWithViews->addEntity($entity, $view_mode);
-
-    $hidden_fields = $entity_with_views->getHiddenFields();
-
-    // Nullify all hidden fields, so they aren't normalized.
-    foreach ($entity->getFields() as $field_name => $field) {
-
-      if (in_array($field_name, $hidden_fields) || !$field->access('view', $this->currentUser)) {
-        $entity->set($field_name, NULL);
-      }
-
-    }
-
-    $normalized_entity = [
-      '__hn' => [
-        'view_modes' => $entity_with_views->getViewModes(),
-        'hidden_fields' => [],
-      ],
-    ] + $this->serializer->normalize($entity);
-
-    // Now completely remove the hidden fields.
-    foreach ($entity->getFields() as $field_name => $field) {
-      if (in_array($field_name, $hidden_fields) || !$field->access('view', $this->currentUser)) {
-        unset($normalized_entity[$field_name]);
-        $normalized_entity['__hn']['hidden_fields'][] = $field_name;
-      }
-
-      // If this field is an entity reference, add the referenced entities too.
-      elseif ($field instanceof EntityReferenceFieldItemListInterface) {
-
-        // Get all referenced entities.
-        $referenced_entities = $field->referencedEntities();
-
-        if ($field_name === 'field_view') {
-          print_r($referenced_entities[0]->toArray());
-          print get_class($referenced_entities[0]);
-          die();
-        }
-
-        // Get the referenced view mode (e.g. teaser) that is set in the current
-        // display (e.g. full).
-        $referenced_entities_display = $entity_with_views->getDisplay($view_mode)->getComponent($field_name);
-        $referenced_entities_view_mode = $referenced_entities_display && $referenced_entities_display['type'] === 'entity_reference_entity_view' ? $referenced_entities_display['settings']['view_mode'] : 'default';
-
-        foreach ($referenced_entities as $referenced_entity) {
-          $this->addEntity($referenced_entity, $referenced_entities_view_mode);
-        }
-
-      }
     }
 
     // Add the entity and the path to the response_data object.
     $this->responseData['data'][$entity->uuid()] = $normalized_entity;
 
-    // If entity is instance of paragraph don't add it to path.
-    // Paragraphs don't have a URL to add to the paths array.
     try {
       $this->responseData['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
     }
     catch (\Exception $exception) {
       // Can't add url so do nothing.
     }
+  }
+
+  /**
+   * All logged texts.
+   *
+   * @var string[]
+   */
+  private $log = [];
+
+  private $lastLogTime;
+
+  /**
+   * Add a text to the debug log.
+   *
+   * @param string $string
+   *   The string that get's added to the response log.
+   */
+  public function log($string) {
+
+    $newTime = microtime(TRUE);
+    $this->log[] = '['
+      . ($this->lastLogTime ? '+' . round($newTime - $this->lastLogTime, 3) * 1000 . 'ms' : date(DATE_RFC1123))
+      . '] ' . $string;
+
+    $this->lastLogTime = $newTime;
   }
 
 }

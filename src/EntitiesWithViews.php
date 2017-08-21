@@ -29,16 +29,11 @@ class EntitiesWithViews {
    *   Returns a holder of the entity with the view provided.
    */
   public function addEntity(EntityInterface $entity, $view_mode = 'default') {
-    if (!$entity instanceof FieldableEntityInterface) {
-      return NULL;
-    }
     if (!isset($this->entities[$entity->uuid()])) {
       $this->entities[$entity->uuid()] = new EntityWithViews($entity);
     }
     $entity_with_views = $this->entities[$entity->uuid()];
-    $entity_with_views->addViewMode($view_mode);
-
-    return $entity_with_views;
+    return $entity_with_views->addViewMode($view_mode) ? $entity_with_views : NULL;
   }
 
 }
@@ -88,7 +83,10 @@ class EntityWithViews {
 
     if (!isset($this->viewModes[$view_mode])) {
       $this->viewModes[$view_mode] = entity_get_display($this->entity->getEntityTypeId(), $this->entity->bundle(), $view_mode);
+      return TRUE;
     }
+
+    return FALSE;
   }
 
   /**
