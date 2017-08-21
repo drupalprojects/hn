@@ -34,7 +34,6 @@ class ViewHandler extends HnEntityManagerPluginBase {
       $results[] = $resultRow->_entity->uuid();
     }
 
-
     $response = [];
     $response['display'] = $display['display_options'];
     unset($response['display']['access']);
@@ -47,7 +46,7 @@ class ViewHandler extends HnEntityManagerPluginBase {
     $filters = [];
 
     foreach ($response['display']['filters'] as $filter) {
-      if ($filter['exposed']) {
+      if (isset($filter['exposed']) && $filter['exposed']) {
         $filters[] = $filter;
       }
     }
@@ -58,4 +57,5 @@ class ViewHandler extends HnEntityManagerPluginBase {
 
     return $response;
   }
+
 }
