@@ -66,6 +66,7 @@ class HnResponseService {
    */
   public function getResponseData() {
     $this->log('Creating new Headless Ninja response..');
+    $DEBUG = \Drupal::request()->query->get('debug', FALSE);
 
     $status = 200;
 
@@ -77,13 +78,14 @@ class HnResponseService {
       $path = \Drupal::request()->query->get('path', '');
     }
 
-    if ($cache = \Drupal::cache()->get('hn.response_cache.' . $path)) {
+    if (!$DEBUG && $cache = \Drupal::cache()->get('hn.response_cache.' . $path)) {
       return $cache->data;
     }
 
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
+      $this->log('Initial entity url isn\'t routed, getting 404 page..');
       $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
       $status = 404;
     }
@@ -113,16 +115,29 @@ class HnResponseService {
 
     $params = $url->getRouteParameters();
     $entity_type = key($params);
+
+    $entity = NULL;
+
     if (!$entity_type) {
-      // TODO: make more generic
-      $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
-      $status = 404;
-      $params = $url->getRouteParameters();
-      $entity_type = key($params);
+      if(explode('.', $url->getRouteName())[0] === 'view') {
+        $entity = \Drupal::entityTypeManager()->getStorage('view')->load(explode('.', $url->getRouteName())[1]);
+      }
+      else {
+        $this->log('Can\'t find entity type of ' . $path . ', returning 404 page.. ' . json_encode($params, TRUE));
+        // TODO: make more generic
+        $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
+        $status = 404;
+        $params = $url->getRouteParameters();
+        $entity_type = key($params);
+      }
     }
 
-    $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
-    $entity = $entity->getTranslation($this->language);
+    if (!$entity) {
+      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
+    }
+    if($entity instanceof Node) {
+      $entity = $entity->getTranslation($this->language);
+    }
 
     $this->entitiesWithViews = new EntitiesWithViews();
     $this->addEntity($entity);
@@ -132,7 +147,7 @@ class HnResponseService {
     $this->responseData['paths'][$path] = $entity->uuid();
 
     $this->log('Done building response data.');
-    if (\Drupal::request()->query->get('debug', FALSE)) {
+    if ($DEBUG) {
       $this->responseData['__hn']['log'] = $this->log;
     }
 
@@ -149,6 +164,8 @@ class HnResponseService {
     return $this->responseData;
   }
 
+  private $alreadyAdded = [];
+
   /**
    * Adds an entity to $this->response_data.
    *
@@ -158,6 +175,10 @@ class HnResponseService {
    *   The view mode to be added.
    */
   public function addEntity(EntityInterface $entity, $view_mode = 'default') {
+
+    $alreadyAddedKey = $entity->uuid() . ':' . $view_mode;
+    if(in_array($alreadyAddedKey, $this->alreadyAdded)) return;
+    $this->alreadyAdded[] = $alreadyAddedKey;
 
     /** @var \Drupal\hn\Plugin\HnEntityManagerPluginManager $hnEntityManagerPluginManager */
     $hnEntityManagerPluginManager = \Drupal::getContainer()->get('plugin.manager.hn_entity_manager_plugin');
