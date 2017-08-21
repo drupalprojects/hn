@@ -6,8 +6,6 @@ use Drupal\Core\Config\ConfigFactory;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\Core\Url;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 use Drupal\rest\ModifiedResourceResponse;
@@ -36,6 +34,8 @@ class HnResponseService {
    */
   protected $config;
 
+  protected $language;
+
   /**
    * A list of entities and their views.
    *
@@ -50,6 +50,7 @@ class HnResponseService {
     $this->serializer = $serializer;
     $this->currentUser = $current_user;
     $this->config = $config_factory;
+    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
   }
 
   protected $responseData;
@@ -158,7 +159,7 @@ class HnResponseService {
 
     $normalized_entity = $entityHandler->handle($entity, $view_mode);
 
-    if ($normalized_entity === NULL){
+    if ($normalized_entity === NULL) {
       return;
     }
 
