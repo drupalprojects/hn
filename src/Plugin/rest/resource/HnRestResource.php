@@ -3,6 +3,7 @@
 namespace Drupal\hn\Plugin\rest\resource;
 
 use Drupal\hn\HnResponseService;
+use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -76,7 +77,9 @@ class HnRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get() {
-    return $this->hnResponseService->newResponse();
+    $response = new ModifiedResourceResponse($this->hnResponseService->getResponseData());
+    $response->headers->set('Cache-Control', 'public, max-age=3600');
+    return $response;
   }
 
 }

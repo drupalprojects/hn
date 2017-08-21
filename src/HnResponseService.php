@@ -2,6 +2,7 @@
 
 namespace Drupal\hn;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactory;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
@@ -63,25 +64,28 @@ class HnResponseService {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function newResponse() {
+  public function getResponseData() {
     $this->log('Creating new Headless Ninja response..');
 
+    $status = 200;
+
     if (!$this->currentUser->hasPermission('access content')) {
-      $url = $this->config->get('system.site')->get('page.404');
-      $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Access Denied']);
-      $response->setStatusCode(403);
-      return $response;
+      $path = $this->config->get('system.site')->get('page.403');
+      $status = 403;
+    }
+    else {
+      $path = \Drupal::request()->query->get('path', '');
     }
 
-    $path = \Drupal::request()->query->get('path', '');
+    if ($cache = \Drupal::cache()->get('hn.response_cache.' . $path)) {
+      return $cache->data;
+    }
 
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
-      $url = $this->config->get('system.site')->get('page.404');
-      $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Entity not found for path ' . $path]);
-      $response->setStatusCode(404);
-      return $response;
+      $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
+      $status = 404;
     }
 
     if ($url->getRouteName() === '<front>') {
@@ -110,10 +114,11 @@ class HnResponseService {
     $params = $url->getRouteParameters();
     $entity_type = key($params);
     if (!$entity_type) {
-      $url = $this->config->get('system.site')->get('page.404');
-      $response = new ModifiedResourceResponse(['url' => $url, 'message' => 'Path ' . $path . ' isn\'t an entity and is therefore not supported.']);
-      $response->setStatusCode(404);
-      return $response;
+      // TODO: make more generic
+      $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
+      $status = 404;
+      $params = $url->getRouteParameters();
+      $entity_type = key($params);
     }
 
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
@@ -122,17 +127,26 @@ class HnResponseService {
     $this->entitiesWithViews = new EntitiesWithViews();
     $this->addEntity($entity);
 
+    $this->responseData['data'][$entity->uuid()]['__hn']['status'] = $status;
+
     $this->responseData['paths'][$path] = $entity->uuid();
 
     $this->log('Done building response data.');
+    if (\Drupal::request()->query->get('debug', FALSE)) {
+      $this->responseData['__hn']['log'] = $this->log;
+    }
 
-    $this->responseData['__hn']['log'] = $this->log;
-    $this->log = [];
+    $cache_tags = [];
 
-    $response = new ModifiedResourceResponse($this->responseData);
-    $response->headers->set('Cache-Control', 'public, max-age=3600');
+    foreach ($this->entitiesWithViews->getEntities() as $entity) {
+      foreach($entity->getCacheTags() as $cache_tag) {
+        $cache_tags[] = $cache_tag;
+      }
+    }
 
-    return $response;
+    \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
+
+    return $this->responseData;
   }
 
   /**
@@ -159,7 +173,7 @@ class HnResponseService {
 
     $normalized_entity = $entityHandler->handle($entity, $view_mode);
 
-    if ($normalized_entity === NULL) {
+    if (empty($normalized_entity)) {
       return;
     }
 
@@ -193,7 +207,7 @@ class HnResponseService {
 
     $newTime = microtime(TRUE);
     $this->log[] = '['
-      . ($this->lastLogTime ? '+' . round($newTime - $this->lastLogTime, 3) * 1000 . 'ms' : date(DATE_RFC1123))
+      . ($this->lastLogTime ? '+' . round($newTime - $this->lastLogTime, 5) * 1000 . 'ms' : date(DATE_RFC1123))
       . '] ' . $string;
 
     $this->lastLogTime = $newTime;

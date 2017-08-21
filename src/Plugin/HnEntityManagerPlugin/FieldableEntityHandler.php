@@ -28,14 +28,19 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
       return;
     }
 
-    $responseService->log('Adding entity ' . $entity->uuid() . '.');
+    $responseService->log('[' . $entity->uuid() . '] Adding entity.');
 
     $entity_with_views = $responseService->entitiesWithViews->addEntity($entity, $view_mode);
     if (!$entity_with_views) {
+      $responseService->log('[' . $entity->uuid() . '] View already added, not adding.');
       return;
     }
 
+    $responseService->log('[' . $entity->uuid() . '] Getting hidden fields..');
+
     $hidden_fields = $entity_with_views->getHiddenFields();
+
+    $responseService->log('[' . $entity->uuid() . '] NULLifiing hidden fields..');
 
     // Nullify all hidden fields, so they aren't normalized.
     foreach ($entity->getFields() as $field_name => $field) {
@@ -46,12 +51,17 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
 
     }
 
+    $responseService->log('[' . $entity->uuid() . '] Normalizing..');
+
     $normalized_entity = [
       '__hn' => [
         'view_modes' => $entity_with_views->getViewModes(),
         'hidden_fields' => [],
       ],
     ] + \Drupal::getContainer()->get('serializer')->normalize($entity);
+
+
+    $responseService->log('[' . $entity->uuid() . '] Looping trough all fields..');
 
     // Now completely remove the hidden fields.
     foreach ($entity->getFields() as $field_name => $field) {
