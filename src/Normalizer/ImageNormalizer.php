@@ -52,7 +52,7 @@ class ImageNormalizer extends EntityReferenceFieldItemNormalizer {
         $dimensions = ['width' => $item->width, 'height' => $item->height];
         $style->transformDimensions($dimensions, $uri);
         $normalization['image_styles'][$id] = [
-          'url' => file_url_transform_relative($style->buildUrl($uri)),
+          'url' => $style->buildUrl($uri),
           'height' => empty($dimensions['height']) ? NULL : $dimensions['height'],
           'width' => empty($dimensions['width']) ? NULL : $dimensions['width'],
         ];
