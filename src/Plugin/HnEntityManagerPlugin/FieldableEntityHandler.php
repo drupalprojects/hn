@@ -1,6 +1,7 @@
 <?php
 
 namespace Drupal\hn\Plugin\HnEntityManagerPlugin;
+
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\hn\Plugin\HnEntityManagerPluginBase;
@@ -30,14 +31,16 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
     $responseService->log('Adding entity ' . $entity->uuid() . '.');
 
     $entity_with_views = $responseService->entitiesWithViews->addEntity($entity, $view_mode);
-    if(!$entity_with_views) return;
+    if (!$entity_with_views) {
+      return;
+    }
 
     $hidden_fields = $entity_with_views->getHiddenFields();
 
     // Nullify all hidden fields, so they aren't normalized.
     foreach ($entity->getFields() as $field_name => $field) {
 
-      if (in_array($field_name, $hidden_fields) || !$field->access('view', $this->currentUser)) {
+      if (in_array($field_name, $hidden_fields) || !$field->access('view', \Drupal::getContainer()->get('current_user'))) {
         $entity->set($field_name, NULL);
       }
 
@@ -78,4 +81,5 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
     return $normalized_entity;
 
   }
+
 }
