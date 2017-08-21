@@ -66,6 +66,7 @@ class HnResponseService {
    */
   public function getResponseData() {
     $this->log('Creating new Headless Ninja response..');
+    $DEBUG = \Drupal::request()->query->get('debug', FALSE);
 
     $status = 200;
 
@@ -77,7 +78,7 @@ class HnResponseService {
       $path = \Drupal::request()->query->get('path', '');
     }
 
-    if ($cache = \Drupal::cache()->get('hn.response_cache.' . $path)) {
+    if (!$DEBUG && $cache = \Drupal::cache()->get('hn.response_cache.' . $path)) {
       return $cache->data;
     }
 
@@ -132,7 +133,7 @@ class HnResponseService {
     $this->responseData['paths'][$path] = $entity->uuid();
 
     $this->log('Done building response data.');
-    if (\Drupal::request()->query->get('debug', FALSE)) {
+    if ($DEBUG) {
       $this->responseData['__hn']['log'] = $this->log;
     }
 
