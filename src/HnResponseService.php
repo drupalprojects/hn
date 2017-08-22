@@ -4,6 +4,7 @@ namespace Drupal\hn;
 
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactory;
+use Drupal\node\Entity\Node;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
@@ -198,15 +199,17 @@ class HnResponseService {
       return;
     }
 
-    // Add the entity and the path to the response_data object.
-    $this->responseData['data'][$entity->uuid()] = $normalized_entity;
-
     try {
-      $this->responseData['paths'][$entity->toUrl('canonical')->toString()] = $entity->uuid();
+      $url = $entity->toUrl('canonical')->toString();
+      $this->responseData['paths'][$url] = $entity->uuid();
+      $normalized_entity['__hn']['url'] = $url;
     }
     catch (\Exception $exception) {
       // Can't add url so do nothing.
     }
+
+    // Add the entity and the path to the response_data object.
+    $this->responseData['data'][$entity->uuid()] = $normalized_entity;
   }
 
   /**
