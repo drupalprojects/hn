@@ -199,6 +199,9 @@ class HnResponseService {
       return;
     }
 
+    $normalized_entity['__hn']['entity']['type'] = $entity->getEntityTypeId();
+    $normalized_entity['__hn']['entity']['bundle'] = $entity->bundle();
+
     try {
       $url = $entity->toUrl('canonical')->toString();
       $this->responseData['paths'][$url] = $entity->uuid();
