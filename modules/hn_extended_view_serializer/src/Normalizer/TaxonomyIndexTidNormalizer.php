@@ -18,6 +18,7 @@ class TaxonomyIndexTidNormalizer extends EntityReferenceFieldItemNormalizer {
    * {@inheritdoc}
    */
   public function normalize($object, $format = NULL, array $context = []) {
+    /** @var \Drupal\taxonomy\Plugin\views\filter\TaxonomyIndexTid $object */
     // Execute adminSummary to add term titles to options array.
     $object->adminSummary();
     $value_options = $object->getValueOptions();

@@ -4,6 +4,7 @@ namespace Drupal\hn\Plugin\HnEntityManagerPlugin;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\hn\Plugin\HnEntityManagerPluginBase;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * @HnEntityManagerPlugin(
@@ -45,8 +46,18 @@ class ViewHandler extends HnEntityManagerPluginBase {
 
     $filters = [];
 
-    foreach ($response['display']['filters'] as $filter) {
-      if (isset($filter['exposed']) && $filter['exposed']) {
+    foreach ($response['display']['filters'] as $filter_id => $filter) {
+      if (!empty($filter['exposed'])) {
+        if($filter['plugin_id'] === 'taxonomy_index_tid') {
+          $query = \Drupal::entityQuery('taxonomy_term');
+          $query->condition('vid', $filter['vid']);
+          $tids = $query->execute();
+          $terms = Term::loadMultiple($tids);
+          foreach ($terms as $term) {
+            $responseService->addEntity($term);
+            $filter['options'][] = $term->uuid();
+          }
+        }
         $filters[] = $filter;
       }
     }
