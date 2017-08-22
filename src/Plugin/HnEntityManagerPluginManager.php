@@ -2,6 +2,7 @@
 
 namespace Drupal\hn\Plugin;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -37,10 +38,15 @@ class HnEntityManagerPluginManager extends DefaultPluginManager {
   private $instances = [];
 
   /**
-   * @param $entity
+   * Gets the entity handler for a given entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity that a handler should be found for.
+   *
    * @return \Drupal\hn\Plugin\HnEntityManagerPluginInterface|null
+   *   Returns the found handler, or NULL if not found.
    */
-  public function getEntityHandler($entity) {
+  public function getEntityHandler(EntityInterface $entity) {
 
     if (!$this->instances) {
       foreach ($this->getDefinitions() as $definition) {

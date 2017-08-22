@@ -26,10 +26,12 @@ interface HnEntityManagerPluginInterface extends PluginInspectionInterface {
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity that will be handled.
+   * @param string $view_mode
+   *   The view mode that should be used to handle the entity.
    *
    * @return mixed
-   *   An normalizable object.
+   *   A normalizable object.
    */
   public function handle(EntityInterface $entity, $view_mode = 'default');
-  
+
 }

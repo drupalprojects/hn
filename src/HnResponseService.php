@@ -3,6 +3,7 @@
 namespace Drupal\hn;
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\node\Entity\Node;
 use Symfony\Component\Serializer\Serializer;
@@ -10,7 +11,6 @@ use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
 use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
-use Drupal\rest\ModifiedResourceResponse;
 
 /**
  * Class HnResponseService.
@@ -48,14 +48,20 @@ class HnResponseService {
   /**
    * Constructs a new HnResponseService object.
    */
-  public function __construct(Serializer $serializer, AccountProxy $current_user, ConfigFactory $config_factory) {
+  public function __construct(Serializer $serializer, AccountProxy $current_user, ConfigFactory $config_factory, CacheBackendInterface $cache) {
     $this->serializer = $serializer;
     $this->currentUser = $current_user;
     $this->config = $config_factory;
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+    $this->debugging = \Drupal::request()->query->get('debug', FALSE);
+    $this->cache = $cache;
   }
 
   protected $responseData;
+
+  protected $debugging = FALSE;
+
+  protected $cache;
 
   /**
    * Responds to GET requests.
@@ -67,7 +73,6 @@ class HnResponseService {
    */
   public function getResponseData() {
     $this->log('Creating new Headless Ninja response..');
-    $DEBUG = \Drupal::request()->query->get('debug', FALSE);
 
     $status = 200;
 
@@ -79,7 +84,7 @@ class HnResponseService {
       $path = \Drupal::request()->query->get('path', '');
     }
 
-    if (!$DEBUG && $cache = \Drupal::cache()->get('hn.response_cache.' . $path)) {
+    if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $path)) {
       return $cache->data;
     }
 
@@ -120,12 +125,12 @@ class HnResponseService {
     $entity = NULL;
 
     if (!$entity_type) {
-      if(explode('.', $url->getRouteName())[0] === 'view') {
+      if (explode('.', $url->getRouteName())[0] === 'view') {
         $entity = \Drupal::entityTypeManager()->getStorage('view')->load(explode('.', $url->getRouteName())[1]);
       }
       else {
         $this->log('Can\'t find entity type of ' . $path . ', returning 404 page.. ' . json_encode($params, TRUE));
-        // TODO: make more generic
+        // TODO: make more generic.
         $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
         $status = 404;
         $params = $url->getRouteParameters();
@@ -136,7 +141,7 @@ class HnResponseService {
     if (!$entity) {
       $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
     }
-    if($entity instanceof Node) {
+    if ($entity instanceof Node) {
       $entity = $entity->getTranslation($this->language);
     }
 
@@ -148,14 +153,14 @@ class HnResponseService {
     $this->responseData['paths'][$path] = $entity->uuid();
 
     $this->log('Done building response data.');
-    if ($DEBUG) {
+    if ($this->debugging) {
       $this->responseData['__hn']['log'] = $this->log;
     }
 
     $cache_tags = [];
 
     foreach ($this->entitiesWithViews->getEntities() as $entity) {
-      foreach($entity->getCacheTags() as $cache_tag) {
+      foreach ($entity->getCacheTags() as $cache_tag) {
         $cache_tags[] = $cache_tag;
       }
     }
@@ -178,7 +183,9 @@ class HnResponseService {
   public function addEntity(EntityInterface $entity, $view_mode = 'default') {
 
     $alreadyAddedKey = $entity->uuid() . ':' . $view_mode;
-    if(in_array($alreadyAddedKey, $this->alreadyAdded)) return;
+    if (in_array($alreadyAddedKey, $this->alreadyAdded)) {
+      return;
+    }
     $this->alreadyAdded[] = $alreadyAddedKey;
 
     /** @var \Drupal\hn\Plugin\HnEntityManagerPluginManager $hnEntityManagerPluginManager */

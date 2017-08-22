@@ -7,6 +7,8 @@ use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
 use Drupal\hn\Plugin\HnEntityManagerPluginBase;
 
 /**
+ * Provides a HN Entity Handler for the FieldableEntity entity.
+ *
  * @HnEntityManagerPlugin(
  *   id = "hn_fieldable_entity"
  * )
@@ -59,7 +61,6 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
         'hidden_fields' => [],
       ],
     ] + \Drupal::getContainer()->get('serializer')->normalize($entity);
-
 
     $responseService->log('[' . $entity->uuid() . '] Looping trough all fields..');
 

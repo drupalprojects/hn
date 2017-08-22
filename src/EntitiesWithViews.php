@@ -42,12 +42,15 @@ class EntitiesWithViews {
   }
 
   /**
+   * Returns all currently stored entities.
+   *
    * @return \Drupal\Core\Entity\EntityInterface[]
+   *   All currently stored entities.
    */
   public function getEntities() {
     $entities = [];
 
-    foreach($this->entities as $entity_with_views) {
+    foreach ($this->entities as $entity_with_views) {
       $entities[] = $entity_with_views->getEntity();
     };
 

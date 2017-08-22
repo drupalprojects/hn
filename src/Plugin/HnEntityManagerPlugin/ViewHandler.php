@@ -7,6 +7,8 @@ use Drupal\hn\Plugin\HnEntityManagerPluginBase;
 use Drupal\taxonomy\Entity\Term;
 
 /**
+ * Provides a HN Entity Handler for the View entity.
+ *
  * @HnEntityManagerPlugin(
  *   id = "hn_view"
  * )
@@ -46,9 +48,9 @@ class ViewHandler extends HnEntityManagerPluginBase {
 
     $filters = [];
 
-    foreach ($response['display']['filters'] as $filter_id => $filter) {
+    foreach ($response['display']['filters'] as $filter) {
       if (!empty($filter['exposed'])) {
-        if($filter['plugin_id'] === 'taxonomy_index_tid') {
+        if ($filter['plugin_id'] === 'taxonomy_index_tid') {
           $query = \Drupal::entityQuery('taxonomy_term');
           $query->condition('vid', $filter['vid']);
           $tids = $query->execute();
