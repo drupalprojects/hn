@@ -3,7 +3,7 @@
 namespace Drupal\hn\Plugin\HnEntityManagerPlugin;
 
 /**
- * Provides a HN Entity Handler for the FieldableEntity entity.
+ * Provides a HN Entity Handler for the ECK entity.
  *
  * @HnEntityManagerPlugin(
  *   id = "hn_eck_entity"
