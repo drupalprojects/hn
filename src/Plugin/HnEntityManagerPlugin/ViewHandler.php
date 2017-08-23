@@ -27,16 +27,28 @@ class ViewHandler extends HnEntityManagerPluginBase {
 
     $display = $entity->getDisplay($view_mode);
 
-    $display_view_mode = $display['display_options']['row']['options']['view_mode'];
-
     $executable = $entity->getExecutable();
     $executable->execute();
-    $results = [];
-    foreach ($executable->result as $resultRow) {
-      $responseService->addEntity($resultRow->_entity, $display_view_mode);
-      $results[] = $resultRow->_entity->uuid();
-    }
 
+    $display_view_mode_options = $display['display_options']['row']['options'];
+    $results = [];
+    foreach ($executable->result as $resultRow) { // For each view result row
+      if (empty($resultRow->_entity)) { // Is Search API view
+        $entity = $resultRow->_object->getValue();
+        if(!empty($display_view_mode_options['view_modes']['entity:'.$entity->getEntityTypeId()][$entity->bundle()])) {
+          $display_view_mode = $display_view_mode_options['view_modes']['entity:'.$entity->getEntityTypeId()][$entity->bundle()];
+        }
+      }
+      else {
+        $display_view_mode = $display_view_mode_options['view_mode'];
+        $entity = $resultRow->_entity;
+      }
+      if(empty($display_view_mode)) {
+        $display_view_mode = 'default';
+      }
+      $responseService->addEntity($entity, $display_view_mode);
+      $results[] = $entity->uuid();
+    }
     $response = [];
     $response['display'] = $display['display_options'];
     unset($response['display']['access']);
@@ -65,7 +77,7 @@ class ViewHandler extends HnEntityManagerPluginBase {
     }
 
     $response['display']['filters'] = $filters;
-
+    $response['total_items'] = $executable->pager->total_items;
     $response['results'] = $results;
 
     return $response;
