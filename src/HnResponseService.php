@@ -6,6 +6,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\node\Entity\Node;
+use Drupal\redirect\Entity\Redirect;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
@@ -91,9 +92,21 @@ class HnResponseService {
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
-      $this->log('Initial entity url isn\'t routed, getting 404 page..');
-      $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
-      $status = 404;
+      $redirect_service = \Drupal::service('redirect.repository');
+      $source_path = substr($path, 0, 1) === '/' ? substr($path, 1) : $path; // Source path has no leading /.
+      /** @var Redirect $redirect */
+      $redirect = $redirect_service->findBySourcePath($source_path); // Get all redirects by original url.
+      if (!empty($redirect)) { // Check if redirects are found.
+        $redirect = reset($redirect); // Redirect is array with id as key.
+        $status = (int)$redirect->getStatusCode(); // Get 301/302.
+        $url = $redirect->getRedirectUrl(); // Get URL object from redirect.
+        $this->log('Redirect found from "' . $source_path . '" to "' . $url->toString() . '"');
+      }
+      else { // If no redirects are found, throw 404.
+        $this->log('Initial entity url isn\'t routed and no redirects found, getting 404 page..');
+        $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
+        $status = 404;
+      }
     }
 
     if ($url->getRouteName() === '<front>') {
