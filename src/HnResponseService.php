@@ -92,12 +92,12 @@ class HnResponseService {
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
+      /** @var \Drupal\redirect\RedirectRepository $redirect_service */
       $redirect_service = \Drupal::service('redirect.repository');
-      $source_path = substr($path, 0, 1) === '/' ? substr($path, 1) : $path; // Source path has no leading /.
+      $source_path = trim($path, '/'); // Source path has no leading /.
       /** @var Redirect $redirect */
-      $redirect = $redirect_service->findBySourcePath($source_path); // Get all redirects by original url.
+      $redirect = $redirect_service->findMatchingRedirect($source_path, [], $this->language); // Get all redirects by original url.
       if (!empty($redirect)) { // Check if redirects are found.
-        $redirect = reset($redirect); // Redirect is array with id as key.
         $status = (int)$redirect->getStatusCode(); // Get 301/302.
         $url = $redirect->getRedirectUrl(); // Get URL object from redirect.
         $this->log('Redirect found from "' . $source_path . '" to "' . $url->toString() . '"');
