@@ -7,6 +7,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\node\Entity\Node;
 use Drupal\redirect\Entity\Redirect;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
@@ -148,6 +149,9 @@ class HnResponseService {
         $status = 404;
         $params = $url->getRouteParameters();
         $entity_type = key($params);
+        if (empty($entity_type)) {
+          throw new NotFoundHttpException('Can\'t find suitable entity and no 404 is defined. Please enter a 404 url in the site.system settings.');
+        }
       }
     }
 
