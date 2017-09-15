@@ -6,3 +6,4 @@ package: Headless Ninja
 dependencies:
   - drupal:rest
   - drupal:language
+  - redirect:redirect
