@@ -5,8 +5,9 @@ namespace Drupal\hn;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactory;
+use Drupal\hn\Event\HnResponseEvent;
 use Drupal\node\Entity\Node;
-use Drupal\redirect\Entity\Redirect;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
@@ -38,6 +39,10 @@ class HnResponseService {
    */
   protected $config;
 
+  /**
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface*/
+  private $eventDispatcher;
+
   protected $language;
 
   /**
@@ -50,13 +55,14 @@ class HnResponseService {
   /**
    * Constructs a new HnResponseService object.
    */
-  public function __construct(Serializer $serializer, AccountProxy $current_user, ConfigFactory $config_factory, CacheBackendInterface $cache) {
+  public function __construct(Serializer $serializer, AccountProxy $current_user, ConfigFactory $config_factory, CacheBackendInterface $cache, EventDispatcherInterface $eventDispatcher) {
     $this->serializer = $serializer;
     $this->currentUser = $current_user;
     $this->config = $config_factory;
     $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
     $this->debugging = \Drupal::request()->query->get('debug', FALSE);
     $this->cache = $cache;
+    $this->eventDispatcher = $eventDispatcher;
   }
 
   protected $responseData;
@@ -64,6 +70,17 @@ class HnResponseService {
   protected $debugging = FALSE;
 
   protected $cache;
+
+  /**
+   * This invokes a function that can be ca.
+   *
+   * @param $eventName
+   */
+  private function alterResponse($eventName) {
+    $event = new HnResponseEvent($this->responseData);
+    $this->eventDispatcher->dispatch($eventName, $event);
+    $this->responseData = $event->getResponseData();
+  }
 
   /**
    * Responds to GET requests.
@@ -74,6 +91,11 @@ class HnResponseService {
    *   Throws exception expected.
    */
   public function getResponseData() {
+
+    $this->responseData = [];
+
+    $this->alterResponse(HnResponseEvent::CREATED);
+
     $this->log('Creating new Headless Ninja response..');
 
     $status = 200;
@@ -90,20 +112,28 @@ class HnResponseService {
       return $cache->data;
     }
 
+    $this->alterResponse(HnResponseEvent::CREATED_CACHE_MISS);
+
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
     if (!$url->isRouted()) {
       /** @var \Drupal\redirect\RedirectRepository $redirect_service */
       $redirect_service = \Drupal::service('redirect.repository');
-      $source_path = trim($path, '/'); // Source path has no leading /.
-      /** @var Redirect $redirect */
-      $redirect = $redirect_service->findMatchingRedirect($source_path, [], $this->language); // Get all redirects by original url.
-      if (!empty($redirect)) { // Check if redirects are found.
-        $status = (int)$redirect->getStatusCode(); // Get 301/302.
-        $url = $redirect->getRedirectUrl(); // Get URL object from redirect.
+      // Source path has no leading /.
+      $source_path = trim($path, '/');
+      /** @var \Drupal\redirect\Entity\Redirect $redirect */
+      // Get all redirects by original url.
+      $redirect = $redirect_service->findMatchingRedirect($source_path, [], $this->language);
+      // Check if redirects are found.
+      if (!empty($redirect)) {
+        // Get 301/302.
+        $status = (int) $redirect->getStatusCode();
+        // Get URL object from redirect.
+        $url = $redirect->getRedirectUrl();
         $this->log('Redirect found from "' . $source_path . '" to "' . $url->toString() . '"');
       }
-      else { // If no redirects are found, throw 404.
+      // If no redirects are found, throw 404.
+      else {
         $this->log('Initial entity url isn\'t routed and no redirects found, getting 404 page..');
         $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
         $status = 404;
@@ -144,7 +174,7 @@ class HnResponseService {
       }
       else {
         $this->log('Can\'t find entity type of ' . $path . ', returning 404 page.. ' . json_encode($params, TRUE));
-        // TODO: make more generic.
+        // @todo make more generic.
         $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
         $status = 404;
         $params = $url->getRouteParameters();
@@ -165,6 +195,8 @@ class HnResponseService {
     $this->entitiesWithViews = new EntitiesWithViews();
     $this->addEntity($entity);
 
+    $this->alterResponse(HnResponseEvent::POST_ENTITIES_ADDED);
+
     $this->responseData['data'][$entity->uuid()]['__hn']['status'] = $status;
 
     $this->responseData['paths'][$path] = $entity->uuid();
@@ -183,6 +215,8 @@ class HnResponseService {
     }
 
     \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
+
+    $this->alterResponse(HnResponseEvent::PRE_SEND);
 
     return $this->responseData;
   }
