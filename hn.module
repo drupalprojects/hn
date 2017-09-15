@@ -1,4 +1,7 @@
 <?php
-function hn_update_8000() {
+/**
+ * Uninstall hn_extended_view_serializer
+ */
+function hn_update_8001() {
   \Drupal::service('module_installer')->uninstall(['hn_extended_view_serializer']);
 }
