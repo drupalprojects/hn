@@ -101,9 +101,24 @@ class EntityWithViews {
    *   The view mode to add.
    */
   public function addViewMode($view_mode) {
-
     if (!isset($this->viewModes[$view_mode])) {
-      $this->viewModes[$view_mode] = entity_get_display($this->entity->getEntityTypeId(), $this->entity->bundle(), $view_mode);
+      $entity_type = $this->entity->getEntityTypeId();
+      $bundle = $this->entity->bundle();
+      $display = \Drupal::entityTypeManager()
+                        ->getStorage('entity_view_display')
+                        ->load($entity_type . '.' . $bundle . '.' . $view_mode);
+      if (!$display) {
+        $values = [
+          'targetEntityType' => $entity_type,
+          'bundle' => $bundle,
+          'mode' => $view_mode,
+          'status' => TRUE,
+        ];
+        $display = \Drupal::entityTypeManager()
+               ->getStorage('entity_view_display')
+               ->create($values);
+      }
+      $this->viewModes[$view_mode] = $display;
     }
   }
 
