@@ -101,14 +101,25 @@ class HnResponseService {
     $status = 200;
 
     if (!$this->currentUser->hasPermission('access content')) {
-      $path = $this->config->get('system.site')->get('page.403');
+      $cache_string = $path = $this->config->get('system.site')->get('page.403');
       $status = 403;
     }
     else {
-      $path = \Drupal::request()->query->get('path', '');
+      $GET_params = \Drupal::request()->query->all();
+      $path = $GET_params['path'];
+      unset($GET_params['_format'], $GET_params['debug']);
+
+      // Construct a string to identify the cache object.
+      // It will keep all the params in the URL to prevent wrong caching.
+      $cache_string = implode('&', array_map(function ($v, $k) {
+        // Group together searches like String1+String2.
+        // The + characters are replaced for blank spaces.
+        return $k . '=' . str_replace(' ', '+', $v);
+      }, $GET_params, array_keys($GET_params)));
+
     }
 
-    if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $path)) {
+    if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $cache_string)) {
       return $cache->data;
     }
 
@@ -214,7 +225,7 @@ class HnResponseService {
       }
     }
 
-    \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
+    \Drupal::cache()->set('hn.response_cache.' . $cache_string, $this->responseData, Cache::PERMANENT, $cache_tags);
 
     $this->alterResponse(HnResponseEvent::PRE_SEND);
 
