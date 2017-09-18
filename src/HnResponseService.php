@@ -5,6 +5,8 @@ namespace Drupal\hn;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactory;
+use Drupal\hn\Event\HnEntityEvent;
+use Drupal\hn\Event\HnHandledEntityEvent;
 use Drupal\hn\Event\HnResponseEvent;
 use Drupal\node\Entity\Node;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -250,6 +252,11 @@ class HnResponseService {
     }
     $this->alreadyAdded[] = $alreadyAddedKey;
 
+    $event = new HnEntityEvent($entity, $view_mode);
+    $this->eventDispatcher->dispatch(HnEntityEvent::ADDDED, $event);
+    $entity = $event->getEntity();
+    $view_mode = $event->getViewMode();
+
     /** @var \Drupal\hn\Plugin\HnEntityManagerPluginManager $hnEntityManagerPluginManager */
     $hnEntityManagerPluginManager = \Drupal::getContainer()->get('plugin.manager.hn_entity_manager_plugin');
 
@@ -279,6 +286,10 @@ class HnResponseService {
     catch (\Exception $exception) {
       // Can't add url so do nothing.
     }
+
+    $event = new HnHandledEntityEvent($normalized_entity, $view_mode);
+    $this->eventDispatcher->dispatch(HnHandledEntityEvent::POST_HANDLE, $event);
+    $normalized_entity = $event->getEntity();
 
     // Add the entity and the path to the response_data object.
     $this->responseData['data'][$entity->uuid()] = $normalized_entity;
