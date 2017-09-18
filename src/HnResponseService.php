@@ -101,25 +101,27 @@ class HnResponseService {
     $status = 200;
 
     if (!$this->currentUser->hasPermission('access content')) {
-      $cache_string = $path = $this->config->get('system.site')->get('page.403');
+      $path = $this->config->get('system.site')->get('page.403');
       $status = 403;
     }
     else {
-      $GET_params = \Drupal::request()->query->all();
-      $path = $GET_params['path'];
-      unset($GET_params['_format'], $GET_params['debug']);
 
-      // Construct a string to identify the cache object.
-      // It will keep all the params in the URL to prevent wrong caching.
-      $cache_string = implode('&', array_map(function ($v, $k) {
-        // Group together searches like String1+String2.
-        // The + characters are replaced for blank spaces.
-        return $k . '=' . str_replace(' ', '+', $v);
-      }, $GET_params, array_keys($GET_params)));
+      /**
+       * The path argument from the query can also contain a new query.
+       * We should add that query to the main query, to make all arguments
+       * available for other modules.
+       */
+
+      $path = \Drupal::request()->query->get('path', '');
+      $parsed_path = parse_url($path);
+      if(!empty($parsed_path['query'])) {
+        parse_str($parsed_path['query'], $path_params);
+        \Drupal::request()->query->add($path_params);
+      }
 
     }
 
-    if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $cache_string)) {
+    if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $path)) {
       return $cache->data;
     }
 
@@ -225,7 +227,7 @@ class HnResponseService {
       }
     }
 
-    \Drupal::cache()->set('hn.response_cache.' . $cache_string, $this->responseData, Cache::PERMANENT, $cache_tags);
+    \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
 
     $this->alterResponse(HnResponseEvent::PRE_SEND);
 
