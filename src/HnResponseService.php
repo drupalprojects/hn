@@ -67,7 +67,7 @@ class HnResponseService {
     $this->eventDispatcher = $eventDispatcher;
   }
 
-  protected $responseData;
+  public $responseData;
 
   protected $debugging = FALSE;
 
@@ -79,9 +79,8 @@ class HnResponseService {
    * @param $eventName
    */
   private function alterResponse($eventName) {
-    $event = new HnResponseEvent($this->responseData);
+    $event = new HnResponseEvent($this);
     $this->eventDispatcher->dispatch($eventName, $event);
-    $this->responseData = $event->getResponseData();
   }
 
   /**

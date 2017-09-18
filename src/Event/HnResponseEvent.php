@@ -2,6 +2,7 @@
 
 namespace Drupal\hn\Event;
 
+use Drupal\hn\HnResponseService;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -35,19 +36,16 @@ class HnResponseEvent extends Event {
    */
   const PRE_SEND = 'hn.response.done';
 
-
-  /**
-   * Holds the response data so it can be viewed and altered.
-   *
-   * @var array
-   */
-  private $responseData = [];
+  /** @var \Drupal\hn\HnResponseService */
+  private $responseService;
 
   /**
    * Creates an response event.
+   *
+   * @param \Drupal\hn\HnResponseService $hn_response_service
    */
-  public function __construct(array $responseData) {
-    $this->responseData = $responseData;
+  public function __construct(HnResponseService $hn_response_service) {
+    $this->responseService = $hn_response_service;
   }
 
   /**
@@ -56,16 +54,11 @@ class HnResponseEvent extends Event {
    * @return array
    */
   public function getResponseData() {
-    return $this->responseData;
+    return $this->responseService->responseData;
   }
 
-  /**
-   * Sets the response data.
-   *
-   * @param array $responseData
-   */
   public function setResponseData(array $responseData) {
-    $this->responseData = $responseData;
+    return $this->responseService->responseData = $responseData;
   }
 
 }
