@@ -2,7 +2,6 @@
 
 namespace Drupal\hn\Event;
 
-use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -10,23 +9,24 @@ use Symfony\Component\EventDispatcher\Event;
  *
  * It can be used to alter the entity and view mode.
  */
-class HnEntityEvent extends Event {
+class HnHandledEntityEvent extends Event {
 
   /**
-   * This event is emitted as soon as the entity will be added to the response.
-   * This means the entity is not yet handled (normalized) yet.
+   * This event is emitted as soon as the entity is handled (normalized) by
+   * an entity handler. You can alter the handled entity here before adding it
+   * to the response.
    */
-  const ADDDED = 'hn.entity.add';
+  const POST_HANDLE = 'hn.handledentity.posthandle';
 
   /**
    * Creates a new HN Entity Event.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity the event is about.
+   * @param array $entity
+   *   The entity that was handled.
    * @param string $viewMode
    *   The view mode the event is about.
    */
-  public function __construct(EntityInterface $entity, $viewMode = 'default') {
+  public function __construct(array $entity, $viewMode = 'default') {
     $this->entity = $entity;
     $this->viewMode = $viewMode;
   }
@@ -38,7 +38,7 @@ class HnEntityEvent extends Event {
   /**
    * Entity getter.
    *
-   * @return \Drupal\Core\Entity\EntityInterface
+   * @return array
    *   The entity.
    */
   public function getEntity() {
@@ -48,10 +48,10 @@ class HnEntityEvent extends Event {
   /**
    * Entity setter.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param array $entity
    *   The entity to set.
    */
-  public function setEntity(EntityInterface $entity) {
+  public function setEntity(array $entity) {
     $this->entity = $entity;
   }
 
@@ -63,16 +63,6 @@ class HnEntityEvent extends Event {
    */
   public function getViewMode() {
     return $this->viewMode;
-  }
-
-  /**
-   * View mode setter.
-   *
-   * @param string $viewMode
-   *   The view mode to set.
-   */
-  public function setViewMode($viewMode) {
-    $this->viewMode = $viewMode;
   }
 
 }
