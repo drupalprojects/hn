@@ -114,7 +114,6 @@ class HnResponseService {
       // The path argument from the query can also contain a new query.
       // We should add that query to the main query, to make all arguments
       // available for other modules.
-
       $path = \Drupal::request()->query->get('path', '');
       $parsed_path = parse_url($path);
       if (!empty($parsed_path['query'])) {
@@ -124,9 +123,39 @@ class HnResponseService {
 
     }
 
+    // Check if this page is cached.
     if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $path)) {
-      return $cache->data;
+      $this->responseData = $cache->data;
     }
+
+    else {
+      $this->getResponseDataWithoutCache($path, $status);
+
+      $cache_tags = [];
+
+      foreach ($this->entitiesWithViews->getEntities() as $entity) {
+        foreach ($entity->getCacheTags() as $cache_tag) {
+          $cache_tags[] = $cache_tag;
+        }
+      }
+
+      \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
+    }
+
+    $this->alterResponse(HnResponseEvent::PRE_SEND);
+
+    return $this->responseData;
+  }
+
+  /**
+   * Creates response data.
+   *
+   * @param string $path
+   *   The path to start with.
+   * @param int $status
+   *   The status of the path to start with.
+   */
+  private function getResponseDataWithoutCache(&$path, $status) {
 
     $this->alterResponse(HnResponseEvent::CREATED_CACHE_MISS);
 
@@ -221,20 +250,6 @@ class HnResponseService {
     if ($this->debugging) {
       $this->responseData['__hn']['log'] = $this->log;
     }
-
-    $cache_tags = [];
-
-    foreach ($this->entitiesWithViews->getEntities() as $entity) {
-      foreach ($entity->getCacheTags() as $cache_tag) {
-        $cache_tags[] = $cache_tag;
-      }
-    }
-
-    \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
-
-    $this->alterResponse(HnResponseEvent::PRE_SEND);
-
-    return $this->responseData;
   }
 
   private $alreadyAdded = [];
