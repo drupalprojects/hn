@@ -1,0 +1,30 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.hn_test_basic_page.body
+    - field.field.node.hn_test_basic_page.field_teaser_body
+    - node.type.hn_test_basic_page
+  module:
+    - text
+    - user
+id: node.hn_test_basic_page.default
+targetEntityType: node
+bundle: hn_test_basic_page
+mode: default
+content:
+  body:
+    label: hidden
+    type: text_default
+    weight: 1
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+  links:
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  field_teaser_body: true
+  langcode: true

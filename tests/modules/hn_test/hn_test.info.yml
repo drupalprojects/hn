@@ -1,0 +1,13 @@
+name: 'HN Test'
+description: 'Provides config required by various tests.'
+type: module
+core: 8.x
+dependencies:
+  - field
+  - hn
+  - language
+  - node
+  - path
+  - rest
+  - text
+  - user
