@@ -36,13 +36,18 @@ class HnResponseEvent extends Event {
    */
   const PRE_SEND = 'hn.response.done';
 
-  /** @var \Drupal\hn\HnResponseService */
+  /**
+   * The response service to get and change the responseData of.
+   *
+   * @var \Drupal\hn\HnResponseService
+   */
   private $responseService;
 
   /**
    * Creates an response event.
    *
    * @param \Drupal\hn\HnResponseService $hn_response_service
+   *   The response service to get and change the responseData of.
    */
   public function __construct(HnResponseService $hn_response_service) {
     $this->responseService = $hn_response_service;
@@ -52,13 +57,20 @@ class HnResponseEvent extends Event {
    * Returns the response data.
    *
    * @return array
+   *   The current response data.
    */
   public function getResponseData() {
     return $this->responseService->responseData;
   }
 
+  /**
+   * Changes the response data.
+   *
+   * @param array $responseData
+   *   The new response data.
+   */
   public function setResponseData(array $responseData) {
-    return $this->responseService->responseData = $responseData;
+    $this->responseService->responseData = $responseData;
   }
 
 }

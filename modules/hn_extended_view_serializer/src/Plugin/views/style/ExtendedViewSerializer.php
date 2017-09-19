@@ -2,7 +2,6 @@
 
 namespace Drupal\hn_extended_view_serializer\Plugin\views\style;
 
-use Drupal\Console\Bootstrap\Drupal;
 use Drupal\rest\Plugin\views\style\Serializer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use UnexpectedValueException;
@@ -44,7 +43,7 @@ class ExtendedViewSerializer extends Serializer {
    * {@inheritdoc}
    */
   public function render() {
-    $rows = array();
+    $rows = [];
 
     $viewId = $this->view->id();
     $path = $this->view->getPath();
@@ -59,7 +58,7 @@ class ExtendedViewSerializer extends Serializer {
       $rows[] = $this->view->rowPlugin->render($row);
     }
 
-    $filters = array();
+    $filters = [];
 
     foreach ($this->view->filter as $filter) {
       // Check if it is a exposed filter.
@@ -70,7 +69,8 @@ class ExtendedViewSerializer extends Serializer {
         // catch to not break loop.
         try {
           $filters[] = $this->serializer->normalize($filter);
-        } catch (UnexpectedValueException $exception) {
+        }
+        catch (UnexpectedValueException $exception) {
           \Drupal::logger('HN')->warning($exception->getMessage());
         }
       }

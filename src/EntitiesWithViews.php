@@ -104,9 +104,11 @@ class EntityWithViews {
     if (!isset($this->viewModes[$view_mode])) {
       $entity_type = $this->entity->getEntityTypeId();
       $bundle = $this->entity->bundle();
+
       $display = \Drupal::entityTypeManager()
-                        ->getStorage('entity_view_display')
-                        ->load($entity_type . '.' . $bundle . '.' . $view_mode);
+        ->getStorage('entity_view_display')
+        ->load($entity_type . '.' . $bundle . '.' . $view_mode);
+
       if (!$display) {
         $values = [
           'targetEntityType' => $entity_type,
@@ -115,9 +117,10 @@ class EntityWithViews {
           'status' => TRUE,
         ];
         $display = \Drupal::entityTypeManager()
-               ->getStorage('entity_view_display')
-               ->create($values);
+          ->getStorage('entity_view_display')
+          ->create($values);
       }
+
       $this->viewModes[$view_mode] = $display;
     }
   }

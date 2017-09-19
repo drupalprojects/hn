@@ -2,6 +2,7 @@
 
 namespace Drupal\hn_extended_view_serializer\Normalizer;
 
+use Drupal\taxonomy\Entity\Term;
 use Drupal\serialization\Normalizer\EntityReferenceFieldItemNormalizer;
 
 /**
@@ -31,9 +32,10 @@ class TaxonomyIndexTidNormalizer extends EntityReferenceFieldItemNormalizer {
       $query = \Drupal::entityQuery('taxonomy_term');
       $query->condition('vid', $options['vid']);
       $tids = $query->execute();
-      $options['value'] = \Drupal\taxonomy\Entity\Term::loadMultiple($tids);
+      $options['value'] = Term::loadMultiple($tids);
     }
 
     return $options;
   }
+
 }

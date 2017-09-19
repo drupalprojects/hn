@@ -32,18 +32,20 @@ class ViewHandler extends HnEntityManagerPluginBase {
 
     $display_view_mode_options = $display['display_options']['row']['options'];
     $results = [];
-    foreach ($executable->result as $resultRow) { // For each view result row
-      if (empty($resultRow->_entity)) { // Is Search API view
+    // For each view result row.
+    foreach ($executable->result as $resultRow) {
+      // Is Search API view.
+      if (empty($resultRow->_entity)) {
         $entity = $resultRow->_object->getValue();
-        if(!empty($display_view_mode_options['view_modes']['entity:'.$entity->getEntityTypeId()][$entity->bundle()])) {
-          $display_view_mode = $display_view_mode_options['view_modes']['entity:'.$entity->getEntityTypeId()][$entity->bundle()];
+        if (!empty($display_view_mode_options['view_modes']['entity:' . $entity->getEntityTypeId()][$entity->bundle()])) {
+          $display_view_mode = $display_view_mode_options['view_modes']['entity:' . $entity->getEntityTypeId()][$entity->bundle()];
         }
       }
       else {
         $display_view_mode = $display_view_mode_options['view_mode'];
         $entity = $resultRow->_entity;
       }
-      if(empty($display_view_mode)) {
+      if (empty($display_view_mode)) {
         $display_view_mode = 'default';
       }
       $responseService->addEntity($entity, $display_view_mode);

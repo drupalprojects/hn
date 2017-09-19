@@ -42,7 +42,10 @@ class HnResponseService {
   protected $config;
 
   /**
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface*/
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
   private $eventDispatcher;
 
   protected $language;
@@ -77,6 +80,7 @@ class HnResponseService {
    * This invokes a function that can be ca.
    *
    * @param $eventName
+   *   The event name to emit.
    */
   private function alterResponse($eventName) {
     $event = new HnResponseEvent($this);
@@ -107,15 +111,13 @@ class HnResponseService {
     }
     else {
 
-      /**
-       * The path argument from the query can also contain a new query.
-       * We should add that query to the main query, to make all arguments
-       * available for other modules.
-       */
+      // The path argument from the query can also contain a new query.
+      // We should add that query to the main query, to make all arguments
+      // available for other modules.
 
       $path = \Drupal::request()->query->get('path', '');
       $parsed_path = parse_url($path);
-      if(!empty($parsed_path['query'])) {
+      if (!empty($parsed_path['query'])) {
         parse_str($parsed_path['query'], $path_params);
         \Drupal::request()->query->add($path_params);
       }
