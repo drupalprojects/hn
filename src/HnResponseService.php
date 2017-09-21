@@ -10,12 +10,12 @@ use Drupal\hn\Event\HnHandledEntityEvent;
 use Drupal\hn\Event\HnResponseEvent;
 use Drupal\node\Entity\Node;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Url;
-use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 
 /**
  * Class HnResponseService.
@@ -48,8 +48,6 @@ class HnResponseService {
    */
   private $eventDispatcher;
 
-  protected $language;
-
   /**
    * A list of entities and their views.
    *
@@ -64,8 +62,6 @@ class HnResponseService {
     $this->serializer = $serializer;
     $this->currentUser = $current_user;
     $this->config = $config_factory;
-    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
-    $this->debugging = \Drupal::request()->query->get('debug', FALSE);
     $this->cache = $cache;
     $this->eventDispatcher = $eventDispatcher;
   }
@@ -97,6 +93,36 @@ class HnResponseService {
    */
   public function getResponseData() {
 
+    // First, get the current request.
+    $r = \Drupal::request();
+
+    // Then, get the path that was requested.
+    $path = $r->query->get('path', '');
+
+    // Create a new request with all the options of the old request, but with
+    // the new url. This also merges the old query with the query in the path.
+    $r2 = Request::create($r->getBaseUrl() . $path, 'GET', $r->query->all(), [], [], $r->server->all());
+
+    // The current request is re-initialized with the original request, but
+    // with the new query and server variables. Those are the only things
+    // that change when the url changes.
+    $r->initialize(
+      $r2->query->all(),
+      $r->request->all(),
+      $r->attributes->all(),
+      $r->cookies->all(),
+      $r->files->all(),
+      $r2->server->all()
+    );
+
+    // Also the languageManager needs to be reset, in order for the active
+    // language to be re-calculated.
+    \Drupal::languageManager()->reset();
+
+
+    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+    $this->debugging = \Drupal::request()->query->get('debug', FALSE);
+
     $this->responseData = [];
 
     $this->alterResponse(HnResponseEvent::CREATED);
@@ -108,19 +134,6 @@ class HnResponseService {
     if (!$this->currentUser->hasPermission('access content')) {
       $path = $this->config->get('system.site')->get('page.403');
       $status = 403;
-    }
-    else {
-
-      // The path argument from the query can also contain a new query.
-      // We should add that query to the main query, to make all arguments
-      // available for other modules.
-      $path = \Drupal::request()->query->get('path', '');
-      $parsed_path = parse_url($path);
-      if (!empty($parsed_path['query'])) {
-        parse_str($parsed_path['query'], $path_params);
-        \Drupal::request()->query->add($path_params);
-      }
-
     }
 
     // Check if this page is cached.
@@ -161,6 +174,7 @@ class HnResponseService {
 
     $url = Url::fromUri('internal:/' . trim($path, '/'));
 
+    // @todo Move the redirect resolver to another module.
     if (!$url->isRouted()) {
       /** @var \Drupal\redirect\RedirectRepository $redirect_service */
       $redirect_service = \Drupal::service('redirect.repository');
@@ -187,25 +201,6 @@ class HnResponseService {
 
     if ($url->getRouteName() === '<front>') {
       $url = Url::fromUri('internal:/' . trim(\Drupal::config('system.site')->get('page.front'), '/'));
-    }
-
-    $language_negotiation = \Drupal::config('language.negotiation')->get('url');
-
-    // TODO: get language by domain.
-    if ($language_negotiation['source'] == LanguageNegotiationUrl::CONFIG_PATH_PREFIX) {
-
-      // The PATH_PREFIX method is used for language detection.
-      // This should be stripped of the url.
-      foreach ($language_negotiation['prefixes'] as $lang_id => $lang_prefix) {
-        if (empty($lang_prefix) && !isset($this->language)) {
-          $this->language = $lang_id;
-        }
-
-        if (!empty($lang_prefix) && strpos($path, $lang_prefix) === 1) {
-          // Change the language.
-          $this->language = $lang_id;
-        }
-      }
     }
 
     $params = $url->getRouteParameters();
