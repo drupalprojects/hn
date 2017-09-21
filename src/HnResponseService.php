@@ -119,8 +119,6 @@ class HnResponseService {
     // language to be re-calculated.
     \Drupal::languageManager()->reset();
 
-
-    $this->language = \Drupal::languageManager()->getCurrentLanguage()->getId();
     $this->debugging = \Drupal::request()->query->get('debug', FALSE);
 
     $this->responseData = [];
@@ -182,7 +180,7 @@ class HnResponseService {
       $source_path = trim($path, '/');
       /** @var \Drupal\redirect\Entity\Redirect $redirect */
       // Get all redirects by original url.
-      $redirect = $redirect_service->findMatchingRedirect($source_path, [], $this->language);
+      $redirect = $redirect_service->findMatchingRedirect($source_path, []);
       // Check if redirects are found.
       if (!empty($redirect)) {
         // Get 301/302.
@@ -227,9 +225,6 @@ class HnResponseService {
 
     if (!$entity) {
       $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
-    }
-    if ($entity instanceof Node) {
-      $entity = $entity->getTranslation($this->language);
     }
 
     $this->entitiesWithViews = new EntitiesWithViews();

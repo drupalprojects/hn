@@ -23,8 +23,6 @@ class HnRestResource extends ResourceBase {
 
   protected $config;
 
-  protected $language;
-
   protected $hnResponseService;
 
   /**

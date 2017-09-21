@@ -5,5 +5,4 @@ core: 8.x
 package: Headless Ninja
 dependencies:
   - drupal:rest
-  - drupal:language
   - redirect:redirect
