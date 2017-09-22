@@ -1,0 +1,20 @@
+<?php
+
+/**
+ * @file
+ * This file provides updates for the HN module.
+ */
+
+/**
+ * Uninstall hn_extended_view_serializer.
+ */
+function hn_update_8001() {
+  \Drupal::service('module_installer')->uninstall(['hn_extended_view_serializer']);
+}
+
+/**
+ * Add config file with cache enabled.
+ */
+function hn_update_8002() {
+  \Drupal::configFactory()->getEditable('hn.settings')->set('cache', TRUE)->save();
+}

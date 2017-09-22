@@ -8,7 +8,6 @@ use Drupal\Core\Config\ConfigFactory;
 use Drupal\hn\Event\HnEntityEvent;
 use Drupal\hn\Event\HnHandledEntityEvent;
 use Drupal\hn\Event\HnResponseEvent;
-use Drupal\node\Entity\Node;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -35,7 +34,7 @@ class HnResponseService {
    */
   protected $currentUser;
   /**
-   * Drupal\webprofiler\Config\ConfigFactoryWrapper definition.
+   * Drupal\Core\Config\ConfigFactory definition.
    *
    * @var \Drupal\Core\Config\ConfigFactory
    */
@@ -93,6 +92,8 @@ class HnResponseService {
    */
   public function getResponseData() {
 
+    $config = $this->config->get('hn.settings');
+
     // First, get the current request.
     $r = \Drupal::request();
 
@@ -135,7 +136,7 @@ class HnResponseService {
     }
 
     // Check if this page is cached.
-    if (!$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $path)) {
+    if ($config->get('cache') && !$this->debugging && $cache = $this->cache->get('hn.response_cache.' . $path)) {
       $this->responseData = $cache->data;
     }
 
@@ -150,7 +151,9 @@ class HnResponseService {
         }
       }
 
-      \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
+      if ($config->get('cache')) {
+        \Drupal::cache()->set('hn.response_cache.' . $path, $this->responseData, Cache::PERMANENT, $cache_tags);
+      }
     }
 
     $this->alterResponse(HnResponseEvent::PRE_SEND);
