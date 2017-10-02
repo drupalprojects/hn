@@ -2,12 +2,13 @@
 
 namespace Drupal\hn\Event;
 
+use Drupal\Core\Entity\EntityInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * This event is invoked whenever something happens with an entity.
+ * This event is invoked whenever something happens with an handled entity.
  *
- * It can be used to alter the entity and view mode.
+ * It can be used to alter handled entity.
  */
 class HnHandledEntityEvent extends Event {
 
@@ -21,24 +22,29 @@ class HnHandledEntityEvent extends Event {
   /**
    * Creates a new HN Entity Event.
    *
-   * @param array $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity that was handled.
+   * @param array $handledEntity
+   *   The handled entity.
    * @param string $viewMode
    *   The view mode the event is about.
    */
-  public function __construct(array $entity, $viewMode = 'default') {
+  public function __construct(EntityInterface $entity, array $handledEntity, $viewMode = 'default') {
     $this->entity = $entity;
+    $this->handledEntity = $handledEntity;
     $this->viewMode = $viewMode;
   }
 
   private $entity;
+
+  private $handledEntity;
 
   private $viewMode;
 
   /**
    * Entity getter.
    *
-   * @return array
+   * @return \Drupal\Core\Entity\EntityInterface
    *   The entity.
    */
   public function getEntity() {
@@ -46,13 +52,23 @@ class HnHandledEntityEvent extends Event {
   }
 
   /**
+   * Handled entity getter.
+   *
+   * @return array
+   *   The handled entity.
+   */
+  public function getHandledEntity() {
+    return $this->handledEntity;
+  }
+
+  /**
    * Entity setter.
    *
-   * @param array $entity
+   * @param array $handledEntity
    *   The entity to set.
    */
-  public function setEntity(array $entity) {
-    $this->entity = $entity;
+  public function setHandledEntity(array $handledEntity) {
+    $this->handledEntity = $handledEntity;
   }
 
   /**

@@ -298,9 +298,9 @@ class HnResponseService {
       // Can't add url so do nothing.
     }
 
-    $event = new HnHandledEntityEvent($normalized_entity, $view_mode);
+    $event = new HnHandledEntityEvent($entity, $normalized_entity, $view_mode);
     $this->eventDispatcher->dispatch(HnHandledEntityEvent::POST_HANDLE, $event);
-    $normalized_entity = $event->getEntity();
+    $normalized_entity = $event->getHandledEntity();
 
     // Add the entity and the path to the response_data object.
     $this->responseData['data'][$entity->uuid()] = $normalized_entity;

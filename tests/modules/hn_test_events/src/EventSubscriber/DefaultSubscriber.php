@@ -68,9 +68,9 @@ class DefaultSubscriber implements EventSubscriberInterface {
    *
    */
   public function postHandledEntityEvent(HnHandledEntityEvent $event) {
-    $entity = $event->getEntity();
+    $entity = $event->getHandledEntity();
     $entity[HnHandledEntityEvent::POST_HANDLE] = TRUE;
-    $event->setEntity($entity);
+    $event->setHandledEntity($entity);
   }
 
   /**
