@@ -1,0 +1,10 @@
+hn_strip_fields.settings:
+  type: config_object
+  label: 'HN Strip Fields Settings'
+  mapping:
+    strip:
+      type: sequence
+      sequence:
+        type: sequence
+        sequence:
+          type: string
