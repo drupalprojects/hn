@@ -58,7 +58,6 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
     $normalized_entity = [
       '__hn' => [
         'view_modes' => $entity_with_views->getViewModes(),
-        'hidden_fields' => [],
       ],
     ] + \Drupal::getContainer()->get('serializer')->normalize($entity);
 
@@ -68,7 +67,9 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
     foreach ($entity->getFields() as $field_name => $field) {
       if (in_array($field_name, $hidden_fields) || !$field->access('view', \Drupal::getContainer()->get('current_user'))) {
         unset($normalized_entity[$field_name]);
-        $normalized_entity['__hn']['hidden_fields'][] = $field_name;
+        if ($responseService->isDebugging()) {
+          $normalized_entity['__hn']['hidden_fields'][] = $field_name;
+        }
       }
 
       // If this field is an entity reference, add the referenced entities too.

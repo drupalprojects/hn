@@ -69,6 +69,10 @@ class HnResponseService {
 
   protected $debugging = FALSE;
 
+  public function isDebugging() {
+    return $this->debugging;
+  }
+
   protected $cache;
 
   /**
