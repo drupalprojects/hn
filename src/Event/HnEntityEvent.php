@@ -16,7 +16,7 @@ class HnEntityEvent extends Event {
    * This event is emitted as soon as the entity will be added to the response.
    * This means the entity is not yet handled (normalized) yet.
    */
-  const ADDDED = 'hn.entity.add';
+  const ADDED = 'hn.entity.add';
 
   /**
    * Creates a new HN Entity Event.

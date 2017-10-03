@@ -264,7 +264,7 @@ class HnResponseService {
     $this->alreadyAdded[] = $alreadyAddedKey;
 
     $event = new HnEntityEvent($entity, $view_mode);
-    $this->eventDispatcher->dispatch(HnEntityEvent::ADDDED, $event);
+    $this->eventDispatcher->dispatch(HnEntityEvent::ADDED, $event);
     $entity = $event->getEntity();
     $view_mode = $event->getViewMode();
 

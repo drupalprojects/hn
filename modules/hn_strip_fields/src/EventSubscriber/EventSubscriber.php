@@ -18,7 +18,7 @@ class EventSubscriber implements EventSubscriberInterface {
   public static function getSubscribedEvents() {
 
     return [
-      HnEntityEvent::ADDDED => 'nullifyEntityProperties',
+      HnEntityEvent::ADDED => 'nullifyEntityProperties',
       HnHandledEntityEvent::POST_HANDLE => 'unsetEntityProperties',
     ];
 

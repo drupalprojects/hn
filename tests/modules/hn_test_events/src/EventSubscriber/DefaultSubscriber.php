@@ -22,7 +22,7 @@ class DefaultSubscriber implements EventSubscriberInterface {
       HnResponseEvent::CREATED_CACHE_MISS => 'createdCacheMissEvent',
       HnResponseEvent::POST_ENTITIES_ADDED => 'postEntitiesAddedEvent',
       HnResponseEvent::PRE_SEND => 'preSendEvent',
-      HnEntityEvent::ADDDED => 'addedEntityEvent',
+      HnEntityEvent::ADDED => 'addedEntityEvent',
       HnHandledEntityEvent::POST_HANDLE => 'postHandledEntityEvent',
     ];
   }
