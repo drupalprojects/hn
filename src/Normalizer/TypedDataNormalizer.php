@@ -59,9 +59,6 @@ class TypedDataNormalizer extends SerializationTypedDataNormalizer {
         }
       }
     }
-    else {
-      \Drupal::logger('hn')->notice('Interesting! ' . get_class($object) . ' is not a FieldItemList!');
-    }
 
     // If the value is an associative array with 'value' as only key,
     // return the value of 'value'.
