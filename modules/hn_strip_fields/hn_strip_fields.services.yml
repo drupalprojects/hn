@@ -1,5 +1,0 @@
-services:
-  hn_strip_fields.event_subscriber:
-    class: Drupal\hn_strip_fields\EventSubscriber\EventSubscriber
-    tags:
-      - { name: event_subscriber }

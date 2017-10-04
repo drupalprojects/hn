@@ -1,7 +1,8 @@
 <?php
 
-namespace Drupal\hn_strip_fields\EventSubscriber;
+namespace Drupal\hn_cleaner\EventSubscriber;
 
+use Drupal\Core\Entity\Entity;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\hn\Event\HnEntityEvent;
 use Drupal\hn\Event\HnHandledEntityEvent;
@@ -36,14 +37,21 @@ class EventSubscriber implements EventSubscriberInterface {
   public function nullifyEntityProperties(HnEntityEvent $event) {
 
     $entity = $event->getEntity();
+    $entity_type = $entity->getEntityTypeId();
+
+    $config = \Drupal::config('hn_cleaner.settings');
+    $removed_entities = $config->get('entities');
+
+    if (in_array($entity_type, $removed_entities)) {
+      $event->setEntity(new NullEntity([], ''));
+      return;
+    }
 
     if (!$entity instanceof FieldableEntityInterface) {
       return;
     }
 
-    $config = \Drupal::config('hn_strip_fields.settings');
-
-    $removed_properties = ($config->get('strip.' . $entity->getEntityTypeId()));
+    $removed_properties = $config->get('fields.' . $entity->getEntityTypeId());
 
     if (!empty($removed_properties)) {
       $entityDefinition = \Drupal::entityTypeManager()->getDefinition($entity->getEntityTypeId());
@@ -71,9 +79,9 @@ class EventSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $config = \Drupal::config('hn_strip_fields.settings');
+    $config = \Drupal::config('hn_cleaner.settings');
 
-    $removed_properties = ($config->get('strip.' . $entity->getEntityTypeId()));
+    $removed_properties = $config->get('fields.' . $entity->getEntityTypeId());
 
     if (!empty($removed_properties)) {
       foreach ($removed_properties as $removed_property) {
@@ -83,5 +91,14 @@ class EventSubscriber implements EventSubscriberInterface {
 
     $event->setHandledEntity($handledEntity);
   }
+
+}
+
+/**
+ * Entity without content.
+ *
+ * Can be used to replace an entity with NULL.
+ */
+class NullEntity extends Entity {
 
 }

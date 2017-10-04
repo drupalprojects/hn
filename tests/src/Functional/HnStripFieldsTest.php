@@ -12,7 +12,7 @@ use Drupal\node\Entity\Node;
 class HnStripFieldsTest extends HnFunctionalTestBase {
 
   public static $modules = [
-    'hn_strip_fields',
+    'hn_cleaner',
   ];
 
   /**
@@ -71,17 +71,17 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
   /**
    * Assure the fields from config are stripped from the response.
    */
-  public function testWithChangingConfig() {
+  public function testFieldStrip() {
 
     // Set the config to remove a few fields of nodes.
-    $config = \Drupal::configFactory()->getEditable('hn_strip_fields.settings');
+    $config = \Drupal::configFactory()->getEditable('hn_cleaner.settings');
     $keysToStrip = [
       'nid', 'uuid', 'vid', 'langcode', 'type', 'status', 'uid', 'created',
       'changed', 'promote', 'sticky', 'revision_timestamp', 'revision_uid',
       'revision_log', 'revision_translation_affected', 'default_langcode',
       'path',
     ];
-    $config->set('strip', ['node' => $keysToStrip]);
+    $config->set('fields', ['node' => $keysToStrip]);
     $config->save();
 
     // Get the response.
@@ -96,6 +96,25 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
     // When comparing the fields, the $keysToStrip should be removed.
     $this->assertEquals($keysToStrip, array_keys(array_diff_key($existingFields, $availableFields)));
     $this->assertEquals([], array_diff_key($availableFields, $existingFields));
+  }
+
+  /**
+   * Assure the fields from config are stripped from the response.
+   */
+  public function testEntityStrip() {
+
+    // Set the config to remove all nodes.
+    $config = \Drupal::configFactory()->getEditable('hn_cleaner.settings');
+    $config->set('entities', ['node']);
+    $config->save();
+
+    // Get the response.
+    $response = $this->getHnResponse($this->nodeUrl);
+    $response = json_decode($response, TRUE);
+
+    // The data endpoint should only contain the __hn => status property.
+    $entity_data = $response['data'][$response['paths'][$this->nodeUrl]];
+    $this->assertEquals(['__hn' => ['status' => 200]], $entity_data);
   }
 
 }
