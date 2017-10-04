@@ -77,7 +77,12 @@ class HnBasicTest extends HnFunctionalTestBase {
     // $this->assertEquals($response['data'][
     // $response['paths'][$this->nodeUrl]
     // ]['__hn']['status'], 403);
-    $this->assertEquals($response['message'], 'Can\'t find suitable entity and no 404 is defined. Please enter a 404 url in the site.system settings.');
+    if (version_compare(\Drupal::VERSION, '8.4.0-dev') >= 0) {
+      $this->assertEquals($response['message'], 'Not acceptable format: hn');
+    }
+    else {
+      $this->assertEquals($response['message'], 'Can\'t find suitable entity and no 404 is defined. Please enter a 404 url in the site.system settings.');
+    }
   }
 
   /**

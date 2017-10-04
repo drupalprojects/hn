@@ -93,8 +93,12 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
     $availableFields = $response['data'][$response['paths'][$this->nodeUrl]]
       + ['field_teaser_body' => TRUE];
 
+    $keysThatShouldBeStripped = array_keys(array_diff_key($existingFields, $availableFields));
+    sort($keysToStrip);
+    sort($keysThatShouldBeStripped);
+
     // When comparing the fields, the $keysToStrip should be removed.
-    $this->assertEquals($keysToStrip, array_keys(array_diff_key($existingFields, $availableFields)));
+    $this->assertEquals($keysToStrip, $keysThatShouldBeStripped);
     $this->assertEquals([], array_diff_key($availableFields, $existingFields));
   }
 
