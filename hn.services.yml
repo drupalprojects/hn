@@ -20,6 +20,12 @@ services:
         - name: normalizer
           priority: 20
       arguments: ['@entity.repository']
+  serializer.normalizer.hn.link:
+      class: Drupal\hn\Normalizer\LinkNormalizer
+      tags:
+        - name: normalizer
+          priority: 20s
+
   hn.response:
     class: Drupal\hn\HnResponseService
     arguments: ['@serializer', '@current_user', '@config.factory', '@cache.default', '@event_dispatcher']
