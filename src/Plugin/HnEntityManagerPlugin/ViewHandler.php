@@ -79,8 +79,9 @@ class ViewHandler extends HnEntityManagerPluginBase {
     }
 
     $response['display']['filters'] = $filters;
-    $response['total_items'] = $executable->pager->total_items;
-    $response['results__' . \Drupal::request()->get('path')] = $results;
+    $path = \Drupal::request()->get('path');
+    $response['total_items__' . $path] = $executable->pager->total_items;
+    $response['results__' . $path] = $results;
 
     return $response;
   }
