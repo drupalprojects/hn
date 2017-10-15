@@ -44,10 +44,13 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
 
     $responseService->log('[' . $entity->uuid() . '] NULLifiing hidden fields..');
 
+    $fields_to_restore = [];
+
     // Nullify all hidden fields, so they aren't normalized.
     foreach ($entity->getFields() as $field_name => $field) {
 
       if (in_array($field_name, $hidden_fields) || !$field->access('view', \Drupal::getContainer()->get('current_user'))) {
+        $fields_to_restore[$field_name] = $entity->get($field_name)->getValue();
         $entity->set($field_name, NULL);
       }
 
@@ -60,6 +63,10 @@ class FieldableEntityHandler extends HnEntityManagerPluginBase {
         'view_modes' => $entity_with_views->getViewModes(),
       ],
     ] + \Drupal::getContainer()->get('serializer')->normalize($entity);
+
+    foreach ($fields_to_restore as $field_name => $value) {
+      $entity->set($field_name, $value);
+    }
 
     $responseService->log('[' . $entity->uuid() . '] Looping trough all fields..');
 
