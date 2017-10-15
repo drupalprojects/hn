@@ -3,9 +3,13 @@ status: true
 dependencies:
   config:
     - field.field.node.hn_test_basic_page.body
+    - field.field.node.hn_test_basic_page.field_link
+    - field.field.node.hn_test_basic_page.field_reference
+    - field.field.node.hn_test_basic_page.field_reference_teaser
     - field.field.node.hn_test_basic_page.field_teaser_body
     - node.type.hn_test_basic_page
   module:
+    - link
     - path
     - text
 id: node.hn_test_basic_page.default
@@ -28,6 +32,32 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
+  field_link:
+    weight: 33
+    settings:
+      placeholder_url: ''
+      placeholder_title: ''
+    third_party_settings: {  }
+    type: link_default
+    region: content
+  field_reference:
+    weight: 34
+    settings:
+      match_operator: CONTAINS
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+    type: entity_reference_autocomplete
+    region: content
+  field_reference_teaser:
+    weight: 35
+    settings:
+      match_operator: CONTAINS
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+    type: entity_reference_autocomplete
+    region: content
   field_teaser_body:
     weight: 32
     settings:
@@ -36,12 +66,6 @@ content:
     third_party_settings: {  }
     type: string_textarea
     region: content
-  langcode:
-    type: language_select
-    weight: 2
-    region: content
-    settings: {  }
-    third_party_settings: {  }
   path:
     type: path
     weight: 30

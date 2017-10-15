@@ -51,8 +51,7 @@ class HnConfigTest extends HnFunctionalTestBase {
     $config->set('menus', []);
     $config->save();
 
-    $response = $this->getHnResponse($this->nodeUrl);
-    $response = json_decode($response, TRUE);
+    $response = $this->getHnJsonResponse($this->nodeUrl);
 
     $this->assertTrue(!empty($response['paths'][$this->nodeUrl]));
     $this->assertTrue(empty($response['data']['config__menus']));
@@ -66,8 +65,7 @@ class HnConfigTest extends HnFunctionalTestBase {
     $config->set('menus', ['main', 'tools']);
     $config->save();
 
-    $response = $this->getHnResponse($this->nodeUrl);
-    $response = json_decode($response, TRUE);
+    $response = $this->getHnJsonResponse($this->nodeUrl);
 
     $response_menus = $response['data']['config__menus'];
 

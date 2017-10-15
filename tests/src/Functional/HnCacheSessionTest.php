@@ -43,8 +43,7 @@ class HnCacheSessionTest extends HnFunctionalTestBase {
   }
 
   public function testSessionTokens() {
-    $response = $this->getHnResponse($this->nodeUrl);
-    $response = json_decode($response, TRUE);
+    $response = $this->getHnJsonResponse($this->nodeUrl);
 
     $this->assertEquals(
       $response['data'][$response['paths'][$this->nodeUrl]]['title'],
@@ -59,8 +58,7 @@ class HnCacheSessionTest extends HnFunctionalTestBase {
 
     // Do a second response with only the user set, this should return the same
     // data as the first response.
-    $secondResponse = $this->getHnResponse($this->nodeUrl, ['_hn_user' => $user]);
-    $secondResponse = json_decode($secondResponse, TRUE);
+    $secondResponse = $this->getHnJsonResponse($this->nodeUrl, ['_hn_user' => $user]);
 
     $this->assertEquals(
       $response['data'],
@@ -69,11 +67,10 @@ class HnCacheSessionTest extends HnFunctionalTestBase {
 
     $this->assertEquals($user, $response['__hn']['request']['user']);
 
-    $responseWithoutData = $this->getHnResponse($this->nodeUrl, [
+    $responseWithoutData = $this->getHnJsonResponse($this->nodeUrl, [
       '_hn_user' => $user,
       '_hn_verify' => [$token],
     ]);
-    $responseWithoutData = json_decode($responseWithoutData, TRUE);
 
     $this->assertTrue(!empty($responseWithoutData['data'][$response['paths'][$this->nodeUrl]]));
     $this->assertTrue(empty($responseWithoutData['data'][$response['paths'][$this->nodeUrl]]['title']));

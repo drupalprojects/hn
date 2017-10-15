@@ -28,6 +28,13 @@ abstract class HnFunctionalTestBase extends BrowserTestBase {
   }
 
   /**
+   * Gets an Hn Response from a path, and converts it to an associative array.
+   */
+  protected function getHnJsonResponse($path, $options = []) {
+    return json_decode($this->getHnResponse($path, $options), TRUE);
+  }
+
+  /**
    * Make sure the HN module is ready to go.
    */
   protected function makeEverythingReady() {

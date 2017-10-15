@@ -7,7 +7,7 @@ use Drupal\node\Entity\Node;
 /**
  * Provides some basic tests with permissions of the HN module.
  *
- * @group hn
+ * @group hn_cleaner
  */
 class HnStripFieldsTest extends HnFunctionalTestBase {
 
@@ -55,8 +55,7 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
    * Assure all fields are still available with the default unchanged.
    */
   public function testWithoutChangingConfig() {
-    $response = $this->getHnResponse($this->nodeUrl);
-    $response = json_decode($response, TRUE);
+    $response = $this->getHnJsonResponse($this->nodeUrl);
 
     $existingFields = $this->entityFieldManager->getFieldDefinitions('node', 'hn_test_basic_page')
       + ['__hn' => TRUE];
@@ -85,8 +84,7 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
     $config->save();
 
     // Get the response.
-    $response = $this->getHnResponse($this->nodeUrl);
-    $response = json_decode($response, TRUE);
+    $response = $this->getHnJsonResponse($this->nodeUrl);
 
     $existingFields = $this->entityFieldManager->getFieldDefinitions('node', 'hn_test_basic_page')
       + ['__hn' => TRUE];
@@ -113,8 +111,7 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
     $config->save();
 
     // Get the response.
-    $response = $this->getHnResponse($this->nodeUrl);
-    $response = json_decode($response, TRUE);
+    $response = $this->getHnJsonResponse($this->nodeUrl);
 
     // The data endpoint should only contain the __hn => status property.
     $entity_data = $response['data'][$response['paths'][$this->nodeUrl]];
