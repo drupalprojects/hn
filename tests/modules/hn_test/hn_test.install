@@ -44,4 +44,33 @@ function hn_test_install() {
     'field_link' => 'https://www.google.com',
   ] + hn_test_node_base(1));
   $node1->save();
+
+  $node2 = Node::create(
+    [
+      'field_link' => 'entity:node/1',
+      'field_reference' => $node1,
+    ] + hn_test_node_base(2)
+  );
+  $node2->save();
+
+  $node3 = Node::create(
+    [
+      'field_link' => 'entity:node/1',
+      'field_reference_teaser' => $node1,
+    ] + hn_test_node_base(3)
+  );
+  $node3->save();
+
+  $node4 = Node::create(
+    [
+      'field_reference' => $node2,
+    ] + hn_test_node_base(4)
+  );
+  $node4->save();
+
+  $node5 = Node::create([
+    'field_reference' => $node1,
+    'field_reference_teaser' => $node1,
+  ] + hn_test_node_base(5));
+  $node5->save();
 }
