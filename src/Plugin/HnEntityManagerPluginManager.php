@@ -49,9 +49,19 @@ class HnEntityManagerPluginManager extends DefaultPluginManager {
   public function getEntityHandler(EntityInterface $entity) {
 
     if (!$this->instances) {
+      $definition_priorities = [];
       foreach ($this->getDefinitions() as $definition) {
         $this->instances[] = $this->createInstance($definition['id']);
+
+        // Default priority = 0
+        if (!isset($definition['priority'])) {
+          $definition['priority'] = 0;
+        }
+
+        $definition_priorities[] = $definition['priority'];
       }
+      // The plugin with the highest priority must be executed first.
+      array_multisort($definition_priorities, SORT_DESC, $this->instances);
     }
     foreach ($this->instances as $plugin) {
       if ($plugin->isSupported($entity)) {
