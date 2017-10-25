@@ -81,6 +81,11 @@ class EventSubscriber implements EventSubscriberInterface {
         foreach ($data_fields as $field) {
           unset($responseData['data'][$data_key][$field]);
         }
+        // Remove the data key if all properties are removed.
+        // See issue #2918729.
+        if (empty($responseData['data'][$data_key])) {
+          unset($responseData['data'][$data_key]);
+        }
       }
     }
 
