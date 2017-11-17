@@ -1,0 +1,3 @@
+access hn:
+  description: 'Gives access to the /hn endpoint provided by the hn module.'
+  title: 'Access the Headless Ninja REST endpoint'

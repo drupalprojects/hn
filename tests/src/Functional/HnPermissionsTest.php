@@ -17,24 +17,24 @@ class HnPermissionsTest extends HnFunctionalTestBase {
   ];
 
   /**
-   * Tests the response if the user doesn't have the 'restful' permission.
+   * Tests the response if the user doesn't have the 'access hn' permission.
    *
-   * If the 'restful get hn_rest_resource' permission isn't enabled, the
-   * endpoint should return a 403 status.
+   * If the 'access hn' permission isn't enabled, the endpoint should return a
+   * 403 status.
    */
   public function testWithoutRestPermission() {
     /** @var \Drupal\user\Entity\Role $anonymous */
     $anonymous = Role::load(RoleInterface::ANONYMOUS_ID);
-    $anonymous->revokePermission('restful get hn_rest_resource');
+    $anonymous->revokePermission('access hn');
     $anonymous->save();
     $this->getHnResponse('/node/1');
     $this->assertSession()->statusCodeEquals(403);
   }
 
   /**
-   * Tests the response if the user doesn't have the 'access' permission.
+   * Tests the response if the user doesn't have the 'content' permission.
    *
-   * If the user has access to the hn_rest_resource but not to 'access content',
+   * If the user has access to the 'access hn' but not to 'access content',
    * the status should be 200 but the response should contain the 403 page.
    */
   public function testWithoutContentPermission() {
@@ -49,12 +49,7 @@ class HnPermissionsTest extends HnFunctionalTestBase {
     // $this->assertEquals($response['data'][
     // $response['paths'][$this->nodeUrl]
     // ]['__hn']['status'], 403);
-    if (version_compare(\Drupal::VERSION, '8.4.0-dev') >= 0) {
-      $this->assertEquals($response['message'], 'Not acceptable format: hn');
-    }
-    else {
-      $this->assertEquals($response['message'], 'Can\'t find suitable entity and no 404 is defined. Please enter a 404 url in the site.system settings.');
-    }
+    $this->assertFalse(isset($response['paths']['/node/1']));
   }
 
 }

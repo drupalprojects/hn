@@ -35,7 +35,7 @@ function hn_test_install() {
   // Give permissions to anonymous users.
   /** @var \Drupal\user\Entity\Role $anonymous */
   $anonymous = Role::load(RoleInterface::ANONYMOUS_ID);
-  $anonymous->grantPermission('restful get hn_rest_resource');
+  $anonymous->grantPermission('access hn');
   $anonymous->grantPermission('access content');
   $anonymous->save();
 

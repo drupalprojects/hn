@@ -4,5 +4,5 @@ description: Provides an REST endpoint for getting entity details by a path.
 core: 8.x
 package: Headless Ninja
 dependencies:
-  - drupal:rest
+  - drupal:serialization
   - redirect:redirect

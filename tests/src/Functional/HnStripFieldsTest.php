@@ -35,8 +35,6 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
   public function setUp() {
     parent::setUp();
 
-    $this->makeEverythingReady();
-
     $test_node = Node::create([
       'type' => 'hn_test_basic_page',
       'title' => 'Test node',

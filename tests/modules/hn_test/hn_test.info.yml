@@ -8,6 +8,5 @@ dependencies:
   - link
   - node
   - path
-  - rest
   - text
   - user

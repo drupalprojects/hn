@@ -1,0 +1,6 @@
+hn.endpoint:
+  path: '/hn'
+  defaults:
+    _controller: '\Drupal\hn\Controller\HnController::endpoint'
+  requirements:
+    _permission: 'access hn'
