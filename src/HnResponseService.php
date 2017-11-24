@@ -8,13 +8,12 @@ use Drupal\Core\Config\ConfigFactory;
 use Drupal\hn\Event\HnEntityEvent;
 use Drupal\hn\Event\HnHandledEntityEvent;
 use Drupal\hn\Event\HnResponseEvent;
+use Drupal\hn\Plugin\HnPathResolverManager;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Serializer\Serializer;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Url;
 
 /**
  * Class HnResponseService.
@@ -55,14 +54,22 @@ class HnResponseService {
   public $entitiesWithViews;
 
   /**
+   * The path resolver manager service.
+   *
+   * @var \Drupal\hn\Plugin\HnPathResolverManager
+   */
+  private $pathResolver;
+
+  /**
    * Constructs a new HnResponseService object.
    */
-  public function __construct(Serializer $serializer, AccountProxy $current_user, ConfigFactory $config_factory, CacheBackendInterface $cache, EventDispatcherInterface $eventDispatcher) {
+  public function __construct(Serializer $serializer, AccountProxy $current_user, ConfigFactory $config_factory, CacheBackendInterface $cache, EventDispatcherInterface $eventDispatcher, HnPathResolverManager $pathResolver) {
     $this->serializer = $serializer;
     $this->currentUser = $current_user;
     $this->config = $config_factory;
     $this->cache = $cache;
     $this->eventDispatcher = $eventDispatcher;
+    $this->pathResolver = $pathResolver;
   }
 
   public $responseData;
@@ -177,62 +184,10 @@ class HnResponseService {
 
     $this->alterResponse(HnResponseEvent::CREATED_CACHE_MISS);
 
-    $url = Url::fromUri('internal:/' . trim($path, '/'));
+    $entity_response = $this->pathResolver->resolve($path);
 
-    // @todo Move the redirect resolver to another module.
-    if (!$url->isRouted()) {
-      /** @var \Drupal\redirect\RedirectRepository $redirect_service */
-      $redirect_service = \Drupal::service('redirect.repository');
-      // Source path has no leading /.
-      $source_path = trim($path, '/');
-      /** @var \Drupal\redirect\Entity\Redirect $redirect */
-      // Get all redirects by original url.
-      $redirect = $redirect_service->findMatchingRedirect($source_path, []);
-      // Check if redirects are found.
-      if (!empty($redirect)) {
-        // Get 301/302.
-        $status = (int) $redirect->getStatusCode();
-        // Get URL object from redirect.
-        $url = $redirect->getRedirectUrl();
-        $this->log('Redirect found from "' . $source_path . '" to "' . $url->toString() . '"');
-      }
-      // If no redirects are found, throw 404.
-      else {
-        $this->log('Initial entity url isn\'t routed and no redirects found, getting 404 page..');
-        $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
-        $status = 404;
-      }
-    }
-
-    if ($url->getRouteName() === '<front>') {
-      $url = Url::fromUri('internal:/' . trim(\Drupal::config('system.site')->get('page.front'), '/'));
-    }
-
-    $params = $url->getRouteParameters();
-    $entity_type = key($params);
-
-    $entity = NULL;
-
-    if (!$entity_type) {
-      if (explode('.', $url->getRouteName())[0] === 'view') {
-        $entity = \Drupal::entityTypeManager()->getStorage('view')->load(explode('.', $url->getRouteName())[1]);
-      }
-      else {
-        $this->log('Can\'t find entity type of ' . $path . ', returning 404 page.. ' . json_encode($params, TRUE));
-        // @todo make more generic.
-        $url = Url::fromUri('internal:/' . trim($this->config->get('system.site')->get('page.404'), '/'));
-        $status = 404;
-        $params = $url->getRouteParameters();
-        $entity_type = key($params);
-        if (empty($entity_type)) {
-          throw new NotFoundHttpException('Can\'t find suitable entity and no 404 is defined. Please enter a 404 url in the site.system settings.');
-        }
-      }
-    }
-
-    if (!$entity) {
-      $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
-    }
+    $entity = $entity_response->getEntity();
+    $status = $entity_response->getStatus();
 
     $this->entitiesWithViews = new EntitiesWithViews();
     $this->addEntity($entity);

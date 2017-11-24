@@ -28,7 +28,10 @@ services:
 
   hn.response:
     class: Drupal\hn\HnResponseService
-    arguments: ['@serializer', '@current_user', '@config.factory', '@cache.default', '@event_dispatcher']
+    arguments: ['@serializer', '@current_user', '@config.factory', '@cache.default', '@event_dispatcher', '@hn.path_resolver']
   plugin.manager.hn_entity_manager_plugin:
     class: Drupal\hn\Plugin\HnEntityManagerPluginManager
+    parent: default_plugin_manager
+  hn.path_resolver:
+    class: Drupal\hn\Plugin\HnPathResolverManager
     parent: default_plugin_manager
