@@ -51,8 +51,9 @@ class HnConfigTest extends HnFunctionalTestBase {
 
     $response = $this->getHnJsonResponse($this->nodeUrl);
 
-    $this->assertTrue(!empty($response['paths'][$this->nodeUrl]));
-    $this->assertTrue(empty($response['data']['config__menus']));
+    $this->assertFalse(empty($response['paths'][$this->nodeUrl]));
+    $this->assertFalse(isset($response['data']['config__menus']));
+    $this->assertFalse(isset($response['data']['config__entities']));
   }
 
   /**
@@ -79,6 +80,26 @@ class HnConfigTest extends HnFunctionalTestBase {
     $this->assertTrue(!empty($response_menus['main'][0]['below'][0]['key']));
     $this->assertEquals($response_menus['main'][0]['below'][0]['title'], 'Nested menu link');
     $this->assertEquals($response_menus['main'][0]['below'][0]['url'], 'http://external.link');
+  }
+
+  /**
+   * Assure that all available configs are exported correctly.
+   */
+  public function testWithConfig() {
+    $all_available_config = \Drupal::configFactory()->listAll();
+
+    $config = \Drupal::configFactory()->getEditable('hn_config.settings');
+    $config->set('entities', $all_available_config);
+    $config->save();
+
+    $response = $this->getHnJsonResponse($this->nodeUrl);
+
+    foreach ($all_available_config as $config_id) {
+      $this->assertEquals(
+        \Drupal::config($config_id)->get(),
+        $response['data']['config__entities'][$config_id]
+      );
+    }
   }
 
 }

@@ -37,6 +37,11 @@ class EventSubscriber implements EventSubscriberInterface {
       $responseData['data']['config__menus'][$menu_id] = $this->getMenuItemsById($menu_id);
     }
 
+    foreach ($config->get('entities') as $config_id) {
+      $config = \Drupal::config($config_id);
+      $responseData['data']['config__entities'][$config_id] = $config->get();
+    }
+
     $event->setResponseData($responseData);
   }
 

@@ -4,6 +4,11 @@ hn_config.settings:
   mapping:
     menus:
       type: sequence
-      label: 'Caching'
+      label: 'Menus'
+      sequence:
+        type: string
+    entities:
+      type: sequence
+      label: 'Config entities'
       sequence:
         type: string
