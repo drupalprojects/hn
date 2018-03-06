@@ -84,6 +84,10 @@ class HnPathsTest extends HnFunctionalTestBase {
 
     $path = '/this-path-does-not-exist';
 
+    // First, test without setting a 404 page. See issue #2930544.
+    $response = $this->getHnResponse($path);
+    $this->assertContains('The 404 page can&#039;t be loaded.', $response);
+
     // Set /node/1 as 404 page.
     \Drupal::configFactory()->getEditable('system.site')->set('page.404', '/node/1')->save();
     $pathResult = base_path() . 'node/1';

@@ -22,6 +22,11 @@ class NotFoundResolver extends HnPathResolverBase {
   public function resolve($path) {
     $url = Url::fromUri('internal:/' . trim(\Drupal::config('system.site')->get('page.404'), '/'));
     $params = $url->getRouteParameters();
+
+    if (empty($params)) {
+      throw new \Exception('The 404 page can\'t be loaded. Please check your config at /admin/config/system/site-information.');
+    }
+
     $entity_type = key($params);
     $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($params[$entity_type]);
     return new HnPathResolverResponse($entity, 404);
