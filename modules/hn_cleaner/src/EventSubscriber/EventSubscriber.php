@@ -58,7 +58,9 @@ class EventSubscriber implements EventSubscriberInterface {
       $entityKeys = $entityDefinition->getKeys();
       $removed_properties = array_diff($removed_properties, $entityKeys);
       foreach ($removed_properties as $removed_property) {
-        $entity->set($removed_property, NULL);
+        if ($entity->hasField($removed_property)) {
+          $entity->set($removed_property, NULL);
+        }
       }
     }
 

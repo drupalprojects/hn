@@ -78,7 +78,12 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
       'revision_log', 'revision_translation_affected', 'default_langcode',
       'path',
     ];
-    $config->set('fields', ['node' => $keysToStrip]);
+
+    // We add a key to the config that doesn't exist, to make sure it doesn't
+    // crash. See issue #2916488.
+    $config->set('fields', [
+      'node' => array_merge($keysToStrip, ['this_key_doesnt_exist']),
+    ]);
     $config->save();
 
     // Get the response.
