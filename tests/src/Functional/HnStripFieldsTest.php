@@ -50,13 +50,31 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
   }
 
   /**
+   * Removes internal fields from a list of field definitions.
+   *
+   * @param \Drupal\Core\Field\FieldDefinitionInterface[] $fieldDefinitions
+   *   The list of field definitions to filter.
+   *
+   * @return \Drupal\Core\Field\FieldDefinitionInterface[]
+   *   The filtered list of field definitions.
+   */
+  private function onlyExternalFieldDefinitions(array $fieldDefinitions) {
+    return array_filter($fieldDefinitions, function ($fieldDefinition) {
+      /** @var \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition */
+      return !$fieldDefinition->isInternal();
+    });
+  }
+
+  /**
    * Assure all fields are still available with the default unchanged.
    */
   public function testWithoutChangingConfig() {
     $response = $this->getHnJsonResponse($this->nodeUrl);
 
-    $existingFields = $this->entityFieldManager->getFieldDefinitions('node', 'hn_test_basic_page')
-      + ['__hn' => TRUE];
+    $existingFields = $this->entityFieldManager->getFieldDefinitions('node', 'hn_test_basic_page');
+    $existingFields = $this->onlyExternalFieldDefinitions($existingFields);
+    $existingFields['__hn'] = TRUE;
+
     $availableFields = $response['data'][$response['paths'][$this->nodeUrl]]
       + ['field_teaser_body' => TRUE];
 
@@ -89,8 +107,9 @@ class HnStripFieldsTest extends HnFunctionalTestBase {
     // Get the response.
     $response = $this->getHnJsonResponse($this->nodeUrl);
 
-    $existingFields = $this->entityFieldManager->getFieldDefinitions('node', 'hn_test_basic_page')
-      + ['__hn' => TRUE];
+    $existingFields = $this->entityFieldManager->getFieldDefinitions('node', 'hn_test_basic_page');
+    $existingFields = $this->onlyExternalFieldDefinitions($existingFields);
+    $existingFields['__hn'] = TRUE;
     $availableFields = $response['data'][$response['paths'][$this->nodeUrl]]
       + ['field_teaser_body' => TRUE];
 

@@ -35,11 +35,7 @@ class HnContentTest extends HnFunctionalTestBase {
       'status' => 200,
     ]);
     $this->assertEquals($r['title'], $defaults['title']);
-    $this->assertEquals($r['body'], [
-      'value' => $defaults['body'],
-      'format' => '',
-      'summary' => '',
-    ]);
+    $this->assertEquals($r['body']['value'], $defaults['body']);
     $this->assertEquals($r['field_link'], [
       'uri' => 'https://www.google.com',
       'title' => '',
