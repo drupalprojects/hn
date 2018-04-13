@@ -14,12 +14,6 @@ services:
     tags:
       - name: normalizer
         priority: 20
-  serializer.normalizer.hn.file:
-      class: Drupal\hn\Normalizer\ImageNormalizer
-      tags:
-        - name: normalizer
-          priority: 20
-      arguments: ['@entity.repository']
   serializer.normalizer.hn.link:
       class: Drupal\hn\Normalizer\LinkNormalizer
       tags:

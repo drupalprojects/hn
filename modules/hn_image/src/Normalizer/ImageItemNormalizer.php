@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\hn\Normalizer;
+namespace Drupal\hn_image\Normalizer;
 
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
@@ -10,7 +10,7 @@ use Drupal\serialization\Normalizer\EntityReferenceFieldItemNormalizer;
 /**
  * Normalizes an ImageItem.
  */
-class ImageNormalizer extends EntityReferenceFieldItemNormalizer {
+class ImageItemNormalizer extends EntityReferenceFieldItemNormalizer {
 
   protected $format = ['hn'];
 

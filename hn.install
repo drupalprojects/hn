@@ -42,3 +42,22 @@ function hn_update_8003() {
   // Disable the rest resource config, it doesn't exist anymore.
   \Drupal::configFactory()->getEditable('rest.resource.hn_rest_resource')->delete();
 }
+
+/**
+ * Enable the hn_image module if the images module is enabled.
+ *
+ * The image normalizer is now in a separate module. When the 'image' module is
+ * enabled, the hn_image module will be enabled to be backwards-compatible. The
+ * module can be disabled manually when the functionality isn't needed.
+ */
+function hn_update_8004() {
+  /** @var \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler */
+  $moduleHandler = \Drupal::service('module_handler');
+  if (!$moduleHandler->moduleExists('image')) {
+    return;
+  }
+
+  /** @var \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller */
+  $moduleInstaller = \Drupal::service('module_installer');
+  $moduleInstaller->install(['hn_image']);
+}
