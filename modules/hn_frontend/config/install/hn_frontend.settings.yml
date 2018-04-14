@@ -1,0 +1,8 @@
+routes:
+  - user.login
+  - user.pass
+  - user.register
+  - user.resets
+  - 'user.reset.*'
+  - hn.endpoint
+  - 'rest.*'
